@@ -37,33 +37,30 @@
 </head>
 <body class="min-h-screen flex flex-col text-stone-200 antialiased relative" onload="initApp()">
 
-  <!-- Background Wallpaper Layer -->
   <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#591010] via-[#2A0808] to-[#110202] -z-10"></div>
 
-  <!-- Custom On-Screen Confirmation Modal (Sequential Safety Engine Framework) -->
-  <div id="confirm-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+  <!-- TRUE DOUBLE CONFIRMATION APP MODAL (Cannot be blocked by Chrome) -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm">
     <div class="bg-[#2A0808] border-2 border-[#D4AF37] rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
-      <h3 id="confirm-title" class="text-xl font-bold text-white font-serif tracking-wide">Confirm Action</h3>
+      <h3 id="confirm-title" class="text-xl font-bold text-white font-serif tracking-wide">Step 1 of 2</h3>
       <p id="confirm-msg" class="text-stone-300 text-sm leading-relaxed"></p>
       <div class="flex gap-3 pt-2">
-        <button onclick="closeConfirmModal(false)" class="flex-1 py-3 bg-stone-900 border border-white/10 text-stone-400 font-bold rounded-xl text-xs uppercase tracking-widest">Cancel</button>
-        <button onclick="closeConfirmModal(true)" class="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black font-bold rounded-xl text-xs uppercase tracking-widest shadow-lg">Confirm</button>
+        <button onclick="processModalAction(false)" class="flex-1 py-3 bg-stone-900 border border-white/10 text-stone-400 font-bold rounded-xl text-xs uppercase tracking-widest active:scale-95">Cancel</button>
+        <button onclick="processModalAction(true)" id="confirm-btn-action" class="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black font-bold rounded-xl text-xs uppercase tracking-widest active:scale-95 shadow-lg">Next</button>
       </div>
     </div>
   </div>
 
-  <!-- Speech Notification HUD Display Box -->
   <div id="voice-toast" class="hidden fixed top-24 left-1/2 -translate-x-1/2 bg-black/90 border border-[#D4AF37] text-white px-6 py-3 rounded-full text-sm font-bold z-50 shadow-2xl whitespace-nowrap">
     🎤 Listening...
   </div>
 
-  <!-- Top Universal Header -->
   <header class="relative z-20 px-5 py-4 flex items-center justify-between border-b border-[#D4AF37]/10 bg-[#2A0808]">
-    <div>
+    <div class="shrink-0">
       <h1 class="text-2xl font-bold gold-gradient-text leading-none tracking-wide">Anantha Shree</h1>
       <p class="text-[9px] text-[#D4AF37]/70 tracking-[0.25em] uppercase mt-1.5 font-semibold">Vaidika Dharma • BLR</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 shrink-0">
       <button onclick="toggleSettingsSheet(true)" class="p-2.5 text-stone-400 bg-white/5 border border-white/10 rounded-full text-base active:scale-90">⚙️</button>
       <button onclick="toggleSahaayaMode()" id="mode-btn" class="glass-card px-4 py-2 rounded-full text-xs font-bold text-[#D4AF37] tracking-widest uppercase active:scale-95 flex items-center gap-2">
         <span class="text-lg">👩‍👦</span> Sahaaya Mode
@@ -71,22 +68,17 @@
     </div>
   </header>
 
-  <!-- Live Sync Status Row -->
   <div class="flex items-center justify-center gap-2 text-[9px] uppercase tracking-widest text-[#D4AF37]/80 py-1.5 bg-black/30 border-b border-white/5">
     <span id="sync-dot" class="h-1.5 w-1.5 rounded-full bg-stone-500"></span><span id="sync-text">CONNECTING...</span>
   </div>
 
-  <!-- Primary Content Area -->
   <main class="flex-1 px-5 pt-4">
 
-    <!-- VIEW 1: HOME/DASHBOARD PANEL -->
+    <!-- TAB 1: DASHBOARD / HOME -->
     <div id="scr-home" class="app-screen block space-y-5">
-      <div class="text-center pb-1"><h2 id="main-title" class="text-3xl text-white mt-1 vedic-font font-semibold tracking-wide">Dashboard</h2></div>
-      
-      <!-- Push Alerts Container -->
+      <div class="text-center pb-1"><h2 class="text-3xl text-white mt-1 vedic-font font-semibold tracking-wide">Dashboard</h2></div>
       <div id="amma-alerts" class="space-y-3"></div>
 
-      <!-- Realtime Panchanga Matrix Card -->
       <div class="glass-card rounded-3xl p-5 relative overflow-hidden">
         <div class="flex items-center justify-between mb-4"><h3 class="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">Today's Panchanga</h3></div>
         <div class="grid grid-cols-2 gap-3">
@@ -97,19 +89,17 @@
         </div>
       </div>
 
-      <!-- Action Cards Routing Buttons -->
       <div class="grid grid-cols-2 gap-3">
-        <div onclick="clearFormAndOpenNew()" class="glass-card p-4 rounded-2xl border-t-2 border-[#D4AF37] text-center cursor-pointer active:scale-95">
+        <div onclick="openBookingForm()" class="glass-card p-4 rounded-2xl border-t-2 border-[#D4AF37] text-center cursor-pointer active:scale-95">
           <span class="text-2xl block mb-1">🕉️</span>
           <span class="text-xs font-bold uppercase tracking-wider text-white">New Booking</span>
         </div>
-        <div onclick="openTiffinModalForNew()" class="glass-card p-4 rounded-2xl border-t-2 border-emerald-500 text-center cursor-pointer active:scale-95">
+        <div onclick="openTiffinForm()" class="glass-card p-4 rounded-2xl border-t-2 border-emerald-500 text-center cursor-pointer active:scale-95">
           <span class="text-2xl block mb-1">☀️</span>
           <span class="text-xs font-bold uppercase tracking-wider text-white">Add Meal Client</span>
         </div>
       </div>
 
-      <!-- Today's Live Ceremonies Dashboard Box Summary -->
       <div class="pt-2">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-bold uppercase tracking-widest text-[#D4AF37]/80">Today's Scheduled Events</h3>
@@ -119,7 +109,7 @@
       </div>
     </div>
 
-    <!-- VIEW 2: SEPARATE BOOKINGS VIEW TAB CONTAINER -->
+    <!-- TAB 2: BOOKINGS LOG -->
     <div id="scr-bookings" class="app-screen hidden space-y-5">
       <div class="flex justify-between items-center mb-1">
         <h2 class="text-2xl font-bold text-white font-serif">Ceremonies Log</h2>
@@ -128,7 +118,7 @@
       <div id="master-bookings-list" class="space-y-4"></div>
     </div>
 
-    <!-- VIEW 3: CALENDAR LEDGER VIEW -->
+    <!-- TAB 3: CALENDAR LEDGER -->
     <div id="scr-calendar" class="app-screen hidden space-y-5">
       <div class="grid grid-cols-2 gap-3">
         <div class="glass-card p-4 rounded-2xl border-l-4 border-emerald-500">
@@ -147,7 +137,7 @@
         <div class="flex items-center gap-1"><span class="text-orange-400">🔸</span> Ekadashi</div>
       </div>
 
-      <!-- Advanced Calendar Navigation Bar (With Year Jump Capabilities) -->
+      <!-- Verified Year Navigation -->
       <div class="glass-card rounded-3xl p-3 flex items-center justify-between">
         <div class="flex gap-1">
           <button onclick="calYearMove(-1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-stone-400 text-xs font-bold active:scale-90">«</button>
@@ -156,7 +146,7 @@
         <h2 id="cal-month-lbl" class="text-lg font-bold text-white tracking-wide font-serif">Month Year</h2>
         <div class="flex gap-1">
           <button onclick="calMove(1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#D4AF37] text-xl active:scale-90">›</button>
-          <button onclick="calYearMove(1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-stone-400 text-xs font-bold active:scale-90 »">»</button>
+          <button onclick="calYearMove(1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-stone-400 text-xs font-bold active:scale-90">»</button>
         </div>
       </div>
 
@@ -170,11 +160,11 @@
       </div>
     </div>
 
-    <!-- VIEW 4: MEALS/TIFFIN HUD -->
+    <!-- TAB 4: TIFFIN MEALS HUD -->
     <div id="scr-tiffin" class="app-screen hidden space-y-5">
       <div class="flex items-center justify-between">
         <div><h2 class="text-2xl font-bold text-white vedic-font tracking-wide">Daily Tiffin Ledger</h2></div>
-        <button onclick="openTiffinModalForNew()" class="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center border border-[#D4AF37]/30 text-[#D4AF37] font-bold text-2xl active:scale-90 shadow-lg">+</button>
+        <button onclick="openTiffinForm()" class="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center border border-[#D4AF37]/30 text-[#D4AF37] font-bold text-2xl active:scale-90 shadow-lg">+</button>
       </div>
       <button onclick="markAllTiffinGiven()" class="w-full glass-card border border-emerald-500/30 bg-emerald-900/10 text-emerald-400 font-bold py-4 rounded-2xl active:scale-95 text-xs tracking-widest uppercase flex justify-center items-center gap-2">
         <span class="text-xl">✅</span> MARK ALL ACTIVE PREFERENCES GIVEN
@@ -182,12 +172,18 @@
       <div id="tiffin-list" class="space-y-4"></div>
     </div>
 
-    <!-- VIEW 5: CUSTOMER DIRECTORY -->
+    <!-- TAB 5: REGISTRY (CUSTOMERS & STAFF) -->
     <div id="scr-people" class="app-screen hidden space-y-5">
-      <div><h2 class="text-2xl font-bold text-white vedic-font tracking-wide">Customer Directory</h2></div>
+      <div class="flex justify-between items-center mb-1">
+        <h2 class="text-2xl font-bold text-white font-serif">Registry</h2>
+        <div class="flex bg-black/40 p-1 rounded-xl text-xs font-bold border border-white/10">
+          <button onclick="toggleRegistryTab('cust')" id="btn-reg-cust" class="px-3 py-1.5 rounded-lg bg-stone-700 text-white shadow-md">Customers</button>
+          <button onclick="toggleRegistryTab('staff')" id="btn-reg-staff" class="px-3 py-1.5 rounded-lg text-stone-500">Staff Pool</button>
+        </div>
+      </div>
       <div class="relative">
         <span class="absolute left-4 top-4 text-stone-500 text-lg">🔍</span>
-        <input type="text" id="search-people" oninput="renderPeople()" placeholder="Search by name..." class="premium-input pl-12 rounded-2xl py-4 bg-black/40 border border-[#D4AF37]/30">
+        <input type="text" id="search-people" oninput="renderPeople()" placeholder="Search registry..." class="premium-input pl-12 rounded-2xl py-4 bg-black/40 border border-[#D4AF37]/30">
       </div>
       <div id="people-list" class="space-y-3 pt-2"></div>
     </div>
@@ -195,21 +191,19 @@
     <div class="h-36 w-full clear-both"></div>
   </main>
 
-  <!-- Voice Assistant Microphone Toggle Button Node -->
   <button id="voice-mic-btn" onclick="startVoiceAssistant()" class="hidden fixed bottom-[104px] right-6 w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-full flex items-center justify-center text-white text-3xl shadow-[0_0_20px_rgba(16,185,129,0.4)] z-50 active:scale-90">
     🎤
   </button>
 
-  <!-- Unified Bottom Navigation controls frame line -->
   <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[96%] max-w-md glass-card rounded-full h-[74px] px-4 flex items-center justify-between z-40 bg-[#2A0808]">
     <button onclick="switchScreen('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-1 text-[#D4AF37] flex-1"><span class="text-lg">🏡</span><span class="text-[8px] font-bold uppercase tracking-tight">Home</span></button>
     <button onclick="switchScreen('bookings')" id="nav-bookings" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">📜</span><span class="text-[8px] font-bold uppercase tracking-tight">Bookings</span></button>
     <button onclick="switchScreen('calendar')" id="nav-calendar" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">📅</span><span class="text-[8px] font-bold uppercase tracking-tight">Ledger</span></button>
     <button onclick="switchScreen('tiffin')" id="nav-tiffin" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">🍱</span><span class="text-[8px] font-bold uppercase tracking-tight">Meals</span></button>
-    <button onclick="switchScreen('people')" id="nav-people" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">👤</span><span class="text-[8px] font-bold uppercase tracking-tight">Clients</span></button>
+    <button onclick="switchScreen('people')" id="nav-people" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">👤</span><span class="text-[8px] font-bold uppercase tracking-tight">Registry</span></button>
   </nav>
 
-  <!-- DIALOG PANEL 1: NEW BOOKING EXPANSION OVERLAY -->
+  <!-- FORM 1: BOOKING SHEET -->
   <div id="booking-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
     <div id="sheet-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-400 pointer-events-none" onclick="toggleBookingSheet(false)"></div>
     <div id="sheet-content" class="relative w-full h-[92vh] bg-[#1a0a0a] border-t border-[#D4AF37]/30 rounded-t-[32px] flex flex-col shadow-2xl bottom-sheet pointer-events-auto">
@@ -220,14 +214,14 @@
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
         
-        <button onclick="selectMobileContact('f-name','f-phone')" class="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/40 text-[#D4AF37] py-3.5 rounded-2xl font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2">
+        <button onclick="selectContact('f-name','f-phone')" class="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/40 text-[#D4AF37] py-3.5 rounded-2xl font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2 active:scale-95">
           👤 Pick Client from Contacts
         </button>
 
         <div class="space-y-4">
           <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Customer Name</label><input type="text" id="f-name" class="premium-input rounded-xl text-xl py-2"></div>
           <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Phone Number</label><input type="tel" id="f-phone" class="premium-input py-2"></div>
-          <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Custom Ceremony Price (₹)</label><input type="number" id="f-custom-total" oninput="calculateLiveBalance()" value="9000" class="premium-input py-2 text-white font-bold"></div>
+          <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Custom Ceremony Base Price (₹)</label><input type="number" id="f-custom-total" oninput="calculateLiveBalance()" value="9000" class="premium-input py-2 text-white font-bold"></div>
           <div class="flex bg-black/40 p-1 rounded-xl border border-white/5">
             <button onclick="setLang('te')" id="btn-lang-te" class="flex-1 py-2.5 text-xs font-bold rounded-lg bg-stone-700 text-white">Telugu</button>
             <button onclick="setLang('kn')" id="btn-lang-kn" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-stone-500">Kannada</button>
@@ -244,14 +238,23 @@
           </div>
         </div>
 
-        <!-- Assigned Staff Contact Allocation Engine Slots -->
+        <!-- NEW: Extra Accounting Metrics -->
+        <div class="p-4 bg-black/30 rounded-2xl border border-white/5 space-y-4">
+          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest">Extra Additions & Metrics</label>
+          <div class="grid grid-cols-2 gap-3">
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-1">Extra Persons Count (₹250/ea)</span><input type="number" id="f-extra-count" value="0" oninput="calculateLiveBalance()" class="premium-input py-1.5 text-center text-sm rounded-xl"></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-1">Extra Prasadam Amount (₹)</span><input type="number" id="f-extra-prasadam" value="0" oninput="calculateLiveBalance()" class="premium-input py-1.5 text-center text-sm rounded-xl"></div>
+          </div>
+        </div>
+
+        <!-- Assigned Staff Contact Importers -->
         <div class="space-y-3 bg-black/30 p-4 rounded-2xl border border-white/5">
-          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Assigned Operational Staff</label>
+          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Assigned Staff Pool</label>
           <div class="space-y-3">
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Purohit</span><div class="flex gap-2"><input type="text" id="f-staff-purohit" placeholder="Select Purohit" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-purohit')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 1</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin1" placeholder="Select Brahmin 1" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-brahmin1')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 2</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin2" placeholder="Select Brahmin 2" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-brahmin2')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Chef</span><div class="flex gap-2"><input type="text" id="f-staff-chef" placeholder="Select Chef" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-chef')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Purohit Name</span><div class="flex gap-2"><input type="text" id="f-staff-purohit" placeholder="Select Purohit" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-purohit')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 1 Name</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin1" placeholder="Select Brahmin 1" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-brahmin1')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 2 Name</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin2" placeholder="Select Brahmin 2" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-brahmin2')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Chef Name</span><div class="flex gap-2"><input type="text" id="f-staff-chef" placeholder="Select Chef" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-chef')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
           </div>
         </div>
 
@@ -266,30 +269,31 @@
           </div>
         </div>
 
-        <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Special Instructions</label><textarea id="f-instructions" rows="2" placeholder="Ex: Yajur Veda tradition notes..." class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#D4AF37]"></textarea></div>
+        <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Special Instructions</label><textarea id="f-instructions" rows="2" placeholder="Ex: Yajur Veda tradition inputs..." class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#D4AF37]"></textarea></div>
 
       </div>
       <div class="p-6 bg-[#110505] border-t border-[#D4AF37]/10 rounded-t-[32px] flex justify-between items-center">
         <div><p class="text-xs font-bold text-stone-500 uppercase">Balance Due</p><p class="text-3xl font-bold text-orange-400 mt-0.5 tracking-wider" id="live-total">₹9,000</p></div>
-        <button id="btn-save-booking" onclick="triggerSaveWorkflow()" class="bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg">Save</button>
+        <button onclick="triggerSaveBooking()" class="bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- DIALOG PANEL 2: CUSTOM MEAL CUSTOMER PROFILE CREATOR/EDITOR -->
+  <!-- FORM 2: TIFFIN SHEET -->
   <div id="tiffin-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
     <div id="tiff-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-400 pointer-events-none" onclick="toggleTiffinSheet(false)"></div>
     <div id="tiff-content" class="relative w-full h-[88vh] bg-[#1a0a0a] border-t border-emerald-500/40 rounded-t-[32px] flex flex-col bottom-sheet pointer-events-auto">
       <div class="w-full flex justify-center pt-3 pb-2"><div class="w-12 h-1.5 bg-emerald-500/30 rounded-full"></div></div>
       <div class="px-6 pb-3 border-b border-white/10 flex justify-between items-center">
-        <div><h2 id="tiffin-sheet-title" class="text-2xl font-bold text-white font-serif tracking-wide">Add Meal Client</h2></div>
+        <div><h2 id="tiffin-sheet-title" class="text-2xl font-bold text-white font-serif tracking-wide">Meal Profile</h2></div>
         <button onclick="toggleTiffinSheet(false)" class="text-stone-400 bg-white/5 p-3 rounded-full">✕</button>
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Customer Full Name</label><input type="text" id="t-name" placeholder="Enter Name" class="premium-input rounded-xl py-2"></div>
+        <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Customer Name</label><input type="text" id="t-name" placeholder="Enter Name" class="premium-input rounded-xl py-2"></div>
+        <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Phone Number</label><input type="tel" id="t-phone" placeholder="Enter Phone" class="premium-input rounded-xl py-2"></div>
         
         <div class="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-3">
-          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Individual Meal Pricing Structures (₹)</label>
+          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Individual Meal Pricing (₹)</label>
           <div class="grid grid-cols-3 gap-2">
             <div><span class="text-[9px] font-bold text-stone-400 block mb-1">Breakfast</span><input type="number" id="t-rate-b" value="60" class="premium-input py-2 text-center text-sm rounded-xl"></div>
             <div><span class="text-[9px] font-bold text-stone-400 block mb-1">Lunch</span><input type="number" id="t-rate-l" value="90" class="premium-input py-2 text-center text-sm rounded-xl"></div>
@@ -298,7 +302,7 @@
         </div>
         
         <div class="space-y-3 bg-black/30 p-4 rounded-2xl border border-white/5">
-          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Default Active Delivery Schedule Profile</label>
+          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Default Delivery Preferences</label>
           <div class="space-y-2 pt-1">
             <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-b" checked class="h-5 w-5 rounded accent-emerald-500"> Breakfast Active</label>
             <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-l" checked class="h-5 w-5 rounded accent-emerald-500"> Lunch Active</label>
@@ -307,12 +311,12 @@
         </div>
       </div>
       <div class="p-6 bg-[#0a110a] border-t border-emerald-500/20">
-        <button onclick="triggerTiffinProfileSaveWorkflow()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg">Save Client Profile</button>
+        <button onclick="triggerSaveTiffin()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save Profile</button>
       </div>
     </div>
   </div>
 
-  <!-- DIALOG PANEL 3: MASTER EXPENSES SHEET (With Brahmin Split Logic) -->
+  <!-- FORM 3: SETTINGS / MASTER RATES -->
   <div id="settings-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
     <div id="sett-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-400 pointer-events-none" onclick="toggleSettingsSheet(false)"></div>
     <div id="sett-content" class="relative w-full h-[88vh] bg-[#1a0a0a] border-t border-[#D4AF37]/30 rounded-t-[32px] flex flex-col bottom-sheet pointer-events-auto">
@@ -329,7 +333,7 @@
         <div><label class="text-xs uppercase text-[#D4AF37] font-bold block mb-1">Maid Daily Payout</label><input type="number" id="m-rate-maid" class="premium-input rounded-xl py-2"></div>
       </div>
       <div class="p-6 bg-[#110505] border-t border-[#D4AF37]/10">
-        <button onclick="triggerMasterSettingsSave()" class="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg">Save Settings</button>
+        <button onclick="triggerSaveSettings()" class="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save Settings</button>
       </div>
     </div>
   </div>
@@ -344,11 +348,11 @@
       bookings: {}, tifCustomers: {}, tifMeals: {}, 
       calMonth: new Date().getMonth(), calYear: new Date().getFullYear(), selectedDate: null,
       currentService: 'regular', currentLang: 'te', isBookingFormOpen: false, editingBookingId: null,
-      isTiffinFormOpen: false, editingTiffinId: null, voiceFieldStep: null,
+      isTiffinFormOpen: false, editingTiffinId: null, voiceFieldStep: null, registryTab: 'cust',
       settings: { ratePurohit: 1000, rateBrahmin1: 500, rateBrahmin2: 500, rateChef: 2200, rateMaid: 300 }
     };
 
-    let activeConfirmCallback = null;
+    // Firebase Init
     const firebaseConfig = { apiKey: "AIzaSyCDzLnVOkLWSlbHi3nMzum2RsUOGT-529U", authDomain: "ananthashree-ee68c.firebaseapp.com", databaseURL: "https://ananthashree-ee68c-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "ananthashree-ee68c", storageBucket: "ananthashree-ee68c.firebasestorage.app", appId: "1:554778775618:web:2f5fee9075dc45034adddb" };
     
     function initApp() {
@@ -371,23 +375,59 @@
 
     const divineSounds = { open: new Audio('https://actions.google.com/sounds/v1/water/glass_ping.ogg'), success: new Audio('https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg') };
     function playSound(type) { divineSounds[type].currentTime = 0; divineSounds[type].play().catch(e=>e); }
+    function showVoiceToast(msg) { const t = document.getElementById('voice-toast'); t.innerText = msg; t.classList.remove('hidden'); t.classList.add('toast-anim'); setTimeout(() => { t.classList.add('hidden'); t.classList.remove('toast-anim'); }, 3000); }
 
-    function showVoiceToast(msg, duration = 3000) {
-      const toast = document.getElementById('voice-toast');
-      toast.innerText = msg; toast.classList.remove('hidden'); toast.classList.add('toast-anim');
-      setTimeout(() => { toast.classList.add('hidden'); toast.classList.remove('toast-anim'); }, duration);
+    // --- ROCK SOLID DOUBLE CONFIRM ENGINE ---
+    let modalState = { step: 0, title1: "", msg1: "", title2: "", msg2: "", finalAction: null };
+    
+    function initiateDoubleConfirm(t1, m1, t2, m2, actionCallback) {
+      modalState = { step: 1, title1: t1, msg1: m1, title2: t2, msg2: m2, finalAction: actionCallback };
+      document.getElementById('confirm-title').innerText = modalState.title1;
+      document.getElementById('confirm-msg').innerText = modalState.msg1;
+      document.getElementById('confirm-btn-action').innerText = "Next";
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+    
+    function processModalAction(isConfirmed) {
+      if (!isConfirmed) { document.getElementById('confirm-modal').classList.add('hidden'); modalState.step = 0; return; }
+      if (modalState.step === 1) {
+        modalState.step = 2;
+        document.getElementById('confirm-title').innerText = modalState.title2;
+        document.getElementById('confirm-msg').innerText = modalState.msg2;
+        document.getElementById('confirm-btn-action').innerText = "Confirm Action";
+      } else if (modalState.step === 2) {
+        document.getElementById('confirm-modal').classList.add('hidden');
+        if (modalState.finalAction) modalState.finalAction();
+        modalState.step = 0;
+      }
     }
 
-    function runCustomConfirm(title, msg, callback) {
-      document.getElementById('confirm-title').innerText = title; document.getElementById('confirm-msg').innerText = msg;
-      activeConfirmCallback = callback; document.getElementById('confirm-modal').classList.remove('hidden');
-    }
-    function closeConfirmModal(isConfirmed) {
-      document.getElementById('confirm-modal').classList.add('hidden');
-      if (isConfirmed && activeConfirmCallback) {
-        // Enforce a tight UI refresh buffer between sequential operations
-        setTimeout(() => { activeConfirmCallback(); }, 150);
-      } else { activeConfirmCallback = null; }
+    // --- CONTACT PICKER API WITH BUILT-IN FALLBACK PROMPT ---
+    async function selectContact(nameFieldId, phoneFieldId = null) {
+      try {
+        if ('contacts' in navigator && 'select' in navigator.contacts) {
+          const props = phoneFieldId ? ['name', 'tel'] : ['name'];
+          const contacts = await navigator.contacts.select(props, { multiple: false });
+          if (contacts && contacts[0]) {
+            if (contacts[0].name && contacts[0].name.length > 0) document.getElementById(nameFieldId).value = contacts[0].name[0];
+            if (phoneFieldId && contacts[0].tel && contacts[0].tel.length > 0) {
+              let clean = contacts[0].tel[0].replace(/[^0-9]/g, "");
+              if (clean.startsWith("91") && clean.length > 10) clean = clean.substring(2);
+              document.getElementById(phoneFieldId).value = clean;
+            }
+            showVoiceToast("👤 Contact Added");
+            return;
+          }
+        }
+      } catch (err) { console.warn("Picker failed, using fallback."); }
+      
+      // Fallback if API fails or is not supported
+      let manualName = prompt("Select Contact not supported. Enter Name:");
+      if (manualName) document.getElementById(nameFieldId).value = manualName;
+      if (phoneFieldId) {
+        let manualPhone = prompt("Enter Phone Number (optional):");
+        if (manualPhone) document.getElementById(phoneFieldId).value = manualPhone.replace(/[^0-9]/g, "");
+      }
     }
 
     function getVedicDayInfo(dateObj) {
@@ -400,53 +440,17 @@
       return { tithi: tithiName, paksha: pakshaName, masa: MASA_LIST[((dateObj.getMonth() + 10) % 12)], nakshatra: NAKSHATRA[nakI], ti: ti };
     }
 
-    function getCustomerFrequencyCount(phoneOrName) {
-      if(!phoneOrName) return 0; const q = phoneOrName.toLowerCase().trim();
-      return Object.values(S.bookings).filter(b => (b.customerName && b.customerName.toLowerCase().trim() === q) || (b.phone && b.phone.trim() === q)).length;
+    function getCustomerFrequencyCount(name) {
+      if(!name) return 0; const q = name.toLowerCase().trim();
+      return Object.values(S.bookings).filter(b => b.customerName && b.customerName.toLowerCase().trim() === q).length;
     }
 
-    async function selectMobileContact(nameFieldId, phoneFieldId = null) {
-      if (!('contacts' in navigator && 'select' in navigator.contacts)) {
-        const fallback = prompt("Enter Entry Name:"); if (fallback) document.getElementById(nameFieldId).value = fallback; return;
-      }
-      try {
-        const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
-        if (contacts && contacts.length > 0) {
-          const contact = contacts[0];
-          if (contact.name && contact.name.length > 0) document.getElementById(nameFieldId).value = contact.name[0];
-          if (phoneFieldId && contact.tel && contact.tel.length > 0) {
-            let cleanPhone = contact.tel[0].replace(/[^0-9]/g, "");
-            if (cleanPhone.startsWith("91") && cleanPhone.length > 10) cleanPhone = cleanPhone.substring(2);
-            document.getElementById(phoneFieldId).value = cleanPhone;
-          }
-          showVoiceToast("👤 Contact Linked");
-        }
-      } catch (err) { console.error(err); }
-    }
-
-    let isSahaaya = false;
     function toggleSahaayaMode() {
       isSahaaya = !isSahaaya; const btn = document.getElementById('mode-btn'); const micBtn = document.getElementById('voice-mic-btn');
       if(isSahaaya) {
-        document.documentElement.style.fontSize = "135%"; btn.classList.add('bg-[#D4AF37]/20'); micBtn.classList.remove('hidden'); speakTelugu("సహయ మోడ్ ఆన్ చేసాను.");
-      } else { document.documentElement.style.fontSize = "100%"; btn.classList.remove('bg-[#D4AF37]/20'); micBtn.classList.add('hidden'); S.voiceFieldStep = null; }
-    }
-
-    function speakTelugu(text) {
-      if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); let msg = new SpeechSynthesisUtterance(text); msg.lang = 'te-IN'; msg.rate = 0.85; window.speechSynthesis.speak(msg); }
-    }
-
-    function startVoiceAssistant() {
-      if (!('webkitSpeechRecognition' in window)) { alert("Voice engine not supported."); return; }
-      playSound('open'); showVoiceToast("🎤 వింటున్నాను...");
-      const recognition = new webkitSpeechRecognition(); recognition.lang = 'te-IN'; recognition.start();
-      recognition.onresult = function(event) {
-        const speechResult = event.results[0][0].transcript.trim(); const cleanResult = speechResult.toLowerCase();
-        if(cleanResult.includes('బుకింగ్') || cleanResult.includes('booking')) { clearFormAndOpenNew(); speakTelugu("బుకింగ్ ఫారం ఓపెన్ చేశాను."); }
-        else if(cleanResult.includes('క్యాలెండర్') || cleanResult.includes('ledger')) { switchScreen('calendar'); }
-        else if(cleanResult.includes('టిఫిన్') || cleanResult.includes('భోజనం')) { switchScreen('tiffin'); }
-        else if(cleanResult.includes('హోమ్')) { switchScreen('home'); }
-      };
+        document.documentElement.style.fontSize = "135%"; btn.classList.add('bg-[#D4AF37]/20'); micBtn.classList.remove('hidden');
+        if ('speechSynthesis' in window) { let msg = new SpeechSynthesisUtterance("సహయ మోడ్ ఆన్ చేసాను."); msg.lang = 'te-IN'; window.speechSynthesis.speak(msg); }
+      } else { document.documentElement.style.fontSize = "100%"; btn.classList.remove('bg-[#D4AF37]/20'); micBtn.classList.add('hidden'); }
     }
 
     function checkFloorAllocation() {
@@ -458,11 +462,28 @@
       if(count >= 2) { targetDiv.innerText = "🛑 HARD BLOCK: DATE FULL"; return 'Blocked'; }
     }
 
+    // --- MATH ENGINE FIX ---
     function calculateLiveBalance() {
       let base = parseInt(document.getElementById('f-custom-total').value) || 0;
-      let bal = base - (parseInt(document.getElementById('f-advance').value) || 0);
-      document.getElementById('live-total').innerText = '₹' + (bal >= 0 ? bal : 0).toLocaleString('en-IN');
-      return base;
+      let extras = (parseInt(document.getElementById('f-extra-count').value) || 0) * 250;
+      let prasadam = parseInt(document.getElementById('f-extra-prasadam').value) || 0;
+      let advance = parseInt(document.getElementById('f-advance').value) || 0;
+      
+      let totalDue = (base + extras + prasadam) - advance;
+      document.getElementById('live-total').innerText = '₹' + (totalDue >= 0 ? totalDue : 0).toLocaleString('en-IN');
+      return base + extras + prasadam;
+    }
+
+    // --- BOOKING LOGIC ---
+    function openBookingForm() {
+      S.editingBookingId = null; document.getElementById('booking-sheet-title').innerText = "New Ceremony";
+      document.getElementById('f-name').value = ''; document.getElementById('f-phone').value = '';
+      document.getElementById('f-custom-total').value = '9000'; document.getElementById('f-advance').value = '0';
+      document.getElementById('f-extra-count').value = '0'; document.getElementById('f-extra-prasadam').value = '0';
+      document.getElementById('f-paymode').value = 'Cash'; document.getElementById('f-instructions').value = '';
+      document.getElementById('f-staff-purohit').value = ''; document.getElementById('f-staff-brahmin1').value = '';
+      document.getElementById('f-staff-brahmin2').value = ''; document.getElementById('f-staff-chef').value = '';
+      toggleBookingSheet(true);
     }
 
     function openBookingForEditing(bookingId) {
@@ -471,8 +492,10 @@
       document.getElementById('booking-sheet-title').innerText = "Edit Ceremony Entry";
       document.getElementById('f-name').value = b.customerName || '';
       document.getElementById('f-phone').value = b.phone || '';
-      document.getElementById('f-custom-total').value = b.total || 9000;
+      document.getElementById('f-custom-total').value = b.totalBasePrice || b.total || 9000;
       document.getElementById('f-date').value = b.date || '';
+      document.getElementById('f-extra-count').value = b.extraPersonsCount || 0;
+      document.getElementById('f-extra-prasadam').value = b.extraPrasadamPrice || 0;
       document.getElementById('f-advance').value = b.advancePaid || 0;
       document.getElementById('f-paymode').value = b.paymentMode || 'Cash';
       document.getElementById('f-instructions').value = b.specialInstructions || '';
@@ -483,73 +506,46 @@
       setService(b.serviceType || 'regular'); toggleBookingSheet(true);
     }
 
-    function clearFormAndOpenNew() {
-      S.editingBookingId = null; document.getElementById('booking-sheet-title').innerText = "New Ceremony";
-      document.getElementById('f-name').value = ''; document.getElementById('f-phone').value = '';
-      document.getElementById('f-custom-total').value = '9000'; document.getElementById('f-advance').value = '0';
-      document.getElementById('f-paymode').value = 'Cash'; document.getElementById('f-instructions').value = '';
-      document.getElementById('f-staff-purohit').value = ''; document.getElementById('f-staff-brahmin1').value = '';
-      document.getElementById('f-staff-brahmin2').value = ''; document.getElementById('f-staff-chef').value = '';
-      toggleBookingSheet(true);
-    }
-
-    // --- ENFORCE MANDATORY INTERACTIVE DOUBLE-CONFIRMATION PROTOCOLS ---
-    function triggerDeleteWorkflow(bookingId) {
-      runCustomConfirm("Step 1 of 2: Delete Entry", "Wipe this ritual recording permanently?", () => {
-        runCustomConfirm("Step 2 of 2: FINAL WARNING", "Are you completely sure? This removes it from all family mobile sync frames.", () => {
-          playSound('open'); firebase.database().ref(`bookings/${bookingId}`).remove().then(() => { showVoiceToast("🗑️ Record Cleared"); });
-        });
-      });
-    }
-
-    function triggerTiffinProfileSave() {
-      const name = document.getElementById('t-name').value.trim(); if(!name) { alert("Please input name!"); return; }
-      const id = S.editingTiffinId ? S.editingTiffinId : 'tc_' + Date.now();
-      const profile = {
-        id: id, name: name, 
-        rateB: parseInt(document.getElementById('t-rate-b').value) || 60,
-        rateL: parseInt(document.getElementById('t-rate-l').value) || 90,
-        rateD: parseInt(document.getElementById('t-rate-d').value) || 90,
-        prefB: document.getElementById('t-pref-b').checked, 
-        prefL: document.getElementById('t-pref-l').checked, 
-        prefD: document.getElementById('t-pref-d').checked,
-        createdAt: Date.now()
-      };
-      firebase.database().ref('tifCustomers/' + id).set(profile).then(() => { playSound('success'); toggleTiffinSheet(false); S.editingTiffinId = null; });
-    }
-
-    function triggerTiffinProfileSaveWorkflow() {
-      runCustomConfirm("Step 1 of 2: Save Profile", "Confirm changes to this meal subscriber profile preferences?", () => {
-        runCustomConfirm("Step 2 of 2: Broadcast Update", "Commit logs and update calculations for all sync devices?", () => {
-          triggerTiffinProfileSave();
-        });
-      });
-    }
-
-    function triggerSaveWorkflow() {
+    function triggerSaveBooking() {
       const name = document.getElementById('f-name').value; const date = document.getElementById('f-date').value;
       if(!name || !date) { alert("Please input Name and Date!"); return; }
       if(checkFloorAllocation() === 'Blocked') { alert("Hard Block: Date is full!"); return; }
-      
-      runCustomConfirm("Step 1 of 2: Save Ceremony", "Commit this ceremony operational configuration data?", () => {
-        runCustomConfirm("Step 2 of 2: Final Verification", "Lock floors and send data parameters to ledger records?", () => {
+
+      initiateDoubleConfirm(
+        "Step 1: Save Ceremony", "Commit this ritual booking to the database?", 
+        "Step 2: Sync to Devices", "Are you 100% sure? This updates the calendar instantly.",
+        () => {
           const id = S.editingBookingId ? S.editingBookingId : 'bk_' + Date.now();
+          const totalFinal = calculateLiveBalance() + (parseInt(document.getElementById('f-advance').value) || 0); // reconstruct full total
           const record = { 
             id: id, customerName: name, phone: document.getElementById('f-phone').value, date: date, 
-            serviceType: S.currentService, lang: S.currentLang, total: parseInt(document.getElementById('f-custom-total').value) || 9000, 
-            advancePaid: parseInt(document.getElementById('f-advance').value) || 0, paymentMode: document.getElementById('f-paymode').value, 
-            specialInstructions: document.getElementById('f-instructions').value, staffPurohit: document.getElementById('f-staff-purohit').value,
-            staffBrahmin1: document.getElementById('f-staff-brahmin1').value, staffBrahmin2: document.getElementById('f-staff-brahmin2').value,
-            staffChef: document.getElementById('f-staff-chef').value, floor: checkFloorAllocation(), createdAt: Date.now() 
+            serviceType: S.currentService, lang: S.currentLang, 
+            total: totalFinal, totalBasePrice: parseInt(document.getElementById('f-custom-total').value) || 9000,
+            extraPersonsCount: parseInt(document.getElementById('f-extra-count').value) || 0,
+            extraPrasadamPrice: parseInt(document.getElementById('f-extra-prasadam').value) || 0,
+            advancePaid: parseInt(document.getElementById('f-advance').value) || 0, 
+            paymentMode: document.getElementById('f-paymode').value, specialInstructions: document.getElementById('f-instructions').value, 
+            staffPurohit: document.getElementById('f-staff-purohit').value, staffBrahmin1: document.getElementById('f-staff-brahmin1').value, 
+            staffBrahmin2: document.getElementById('f-staff-brahmin2').value, staffChef: document.getElementById('f-staff-chef').value, 
+            floor: checkFloorAllocation(), createdAt: Date.now(), payouts: S.bookings[id] ? S.bookings[id].payouts : {}
           };
           firebase.database().ref('bookings/' + id).set(record).then(() => { playSound('success'); toggleBookingSheet(false); S.editingBookingId = null; });
-        });
-      });
+        }
+      );
     }
 
-    function openTiffinModalForNew() {
+    function triggerDeleteBooking(bookingId) {
+      initiateDoubleConfirm(
+        "Step 1: Delete Booking", "Wipe this ritual recording permanently from database?",
+        "Step 2: Final Warning", "Are you completely sure? This removes it from all family devices.",
+        () => { playSound('open'); firebase.database().ref(`bookings/${bookingId}`).remove().then(() => { showVoiceToast("🗑 Record Cleared"); }); }
+      );
+    }
+
+    // --- TIFFIN LOGIC ---
+    function openTiffinForm() {
       S.editingTiffinId = null; document.getElementById('tiffin-sheet-title').innerText = "Add Meal Client";
-      document.getElementById('t-name').value = ''; 
+      document.getElementById('t-name').value = ''; document.getElementById('t-phone').value = '';
       document.getElementById('t-rate-b').value = '60'; document.getElementById('t-rate-l').value = '90'; document.getElementById('t-rate-d').value = '90';
       document.getElementById('t-pref-b').checked = true; document.getElementById('t-pref-l').checked = true; document.getElementById('t-pref-d').checked = true;
       toggleTiffinSheet(true);
@@ -559,20 +555,62 @@
       const c = S.tifCustomers[custId]; if(!c) return;
       playSound('open'); S.editingTiffinId = custId;
       document.getElementById('tiffin-sheet-title').innerText = "Edit Meal Profile";
-      document.getElementById('t-name').value = c.name || '';
+      document.getElementById('t-name').value = c.name || ''; document.getElementById('t-phone').value = c.phone || '';
       document.getElementById('t-rate-b').value = c.rateB || 60; document.getElementById('t-rate-l').value = c.rateL || 90; document.getElementById('t-rate-d').value = c.rateD || 90;
       document.getElementById('t-pref-b').checked = c.prefB !== false; document.getElementById('t-pref-l').checked = c.prefL !== false; document.getElementById('t-pref-d').checked = c.prefD !== false;
       toggleTiffinSheet(true);
     }
 
-    function triggerTiffinDelete(custId) {
-      runCustomConfirm("Step 1 of 2: Remove Profile", "Permanently delete this meal customer record from database?", () => {
-        runCustomConfirm("Step 2 of 2: Wipe History", "Confirm deletion? All historical daily calendar logs for this profile will dismiss.", () => {
-          firebase.database().ref(`tifCustomers/${custId}`).remove().then(() => { showVoiceToast("🗑️ Profile Removed"); });
-        });
-      });
+    function triggerSaveTiffin() {
+      const name = document.getElementById('t-name').value.trim(); if(!name) { alert("Please input name!"); return; }
+      initiateDoubleConfirm(
+        "Step 1: Save Client", "Confirm entries to this meal subscriber profile?",
+        "Step 2: Initialize Preferences", "Set these custom prices and default active meals?",
+        () => {
+          const id = S.editingTiffinId ? S.editingTiffinId : 'tc_' + Date.now();
+          const profile = {
+            id: id, name: name, phone: document.getElementById('t-phone').value || '',
+            rateB: parseInt(document.getElementById('t-rate-b').value) || 60, rateL: parseInt(document.getElementById('t-rate-l').value) || 90, rateD: parseInt(document.getElementById('t-rate-d').value) || 90,
+            prefB: document.getElementById('t-pref-b').checked, prefL: document.getElementById('t-pref-l').checked, prefD: document.getElementById('t-pref-d').checked,
+            createdAt: Date.now()
+          };
+          firebase.database().ref('tifCustomers/' + id).set(profile).then(() => { playSound('success'); toggleTiffinSheet(false); S.editingTiffinId = null; });
+        }
+      );
     }
 
+    function triggerDeleteTiffin(custId) {
+      initiateDoubleConfirm(
+        "Step 1: Remove Profile", "Permanently delete this meal customer?",
+        "Step 2: Wipe History", "Confirm? All meal preference defaults will get erased.",
+        () => { firebase.database().ref(`tifCustomers/${custId}`).remove().then(() => { showVoiceToast("🗑 Profile Removed"); }); }
+      );
+    }
+
+    function cycleMealStatus(custId, mealKey, currentStatus, currentCount) {
+      playSound('open'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      let nextStatus = 'given'; if(currentStatus === 'given') nextStatus = 'skip'; else if(currentStatus === 'skip') nextStatus = 'given';
+      firebase.database().ref(`tifMeals/${todayKey}/${custId}/${mealKey}`).set({ status: nextStatus, count: currentCount || 1 });
+    }
+
+    function adjustGuestCount(custId, mealKey, delta, currentCount) {
+      const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      let n = (currentCount || 1) + delta; if(n < 1) n = 1;
+      firebase.database().ref(`tifMeals/${todayKey}/${custId}/${mealKey}/count`).set(n);
+    }
+
+    function markAllTiffinGiven() {
+      playSound('success'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, ''); const updates = {};
+      Object.entries(S.tifCustomers).forEach(([key, c]) => {
+        const custId = c.id || key;
+        updates[`${custId}/b`] = { status: c.prefB!==false?'given':'skip', count: 1 };
+        updates[`${custId}/l`] = { status: c.prefL!==false?'given':'skip', count: 1 };
+        updates[`${custId}/d`] = { status: c.prefD!==false?'given':'skip', count: 1 };
+      });
+      firebase.database().ref(`tifMeals/${todayKey}`).set(updates);
+    }
+
+    // --- PAYOUTS & SETTINGS ---
     function toggleStaffPayment(bookingId, roleKey) {
       const b = S.bookings[bookingId]; if(!b) return; if(!b.payouts) b.payouts = {};
       b.payouts[roleKey] = b.payouts[roleKey] === 'paid' ? 'pending' : 'paid';
@@ -585,8 +623,8 @@
         rev += b.total || 0;
         if(b.payouts) {
           if(b.payouts.purohit === 'paid') exp += parseInt(S.settings.ratePurohit); 
-          if(b.payouts.brahmin1 === 'paid') exp += parseInt(S.settings.rateBrahmin1);
-          if(b.payouts.brahmin2 === 'paid') exp += parseInt(S.settings.rateBrahmin2);
+          if(b.payouts.brahmin1 === 'paid') exp += parseInt(S.settings.rateBrahmin1 || 500);
+          if(b.payouts.brahmin2 === 'paid') exp += parseInt(S.settings.rateBrahmin2 || 500);
           if(b.payouts.chef === 'paid') exp += parseInt(S.settings.rateChef); 
           if(b.payouts.maid === 'paid') exp += parseInt(S.settings.rateMaid);
         }
@@ -602,9 +640,11 @@
       document.getElementById('m-rate-maid').value = S.settings.rateMaid;
     }
 
-    function triggerMasterSettingsSave() {
-      runCustomConfirm("Step 1 of 2: Shift Default Rates", "Modify global fallback operational prices?", () => {
-        runCustomConfirm("Step 2 of 2: Confirm Overwrite", "Confirm master adjustments? This alters calculations across all future nodes.", () => {
+    function triggerSaveSettings() {
+      initiateDoubleConfirm(
+        "Step 1: Modify Defaults", "Change global fallback operational prices?",
+        "Step 2: Confirm Overwrite", "Lock these daily expenses as new configuration norms?",
+        () => {
           const updated = {
             ratePurohit: parseInt(document.getElementById('m-rate-purohit').value) || 1000, 
             rateBrahmin1: parseInt(document.getElementById('m-rate-brahmin1').value) || 500,
@@ -613,10 +653,11 @@
             rateMaid: parseInt(document.getElementById('m-rate-maid').value) || 300
           };
           firebase.database().ref('masterSettings').set(updated).then(() => { playSound('success'); toggleSettingsSheet(false); });
-        });
-      });
+        }
+      );
     }
 
+    // --- RENDERING VIEWS ---
     function sendWhatsAppReminder(customerName, lang, phone = "") {
       playSound('success'); let message = '';
       if(lang === 'kn') { message = encodeURIComponent(`ನಮಸ್ಕಾರ! ನಾಳೆ ನಿಮ್ಮ ಮನೆಯಲ್ಲಿ ವ್ರತ/ಕಾರ್ಯ ಇದೆ. ದಯವಿಟ್ಟು ಎಲ್ಲವನ್ನೂ ಸಿದ್ಧವಾಗಿಟ್ಟುಕೊಳ್ಳಿ. ಏನಾದರೂ ಸಂದೇಹವಿದ್ದರೆ ದಯವಿಟ್ಟು ಕರೆ ಮಾಡಿ. 🙏`); } 
@@ -626,12 +667,10 @@
 
     function renderHome() {
       let alertsHTML = ''; const hr = new Date().getHours();
-      if(hr >= 19) {
-        alertsHTML += `<div class="glass-card p-4 rounded-3xl border border-orange-500/40 bg-orange-950/20 flex items-center gap-3"><span class="text-2xl">🌙</span><div><p class="text-orange-400 font-bold text-sm">Amma, Tiffin Logs Check Reminder</p><p class="text-xs text-stone-400">Please check today's meals to make sure all Given/Skip values are accurate before bed!</p></div></div>`;
-      }
+      if(hr >= 19) alertsHTML += `<div class="glass-card p-4 rounded-3xl border border-orange-500/40 bg-orange-950/20 flex items-center gap-3"><span class="text-2xl">🌙</span><div><p class="text-orange-400 font-bold text-sm">Tiffin Logs Check Reminder</p><p class="text-xs text-stone-400">Please verify today's Given/Skip meals before bed!</p></div></div>`;
+      
       const todayStr = new Date().toISOString().split('T')[0];
       const tomorrowStr = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0];
-      
       const todaysEntries = Object.entries(S.bookings).filter(([k, b]) => b.date === todayStr);
       const tomorrowsEntries = Object.entries(S.bookings).filter(([k, b]) => b.date === tomorrowStr);
       
@@ -648,18 +687,20 @@
               <div>
                 <h4 class="text-white font-bold text-xl leading-tight">${b.customerName}</h4>
                 <p class="text-xs text-[#D4AF37]/80 uppercase tracking-widest font-bold mt-0.5">${b.serviceType} • ${b.floor || 'First Floor'}</p>
-                <div class="text-[11px] text-stone-400 font-medium mt-1">Due Balance: <span class="text-orange-400 font-bold">₹${remainingBal}</span></div>
+                <div class="text-[11px] text-stone-400 font-bold mt-1">
+                  ${b.staffPurohit ? `Purohit: ${b.staffPurohit} ` : ''} ${b.staffChef ? `| Chef: ${b.staffChef}` : ''}
+                </div>
               </div>
-              <div class="flex gap-2">
-                <button onclick="openBookingForEditing('${bookingId}')" class="text-xs bg-stone-800 text-stone-300 px-3 py-1.5 rounded-xl font-bold">✏️ Edit</button>
-                <button onclick="triggerDeleteWorkflow('${bookingId}')" class="text-xs bg-red-950/40 text-red-400 px-3 py-1.5 rounded-xl font-bold">🗑️ Clear</button>
+              <div class="flex flex-col gap-2 items-end">
+                <span class="text-[11px] font-bold text-orange-400 bg-orange-950/40 px-2 py-0.5 rounded border border-orange-500/30">Due: ₹${remainingBal}</span>
+                <button onclick="openBookingForEditing('${bookingId}'); switchScreen('bookings');" class="text-xs bg-stone-800 text-stone-300 px-3 py-1.5 rounded-xl font-bold border border-white/5 shadow-md">✏️ Manage</button>
               </div>
             </div>`;
         }).join('');
       }
 
       tomorrowsEntries.forEach(([key, b]) => {
-        alertsHTML += `<div class="glass-card p-5 rounded-3xl border border-emerald-500/30 bg-emerald-900/10 shadow-lg flex flex-col gap-3"><div><p class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-0.5">📅 Ceremony Tomorrow</p><h4 class="text-white font-bold text-lg">${b.customerName}</h4></div><button onclick="sendWhatsAppReminder('${b.customerName}', '${b.lang || 'te'}', '${b.phone || ''}')" class="bg-[#25D366]/20 text-[#25D366] py-2.5 rounded-xl text-xs font-bold">💬 Launch WhatsApp Reminder</button></div>`;
+        alertsHTML += `<div class="glass-card p-5 rounded-3xl border border-emerald-500/30 bg-emerald-900/10 shadow-lg flex flex-col gap-3"><div><p class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-0.5">📅 Ceremony Tomorrow</p><h4 class="text-white font-bold text-lg">${b.customerName}</h4></div><button onclick="sendWhatsAppReminder('${b.customerName}', '${b.lang || 'te'}', '${b.phone || ''}')" class="bg-[#25D366]/20 text-[#25D366] py-2.5 rounded-xl text-xs font-bold shadow-md">💬 Launch WhatsApp Reminder</button></div>`;
       });
       document.getElementById('amma-alerts').innerHTML = alertsHTML || `<p class="text-stone-500 text-xs text-center py-2">No pending dashboard alerts for today.</p>`;
     }
@@ -668,7 +709,7 @@
       const arr = Object.entries(S.bookings).sort((a,b) => new Date(b[1].date) - new Date(a[1].date));
       document.getElementById('master-booking-count').innerText = `${arr.length} Registered`;
       const container = document.getElementById('master-bookings-list');
-      if(arr.length === 0) { container.innerHTML = `<p class="text-stone-500 text-sm text-center py-8">No ceremony records saved in database.</p>`; return; }
+      if(arr.length === 0) { container.innerHTML = `<p class="text-stone-500 text-sm text-center py-8">No records in database.</p>`; return; }
       
       container.innerHTML = arr.map(([key, b]) => {
         const bookingId = b.id || key; const po = b.payouts || {}; const remainingBal = b.total - (b.advancePaid || 0);
@@ -676,10 +717,10 @@
           <div class="glass-card p-5 rounded-2xl border-l-4 border-l-[#D4AF37] space-y-4">
             <div class="flex justify-between items-start">
               <div class="flex-1">
-                <div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl leading-tight">${b.customerName}</h4><span class="text-[9px] bg-stone-800 text-[#D4AF37] px-2 py-0.5 rounded-full font-bold shrink-0">Orders: ${getCustomerFrequencyCount(b.customerName)}</span></div>
+                <div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl leading-tight">${b.customerName}</h4></div>
                 <p class="text-xs text-[#D4AF37]/90 font-bold mt-0.5 uppercase tracking-wider">${b.date} • ${b.floor || 'First Floor'}</p>
                 
-                <!-- Expanded Verified Assigned Staff Profile Tracker Blocks -->
+                <!-- Display Staff Roles Configured by User -->
                 <div class="text-[11px] text-stone-200 font-bold space-y-0.5 pt-2">
                   ${b.staffPurohit ? `<div><span class="text-amber-400/80 uppercase tracking-wider text-[9px] font-bold">Purohit:</span> ${b.staffPurohit}</div>` : ''}
                   ${b.staffBrahmin1 ? `<div><span class="text-amber-400/80 uppercase tracking-wider text-[9px] font-bold">Brahmin 1:</span> ${b.staffBrahmin1}</div>` : ''}
@@ -694,13 +735,13 @@
                 <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/30 px-2 rounded border border-emerald-500/20">Paid: ₹${b.advancePaid || 0}</span>
                 <span class="text-[9px] font-bold text-orange-400 bg-orange-950/30 px-2 rounded border border-orange-500/20">Due: ₹${remainingBal}</span>
                 <div class="flex gap-2 mt-2">
-                  <button onclick="openBookingForEditing('${bookingId}')" class="text-[10px] bg-stone-800 px-2.5 py-1 rounded font-bold uppercase text-stone-300">✏️ Edit</button>
-                  <button onclick="triggerDeleteWorkflow('${bookingId}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1 rounded font-bold uppercase text-red-400">🗑️ Clear</button>
+                  <button onclick="openBookingForEditing('${bookingId}')" class="text-[10px] bg-stone-800 px-2.5 py-1 rounded font-bold uppercase text-stone-300 border border-white/5">✏️ Edit</button>
+                  <button onclick="triggerDeleteBooking('${bookingId}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1 rounded font-bold uppercase text-red-400">🗑️ Clear</button>
                 </div>
               </div>
             </div>
             
-            <!-- Split Brahmin Helper Ledger Rows Allocation Modules -->
+            <!-- Split Brahmin Ledger Payouts Buttons -->
             <div class="border-t border-white/5 pt-3">
               <div class="grid grid-cols-2 gap-2 text-[10px]">
                 <button onclick="toggleStaffPayment('${bookingId}', 'purohit')" class="p-2 rounded-xl font-bold flex justify-between ${po.purohit === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Purohit</span> <span>₹${S.settings.ratePurohit}</span></button>
@@ -731,9 +772,9 @@
       }
       grid.innerHTML = html;
     }
-    function calMove(dir) { S.calMonth += dir; if(S.calMonth < 0) { S.calMonth = 11; S.calYear--; } else if(S.calMonth > 11) { S.calMonth = 0; S.calYear++; } renderCalendar(); }
     
-    // --- INTEGRATE DIRECT MULTI-YEAR NAVIGATION LINK MUTATOR LOGIC ---
+    // Jump Years Controls
+    function calMove(dir) { S.calMonth += dir; if(S.calMonth < 0) { S.calMonth = 11; S.calYear--; } else if(S.calMonth > 11) { S.calMonth = 0; S.calYear++; } renderCalendar(); }
     function calYearMove(dir) { S.calYear += dir; renderCalendar(); if(S.selectedDate) selectDate(S.selectedDate); }
     
     function selectDate(dateStr) {
@@ -755,7 +796,7 @@
                   ${b.staffPurohit ? `Purohit: ${b.staffPurohit} ` : ''} ${b.staffChef ? `| Chef: ${b.staffChef}` : ''}
                 </div>
               </div>
-              <div class="text-right flex flex-col items-end"><span class="text-white font-bold text-sm">₹${b.total.toLocaleString()}</span><button onclick="openBookingForEditing('${bookingId}'); switchScreen('bookings');" class="text-[10px] text-stone-400 font-bold uppercase mt-1">View/Edit ✏️</button></div>
+              <div class="text-right flex flex-col items-end"><span class="text-white font-bold text-sm">₹${b.total.toLocaleString()}</span><button onclick="openBookingForEditing('${bookingId}'); switchScreen('bookings');" class="text-[10px] text-stone-400 font-bold uppercase mt-1 border border-white/10 px-2 py-1 rounded">View/Edit ✏️</button></div>
             </div>`;
         }).join('');
       }
@@ -777,7 +818,7 @@
               </div>
               <div class="flex gap-2">
                 <button onclick="openTiffinForEditing('${custId}')" class="text-xs bg-stone-800 text-stone-300 px-2.5 py-1 rounded font-bold border border-white/5">✏️ Profile</button>
-                <button onclick="triggerTiffinDelete('${custId}')" class="text-xs bg-red-950/20 text-red-400 px-2.5 py-1 rounded font-bold border border-red-900/20">🗑️</button>
+                <button onclick="triggerDeleteTiffin('${custId}')" class="text-xs bg-red-950/20 text-red-400 px-2.5 py-1 rounded font-bold border border-red-900/20">🗑️</button>
               </div>
             </div>
             <div class="grid grid-cols-3 gap-2 p-3">
@@ -807,53 +848,45 @@
         </div>`;
     }
 
-    function cycleMealStatus(custId, mealKey, currentStatus, currentCount) {
-      playSound('open'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      let nextStatus = 'given'; if(currentStatus === 'given') nextStatus = 'skip'; else if(currentStatus === 'skip') nextStatus = 'given';
-      firebase.database().ref(`tifMeals/${todayKey}/${custId}/${mealKey}`).set({ status: nextStatus, count: currentCount || 1 });
+    function toggleRegistryTab(mode) {
+      S.registryTab = mode;
+      document.getElementById('btn-reg-cust').className = mode === 'cust' ? "px-3 py-1.5 rounded-lg bg-stone-700 text-white shadow-md" : "px-3 py-1.5 rounded-lg text-stone-500";
+      document.getElementById('btn-reg-staff').className = mode === 'staff' ? "px-3 py-1.5 rounded-lg bg-stone-700 text-white shadow-md" : "px-3 py-1.5 rounded-lg text-stone-500";
+      renderPeople();
     }
 
-    function adjustGuestCount(custId, mealKey, delta, currentCount) {
-      const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      let n = (currentCount || 1) + delta; if(n < 1) n = 1;
-      firebase.database().ref(`tifMeals/${todayKey}/${custId}/${mealKey}/count`).set(n);
-    }
-
-    function markAllTiffinGiven() {
-      playSound('success'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, ''); const updates = {};
-      Object.entries(S.tifCustomers).forEach(([key, c]) => {
-        const custId = c.id || key;
-        updates[`${custId}/b`] = { status: c.prefB!==false?'given':'skip', count: 1 };
-        updates[`${custId}/l`] = { status: c.prefL!==false?'given':'skip', count: 1 };
-        updates[`${custId}/d`] = { status: c.prefD!==false?'given':'skip', count: 1 };
-      });
-      firebase.database().ref(`tifMeals/${todayKey}`).set(updates);
-    }
-
-    // --- REWRITE DIRECTORY: INTEGRATED ONE-TAP DIRECT COMMUNICATIONS INTERFACES ---
     function renderPeople() {
-      const list = document.getElementById('people-list'); const searchTerm = document.getElementById('search-people').value.toLowerCase(); const peopleMap = {};
-      Object.values(S.bookings).forEach(b => { const nameKey = b.customerName.toLowerCase().trim(); if(!peopleMap[nameKey]) { peopleMap[nameKey] = { name: b.customerName, phone: b.phone || '', type: 'Booking' }; } });
-      Object.values(S.tifCustomers).forEach(c => { const nameKey = c.name.toLowerCase().trim(); if(!peopleMap[nameKey]) { peopleMap[nameKey] = { name: c.name, phone: c.phone || '', type: 'Tiffin' }; } });
+      const list = document.getElementById('people-list'); const searchTerm = document.getElementById('search-people').value.toLowerCase();
+      
+      if (S.registryTab === 'staff') {
+        const defaultStaff = [
+          { name: "Purohit Pool Members", phone: "", role: "Lead Purohits" },
+          { name: "Brahmin Pool Members", phone: "", role: "Assisting Brahmins" },
+          { name: "Chef Pool Members", phone: "", role: "Catering Staff" }
+        ];
+        list.innerHTML = defaultStaff.map(p => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-amber-500"><div><h4 class="text-white font-bold text-lg">${p.name}</h4><p class="text-[9px] text-stone-400 font-bold uppercase mt-1">${p.role}</p></div></div>`).join('');
+        return;
+      }
+
+      const peopleMap = {};
+      Object.values(S.bookings).forEach(b => { const nameKey = b.customerName.toLowerCase().trim(); if(!peopleMap[nameKey]) { peopleMap[nameKey] = { name: b.customerName, phone: b.phone || '', type: 'Booking' }; } else if(!peopleMap[nameKey].phone && b.phone) { peopleMap[nameKey].phone = b.phone; } });
+      Object.values(S.tifCustomers).forEach(c => { const nameKey = c.name.toLowerCase().trim(); if(!peopleMap[nameKey]) { peopleMap[nameKey] = { name: c.name, phone: c.phone || '', type: 'Tiffin' }; } else if(!peopleMap[nameKey].phone && c.phone) { peopleMap[nameKey].phone = c.phone; } });
+      
       const filtered = Object.values(peopleMap).filter(p => p.name.toLowerCase().includes(searchTerm));
       if(filtered.length === 0) { list.innerHTML = `<p class="text-stone-500 text-sm text-center py-4">No match records found.</p>`; return; }
       
-      list.innerHTML = filtered.map(p => {
-        const freq = getCustomerFrequencyCount(p.name);
-        return `
-          <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-[#D4AF37]">
-            <div>
-              <div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl">${p.name}</h4><span class="text-[9px] bg-stone-800 text-[#D4AF37] px-2 rounded-full font-bold">Frequency: ${freq}</span></div>
-              <p class="text-[10px] text-stone-400 font-bold uppercase mt-1">${p.type} Client ${p.phone ? '• ' + p.phone : ''}</p>
-            </div>
-            
-            <!-- One-Tap Action Connection Node Panel Layer -->
-            <div class="flex gap-2">
-              ${p.phone ? `<a href="tel:${p.phone}" class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl border border-blue-500/30 active:scale-90">📞</a>` : ''}
-              ${p.phone ? `<a href="https://wa.me/91${p.phone}" class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/30 active:scale-90">💬</a>` : ''}
-            </div>
-          </div>`;
-      }).join('');
+      list.innerHTML = filtered.map(p => `
+        <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-[#D4AF37]">
+          <div>
+            <div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl">${p.name}</h4><span class="text-[9px] bg-stone-800 text-[#D4AF37] px-2 rounded-full font-bold">Orders: ${getCustomerFrequencyCount(p.name)}</span></div>
+            <p class="text-[10px] text-stone-400 font-bold uppercase mt-1">${p.type} Client ${p.phone ? '• ' + p.phone : ''}</p>
+          </div>
+          <!-- One Tap Direct Dialing Links -->
+          <div class="flex gap-2">
+            ${p.phone ? `<a href="tel:${p.phone}" class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl border border-blue-500/30 shadow-lg active:scale-90">📞</a>` : ''}
+            ${p.phone ? `<a href="https://wa.me/91${p.phone}" class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/30 shadow-lg active:scale-90">💬</a>` : ''}
+          </div>
+        </div>`).join('');
     }
 
     function switchScreen(target) {
@@ -862,7 +895,8 @@
       document.getElementById('nav-' + target).classList.remove('text-stone-500'); document.getElementById('nav-' + target).classList.add('text-[#D4AF37]');
       if(target === 'people') renderPeople();
     }
-    function setLang(lang) { S.currentLang = lang; document.getElementById('btn-lang-te').className = lang==='te'?"flex-1 py-2.5 text-xs font-bold rounded-lg bg-stone-700 text-white":"flex-1 py-2.5 text-xs font-bold rounded-lg text-stone-500"; document.getElementById('btn-lang-kn').className = lang==='kn'?"flex-1 py-2.5 text-xs font-bold rounded-lg bg-stone-700 text-white":"flex-1 py-2.5 text-xs font-bold rounded-lg text-stone-500"; }
+    
+    function setLang(lang) { S.currentLang = lang; document.getElementById('btn-lang-te').className = lang==='te'?"flex-1 py-2.5 text-xs font-bold rounded-lg bg-stone-700 text-white shadow-md":"flex-1 py-2.5 text-xs font-bold rounded-lg text-stone-500"; document.getElementById('btn-lang-kn').className = lang==='kn'?"flex-1 py-2.5 text-xs font-bold rounded-lg bg-stone-700 text-white shadow-md":"flex-1 py-2.5 text-xs font-bold rounded-lg text-stone-500"; }
     function setService(type) { S.currentService = type; document.getElementById('btn-regular').className = type==='regular'?"flex-1 py-3 text-xs uppercase font-bold rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-md":"flex-1 py-3 text-xs uppercase font-bold rounded-lg text-stone-500"; document.getElementById('btn-muthidya').className = type==='muthidya'?"flex-1 py-3 text-xs uppercase font-bold rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-md":"flex-1 py-3 text-xs uppercase font-bold rounded-lg text-stone-500"; if(!S.editingBookingId) { document.getElementById('f-custom-total').value = type==='regular' ? 9000 : 9500; } calculateLiveBalance(); }
     
     function toggleBookingSheet(show) {
