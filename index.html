@@ -14,6 +14,8 @@
     .booking-sheet { position: fixed; bottom: 0; left: 0; width: 100%; height: 80vh; background: #1a0a0a; border-radius: 32px 32px 0 0; transform: translateY(100%); transition: transform 0.4s ease; z-index: 50; padding: 24px; border-top: 1px solid #D4AF37; }
     .sheet-open { transform: translateY(0); }
     .premium-input { width: 100%; background: rgba(0,0,0,0.3); border-bottom: 2px solid #D4AF37; padding: 16px; color: white; font-size: 16px; margin-bottom: 24px; }
+    .app-screen { display: none; }
+    .active-screen { display: block; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -22,12 +24,27 @@
     <h1 class="text-xl font-bold text-[#D4AF37]">Anantha Shree</h1>
   </header>
 
-  <main class="flex-1 overflow-y-auto px-5 pt-4 pb-32">
-    <h2 class="text-center text-white py-4">Welcome Back, Ji</h2>
-    <div class="glass-card p-6 rounded-3xl">
-      <h3 class="text-xs uppercase text-[#D4AF37] mb-3">Quick Actions</h3>
+  <main class="flex-1 overflow-y-auto px-5 pt-4 pb-32" style="padding-bottom: max(120px, env(safe-area-inset-bottom));">
+    
+    <!-- Home Screen -->
+    <div id="scr-home" class="app-screen active-screen space-y-4">
+      <h2 class="text-center text-white py-4">Welcome Back, Ji</h2>
+      <div class="glass-card p-6 rounded-3xl">
+        <h3 class="text-xs uppercase text-[#D4AF37] mb-3">Today's Panchanga</h3>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+          <div class="bg-black/20 p-3 rounded-lg"><span class="text-[#D4AF37]/60 block text-[9px]">Tithi</span><span id="ptithi">Ekadashi</span></div>
+          <div class="bg-black/20 p-3 rounded-lg"><span class="text-[#D4AF37]/60 block text-[9px]">Nakshatra</span><span id="pnaksh">Rohini</span></div>
+        </div>
+      </div>
       <button onclick="toggleSheet(true)" class="w-full bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] py-4 rounded-xl font-bold">New Booking</button>
     </div>
+
+    <!-- Tiffin Screen -->
+    <div id="scr-tiffin" class="app-screen text-center pt-10 text-stone-500">Tiffin Module</div>
+    <!-- Calendar Screen -->
+    <div id="scr-calendar" class="app-screen text-center pt-10 text-stone-500">Calendar Module</div>
+    <!-- People Screen -->
+    <div id="scr-people" class="app-screen text-center pt-10 text-stone-500">People Module</div>
 
     <!-- Booking Form -->
     <div id="booking-sheet" class="booking-sheet">
@@ -39,9 +56,11 @@
   </main>
 
   <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] glass-card rounded-full h-20 px-6 flex items-center justify-between z-40">
-    <div class="text-[#D4AF37] text-xs">Home</div>
+    <button onclick="showScreen('scr-home')" class="text-[#D4AF37] text-xs">Home</button>
+    <button onclick="showScreen('scr-calendar')" class="text-stone-500 text-xs">Dates</button>
     <button onclick="startVoice()" class="w-16 h-16 bg-teal-500 rounded-full text-white font-bold text-2xl shadow-lg">🎤</button>
-    <div class="text-stone-500 text-xs">People</div>
+    <button onclick="showScreen('scr-tiffin')" class="text-stone-500 text-xs">Tiffin</button>
+    <button onclick="showScreen('scr-people')" class="text-stone-500 text-xs">People</button>
   </nav>
 
   <script>
@@ -57,6 +76,11 @@
     
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    function showScreen(id) {
+        document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active-screen'));
+        document.getElementById(id).classList.add('active-screen');
+    }
 
     function toggleSheet(show) {
         document.getElementById('booking-sheet').classList.toggle('sheet-open', show);
@@ -74,6 +98,8 @@
             const s = new SpeechSynthesisUtterance("Opening booking form");
             s.lang = 'te-IN';
             window.speechSynthesis.speak(s);
+          } else if (text.includes('home') || text.includes('హోమ్')) {
+            showScreen('scr-home');
           }
         };
       }
