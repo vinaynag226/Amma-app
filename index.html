@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Anantha Shree Pro</title>
   
-  <!-- Firebase SDKs -->
+  <!-- Firebase & Styling SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -24,9 +24,12 @@
     .premium-input:focus { border-bottom-color: var(--gold); background: rgba(212, 175, 55, 0.08); }
     
     .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; position: relative; border: 1px solid transparent; }
-    .cal-day.empty { pointer-events: none; } .cal-day.past { opacity: 0.3; } .cal-day.today { background: rgba(212, 175, 55, 0.2); border-color: rgba(212, 175, 55, 0.6); color: #D4AF37; }
-    .cal-dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 2px; }
+    .cal-day.empty { pointer-events: none; } .cal-day.past { opacity: 0.3; } 
+    .cal-day.today { background: rgba(212, 175, 55, 0.2); border-color: rgba(212, 175, 55, 0.6); color: #D4AF37; }
     
+    /* Beautiful Highlight for Booked Dates */
+    .cal-day.booked { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.5); color: #34d399; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+
     .meal-pending { background: rgba(255,255,255,0.05); color: #a8a29e; border: 1px solid rgba(255,255,255,0.1); }
     .meal-given { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
     .meal-skip { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
@@ -39,10 +42,10 @@
 
   <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#591010] via-[#2A0808] to-[#110202] -z-10"></div>
 
-  <!-- TRUE DOUBLE CONFIRMATION APP MODAL (Cannot be blocked by Chrome) -->
+  <!-- Bulletproof Double Confirmation Modal -->
   <div id="confirm-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm">
     <div class="bg-[#2A0808] border-2 border-[#D4AF37] rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
-      <h3 id="confirm-title" class="text-xl font-bold text-white font-serif tracking-wide">Step 1 of 2</h3>
+      <h3 id="confirm-title" class="text-xl font-bold text-white font-serif tracking-wide">Action Required</h3>
       <p id="confirm-msg" class="text-stone-300 text-sm leading-relaxed"></p>
       <div class="flex gap-3 pt-2">
         <button onclick="processModalAction(false)" class="flex-1 py-3 bg-stone-900 border border-white/10 text-stone-400 font-bold rounded-xl text-xs uppercase tracking-widest active:scale-95">Cancel</button>
@@ -51,34 +54,32 @@
     </div>
   </div>
 
+  <!-- Voice & Status Notifications -->
   <div id="voice-toast" class="hidden fixed top-24 left-1/2 -translate-x-1/2 bg-black/90 border border-[#D4AF37] text-white px-6 py-3 rounded-full text-sm font-bold z-50 shadow-2xl whitespace-nowrap">
     🎤 Listening...
   </div>
 
-  <header class="relative z-20 px-5 py-4 flex items-center justify-between border-b border-[#D4AF37]/10 bg-[#2A0808]">
-    <div class="shrink-0">
-      <h1 class="text-2xl font-bold gold-gradient-text leading-none tracking-wide">Anantha Shree</h1>
-      <p class="text-[9px] text-[#D4AF37]/70 tracking-[0.25em] uppercase mt-1.5 font-semibold">Vaidika Dharma • BLR</p>
-    </div>
-    <div class="flex items-center gap-2 shrink-0">
-      <button onclick="toggleSettingsSheet(true)" class="p-2.5 text-stone-400 bg-white/5 border border-white/10 rounded-full text-base active:scale-90">⚙️</button>
-      <button onclick="toggleSahaayaMode()" id="mode-btn" class="glass-card px-4 py-2 rounded-full text-xs font-bold text-[#D4AF37] tracking-widest uppercase active:scale-95 flex items-center gap-2">
-        <span class="text-lg">👩‍👦</span> Sahaaya Mode
-      </button>
+  <!-- Ultra Clean Header (No Settings Gear) -->
+  <header class="relative z-20 px-5 py-4 flex items-center justify-center border-b border-[#D4AF37]/10 bg-[#2A0808]">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold gold-gradient-text leading-none tracking-wide">Anantha Shree</h1>
+      <p class="text-[10px] text-[#D4AF37]/70 tracking-[0.25em] uppercase mt-1.5 font-semibold">Vaidika Dharma • BLR</p>
     </div>
   </header>
 
-  <div class="flex items-center justify-center gap-2 text-[9px] uppercase tracking-widest text-[#D4AF37]/80 py-1.5 bg-black/30 border-b border-white/5">
-    <span id="sync-dot" class="h-1.5 w-1.5 rounded-full bg-stone-500"></span><span id="sync-text">CONNECTING...</span>
+  <div class="flex items-center justify-center gap-2 text-[9px] uppercase tracking-widest text-[#D4AF37]/80 py-1.5 bg-black/40 border-b border-white/5">
+    <span id="sync-dot" class="h-1.5 w-1.5 rounded-full bg-stone-500"></span><span id="sync-text">SYSTEM CONNECTING...</span>
   </div>
 
   <main class="flex-1 px-5 pt-4">
 
-    <!-- TAB 1: DASHBOARD / HOME -->
+    <!-- TAB 1: DASHBOARD / HOME (With Beautiful Embedded Settings) -->
     <div id="scr-home" class="app-screen block space-y-5">
-      <div class="text-center pb-1"><h2 class="text-3xl text-white mt-1 vedic-font font-semibold tracking-wide">Dashboard</h2></div>
+      
+      <!-- Automated Alerts -->
       <div id="amma-alerts" class="space-y-3"></div>
 
+      <!-- Panchanga Block -->
       <div class="glass-card rounded-3xl p-5 relative overflow-hidden">
         <div class="flex items-center justify-between mb-4"><h3 class="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">Today's Panchanga</h3></div>
         <div class="grid grid-cols-2 gap-3">
@@ -89,27 +90,54 @@
         </div>
       </div>
 
+      <!-- Core Actions -->
       <div class="grid grid-cols-2 gap-3">
-        <div onclick="openBookingForm()" class="glass-card p-4 rounded-2xl border-t-2 border-[#D4AF37] text-center cursor-pointer active:scale-95">
-          <span class="text-2xl block mb-1">🕉️</span>
-          <span class="text-xs font-bold uppercase tracking-wider text-white">New Booking</span>
+        <div onclick="openBookingForm()" class="glass-card p-4 rounded-2xl border-t-2 border-[#D4AF37] text-center cursor-pointer active:scale-95 shadow-lg">
+          <span class="text-3xl block mb-2">🕉️</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-white">New Karyam</span>
         </div>
-        <div onclick="openTiffinModalForNew()" class="glass-card p-4 rounded-2xl border-t-2 border-emerald-500 text-center cursor-pointer active:scale-95">
-          <span class="text-2xl block mb-1">☀️</span>
-          <span class="text-xs font-bold uppercase tracking-wider text-white">Add Meal Client</span>
+        <div onclick="openTiffinModalForNew()" class="glass-card p-4 rounded-2xl border-t-2 border-emerald-500 text-center cursor-pointer active:scale-95 shadow-lg">
+          <span class="text-3xl block mb-2">🍱</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-white">Add Meals</span>
         </div>
       </div>
 
+      <!-- Today's Schedule -->
       <div class="pt-2">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold uppercase tracking-widest text-[#D4AF37]/80">Today's Scheduled Events</h3>
-          <span class="text-xs bg-white/5 px-2 py-1 rounded-md text-stone-400" id="tod-count">0 Bookings</span>
+          <h3 class="text-sm font-bold uppercase tracking-widest text-[#D4AF37]/80">Today's Schedule</h3>
+          <span class="text-xs bg-white/5 px-2 py-1 rounded-md text-stone-400 font-bold" id="tod-count">0 Events</span>
         </div>
         <div id="tod-list" class="space-y-3"></div>
       </div>
+
+      <!-- BEAUTIFUL EMBEDDED DASHBOARD SETTINGS -->
+      <div class="pt-6 pb-2">
+        <div class="glass-card rounded-3xl p-5 border border-white/5">
+          <h3 class="text-xs font-bold uppercase tracking-widest text-stone-400 mb-4 flex items-center gap-2">⚙️ System Preferences</h3>
+          
+          <div class="space-y-4">
+            <div class="flex justify-between items-center bg-black/30 p-4 rounded-2xl border border-white/5">
+              <div>
+                <p class="text-sm font-bold text-white">Voice Assistant Language</p>
+                <p class="text-[10px] text-stone-400 mt-0.5">Mix of English & Telugu</p>
+              </div>
+              <button onclick="toggleAppLanguage()" id="lang-toggle-btn" class="text-xs font-bold bg-[#D4AF37]/20 text-[#D4AF37] px-3 py-1.5 rounded-lg uppercase tracking-wider">TE-MIX</button>
+            </div>
+            
+            <button onclick="openMasterSettings()" class="w-full flex justify-between items-center bg-black/30 p-4 rounded-2xl border border-white/5 active:scale-95 transition-transform">
+              <div class="text-left">
+                <p class="text-sm font-bold text-white">Master Default Rates</p>
+                <p class="text-[10px] text-stone-400 mt-0.5">Update daily payouts for staff</p>
+              </div>
+              <span class="text-stone-500">▶</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- TAB 2: BOOKINGS LOG -->
+    <!-- TAB 2: BOOKINGS LOG (Expandable Cards) -->
     <div id="scr-bookings" class="app-screen hidden space-y-5">
       <div class="flex justify-between items-center mb-1">
         <h2 class="text-2xl font-bold text-white font-serif">Ceremonies Log</h2>
@@ -131,22 +159,16 @@
         </div>
       </div>
 
-      <div class="glass-card p-3 rounded-2xl flex justify-center gap-4 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-        <div class="flex items-center gap-1"><span class="text-amber-400">🌕</span> Pournami</div>
-        <div class="flex items-center gap-1"><span class="text-stone-300">🌑</span> Amavasya</div>
-        <div class="flex items-center gap-1"><span class="text-orange-400">🔸</span> Ekadashi</div>
-      </div>
-
-      <!-- Verified Year Navigation -->
+      <!-- Advanced Calendar Year/Month Controls -->
       <div class="glass-card rounded-3xl p-3 flex items-center justify-between">
         <div class="flex gap-1">
-          <button onclick="calYearMove(-1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-stone-400 text-xs font-bold active:scale-90">«</button>
-          <button onclick="calMove(-1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#D4AF37] text-xl active:scale-90">‹</button>
+          <button onclick="calYearMove(-1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-stone-400 text-xs font-bold active:scale-90 shadow">«</button>
+          <button onclick="calMove(-1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#D4AF37] text-xl active:scale-90 shadow">‹</button>
         </div>
         <h2 id="cal-month-lbl" class="text-lg font-bold text-white tracking-wide font-serif">Month Year</h2>
         <div class="flex gap-1">
-          <button onclick="calMove(1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#D4AF37] text-xl active:scale-90">›</button>
-          <button onclick="calYearMove(1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-stone-400 text-xs font-bold active:scale-90">»</button>
+          <button onclick="calMove(1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#D4AF37] text-xl active:scale-90 shadow">›</button>
+          <button onclick="calYearMove(1)" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-stone-400 text-xs font-bold active:scale-90 shadow">»</button>
         </div>
       </div>
 
@@ -155,7 +177,7 @@
         <div id="cal-grid" class="grid grid-cols-7 gap-2"></div>
       </div>
       <div id="cal-details" class="hidden pt-2">
-        <h3 class="text-sm font-bold uppercase tracking-widest text-[#D4AF37]/80 mb-3 border-b border-white/10 pb-2" id="sel-date-lbl">Selected Date Coordinates</h3>
+        <h3 class="text-sm font-bold uppercase tracking-widest text-[#D4AF37]/80 mb-3 border-b border-white/10 pb-2" id="sel-date-lbl">Date Selected</h3>
         <div id="sel-date-list" class="space-y-3"></div>
       </div>
     </div>
@@ -163,16 +185,16 @@
     <!-- TAB 4: TIFFIN MEALS HUD -->
     <div id="scr-tiffin" class="app-screen hidden space-y-5">
       <div class="flex items-center justify-between">
-        <div><h2 class="text-2xl font-bold text-white vedic-font tracking-wide">Daily Tiffin Ledger</h2></div>
+        <div><h2 class="text-2xl font-bold text-white vedic-font tracking-wide">Tiffin Ledger</h2></div>
         <button onclick="openTiffinModalForNew()" class="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center border border-[#D4AF37]/30 text-[#D4AF37] font-bold text-2xl active:scale-90 shadow-lg">+</button>
       </div>
       <button onclick="markAllTiffinGiven()" class="w-full glass-card border border-emerald-500/30 bg-emerald-900/10 text-emerald-400 font-bold py-4 rounded-2xl active:scale-95 text-xs tracking-widest uppercase flex justify-center items-center gap-2">
-        <span class="text-xl">✅</span> MARK ALL ACTIVE PREFERENCES GIVEN
+        <span class="text-xl">✅</span> MARK ALL ACTIVE GIVEN
       </button>
       <div id="tiffin-list" class="space-y-4"></div>
     </div>
 
-    <!-- TAB 5: REGISTRY (CUSTOMERS & STAFF) -->
+    <!-- TAB 5: REGISTRY (CUSTOMERS & STAFF POOL) -->
     <div id="scr-people" class="app-screen hidden space-y-5">
       <div class="flex justify-between items-center mb-1">
         <h2 class="text-2xl font-bold text-white font-serif">Registry</h2>
@@ -181,6 +203,14 @@
           <button onclick="toggleRegistryTab('staff')" id="btn-reg-staff" class="px-3 py-1.5 rounded-lg text-stone-500">Staff Pool</button>
         </div>
       </div>
+      
+      <!-- Staff Pool Actions (Only visible in Staff Tab) -->
+      <div id="staff-actions" class="hidden">
+         <button onclick="addStaffToPool()" class="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/40 text-[#D4AF37] py-3 rounded-xl font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2 active:scale-95 mb-3">
+          ➕ Register New Staff (Pick Contact)
+        </button>
+      </div>
+
       <div class="relative">
         <span class="absolute left-4 top-4 text-stone-500 text-lg">🔍</span>
         <input type="text" id="search-people" oninput="renderPeople()" placeholder="Search registry..." class="premium-input pl-12 rounded-2xl py-4 bg-black/40 border border-[#D4AF37]/30">
@@ -191,11 +221,12 @@
     <div class="h-36 w-full clear-both"></div>
   </main>
 
-  <!-- ALWAYS VISIBLE Voice Assistant Microphone Button -->
-  <button id="voice-mic-btn" onclick="startVoiceAssistant()" class="fixed bottom-[104px] right-6 w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-full flex items-center justify-center text-white text-3xl shadow-[0_0_20px_rgba(16,185,129,0.4)] z-50 active:scale-90">
-    🎤
+  <!-- ALWAYS VISIBLE: Voice Assistant Sahaaya Mic -->
+  <button id="voice-mic-btn" onclick="startSahaayaAssistant()" class="fixed bottom-[104px] right-6 w-16 h-16 bg-gradient-to-tr from-[#D4AF37] to-[#AA771C] rounded-full flex items-center justify-center text-black text-3xl shadow-[0_0_20px_rgba(212,175,55,0.5)] z-50 active:scale-90 transition-transform">
+    👩‍👦
   </button>
 
+  <!-- BOTTOM NAVIGATION -->
   <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[96%] max-w-md glass-card rounded-full h-[74px] px-4 flex items-center justify-between z-40 bg-[#2A0808]">
     <button onclick="switchScreen('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-1 text-[#D4AF37] flex-1"><span class="text-lg">🏡</span><span class="text-[8px] font-bold uppercase tracking-tight">Home</span></button>
     <button onclick="switchScreen('bookings')" id="nav-bookings" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">📜</span><span class="text-[8px] font-bold uppercase tracking-tight">Bookings</span></button>
@@ -204,7 +235,7 @@
     <button onclick="switchScreen('people')" id="nav-people" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">👤</span><span class="text-[8px] font-bold uppercase tracking-tight">Registry</span></button>
   </nav>
 
-  <!-- FORM 1: BOOKING SHEET -->
+  <!-- MODAL: BOOKING FORM -->
   <div id="booking-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
     <div id="sheet-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-400 pointer-events-none" onclick="toggleBookingSheet(false)"></div>
     <div id="sheet-content" class="relative w-full h-[92vh] bg-[#1a0a0a] border-t border-[#D4AF37]/30 rounded-t-[32px] flex flex-col shadow-2xl bottom-sheet pointer-events-auto">
@@ -223,10 +254,6 @@
           <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Customer Name</label><input type="text" id="f-name" class="premium-input rounded-xl text-xl py-2"></div>
           <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Phone Number</label><input type="tel" id="f-phone" class="premium-input py-2"></div>
           <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Custom Ceremony Base Price (₹)</label><input type="number" id="f-custom-total" oninput="calculateLiveBalance()" value="9000" class="premium-input py-2 text-white font-bold"></div>
-          <div class="flex bg-black/40 p-1 rounded-xl border border-white/5">
-            <button onclick="setLang('te')" id="btn-lang-te" class="flex-1 py-2.5 text-xs font-bold rounded-lg bg-stone-700 text-white">Telugu</button>
-            <button onclick="setLang('kn')" id="btn-lang-kn" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-stone-500">Kannada</button>
-          </div>
         </div>
         
         <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Ceremony Date</label><input type="date" id="f-date" onchange="checkFloorAllocation()" class="premium-input rounded-xl text-xl py-3" style="color-scheme: dark;"><div id="floor-suggestion" class="text-xs font-bold text-emerald-400 uppercase mt-1"></div></div>
@@ -239,21 +266,24 @@
           </div>
         </div>
 
+        <!-- NEW EXTRA METRICS -->
         <div class="p-4 bg-black/30 rounded-2xl border border-white/5 space-y-4">
-          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest">Extra Additions & Metrics</label>
+          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest">Extras & Accounting</label>
           <div class="grid grid-cols-2 gap-3">
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-1">Extra Persons Count (₹250/ea)</span><input type="number" id="f-extra-count" value="0" oninput="calculateLiveBalance()" class="premium-input py-1.5 text-center text-sm rounded-xl"></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-1">Extra Prasadam Amount (₹)</span><input type="number" id="f-extra-prasadam" value="0" oninput="calculateLiveBalance()" class="premium-input py-1.5 text-center text-sm rounded-xl"></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-1">Extra Persons (₹250/ea)</span><input type="number" id="f-extra-count" value="0" oninput="calculateLiveBalance()" class="premium-input py-2 text-center text-sm rounded-xl"></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-1">Extra Prasadam (₹)</span><input type="number" id="f-extra-prasadam" value="0" oninput="calculateLiveBalance()" class="premium-input py-2 text-center text-sm rounded-xl"></div>
           </div>
         </div>
 
+        <!-- STAFF ASSIGNMENT DROPDOWNS -->
         <div class="space-y-3 bg-black/30 p-4 rounded-2xl border border-white/5">
-          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Assigned Staff Pool</label>
+          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Assign Registered Staff</label>
+          <p class="text-[9px] text-stone-400 mb-2 font-medium">Select from your Staff Registry Pool</p>
           <div class="space-y-3">
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Purohit Name</span><div class="flex gap-2"><input type="text" id="f-staff-purohit" placeholder="Select Purohit" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-purohit')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 1 Name</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin1" placeholder="Select Brahmin 1" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-brahmin1')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 2 Name</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin2" placeholder="Select Brahmin 2" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-brahmin2')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Chef Name</span><div class="flex gap-2"><input type="text" id="f-staff-chef" placeholder="Select Chef" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectContact('f-staff-chef')" class="bg-white/5 border border-white/10 px-4 rounded-xl active:scale-95">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Purohit</span><select id="f-staff-purohit" class="premium-input py-2 text-sm rounded-xl outline-none bg-stone-900 border-white/10"><option value="">-- Unassigned --</option></select></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 1</span><select id="f-staff-brahmin1" class="premium-input py-2 text-sm rounded-xl outline-none bg-stone-900 border-white/10"><option value="">-- Unassigned --</option></select></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 2</span><select id="f-staff-brahmin2" class="premium-input py-2 text-sm rounded-xl outline-none bg-stone-900 border-white/10"><option value="">-- Unassigned --</option></select></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Chef</span><select id="f-staff-chef" class="premium-input py-2 text-sm rounded-xl outline-none bg-stone-900 border-white/10"><option value="">-- Unassigned --</option></select></div>
           </div>
         </div>
 
@@ -268,17 +298,17 @@
           </div>
         </div>
 
-        <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Special Instructions</label><textarea id="f-instructions" rows="2" placeholder="Ex: Yajur Veda tradition inputs..." class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#D4AF37]"></textarea></div>
+        <div><label class="block text-xs uppercase text-[#D4AF37] font-bold mb-1">Special Instructions (Veda / Items)</label><textarea id="f-instructions" rows="2" placeholder="Ex: Yajur Veda..." class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#D4AF37]"></textarea></div>
 
       </div>
       <div class="p-6 bg-[#110505] border-t border-[#D4AF37]/10 rounded-t-[32px] flex justify-between items-center">
         <div><p class="text-xs font-bold text-stone-500 uppercase">Balance Due</p><p class="text-3xl font-bold text-orange-400 mt-0.5 tracking-wider" id="live-total">₹9,000</p></div>
-        <button onclick="triggerSaveBooking()" class="bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save</button>
+        <button onclick="initiateSaveSequence()" class="bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- FORM 2: TIFFIN SHEET -->
+  <!-- MODAL: TIFFIN PROFILE -->
   <div id="tiffin-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
     <div id="tiff-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-400 pointer-events-none" onclick="toggleTiffinSheet(false)"></div>
     <div id="tiff-content" class="relative w-full h-[88vh] bg-[#1a0a0a] border-t border-emerald-500/40 rounded-t-[32px] flex flex-col bottom-sheet pointer-events-auto">
@@ -293,7 +323,7 @@
           👤 Pick Client from Contacts
         </button>
 
-        <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Customer Name</label><input type="text" id="t-name" placeholder="Enter Name" class="premium-input rounded-xl py-2"></div>
+        <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Customer Full Name</label><input type="text" id="t-name" placeholder="Enter Name" class="premium-input rounded-xl py-2"></div>
         <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Phone Number</label><input type="tel" id="t-phone" placeholder="Enter Phone" class="premium-input rounded-xl py-2"></div>
         
         <div class="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-3">
@@ -306,7 +336,7 @@
         </div>
         
         <div class="space-y-3 bg-black/30 p-4 rounded-2xl border border-white/5">
-          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Default Delivery Preferences</label>
+          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Default Active Schedule</label>
           <div class="space-y-2 pt-1">
             <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-b" checked class="h-5 w-5 rounded accent-emerald-500"> Breakfast Active</label>
             <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-l" checked class="h-5 w-5 rounded accent-emerald-500"> Lunch Active</label>
@@ -315,18 +345,18 @@
         </div>
       </div>
       <div class="p-6 bg-[#0a110a] border-t border-emerald-500/20">
-        <button onclick="triggerSaveTiffin()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save Profile</button>
+        <button onclick="initiateTiffinSaveSequence()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save Profile</button>
       </div>
     </div>
   </div>
 
-  <!-- FORM 3: SETTINGS / MASTER RATES -->
+  <!-- MODAL: SYSTEM SETTINGS -->
   <div id="settings-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
     <div id="sett-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-400 pointer-events-none" onclick="toggleSettingsSheet(false)"></div>
     <div id="sett-content" class="relative w-full h-[88vh] bg-[#1a0a0a] border-t border-[#D4AF37]/30 rounded-t-[32px] flex flex-col bottom-sheet pointer-events-auto">
       <div class="w-full flex justify-center pt-3 pb-2"><div class="w-12 h-1.5 bg-[#D4AF37]/30 rounded-full"></div></div>
       <div class="px-6 pb-4 border-b border-[#D4AF37]/10 flex justify-between items-center">
-        <div><h2 class="text-2xl font-bold text-white vedic-font tracking-wide">Master Default Rates (₹)</h2></div>
+        <div><h2 class="text-2xl font-bold text-white vedic-font tracking-wide">Master Default Rates</h2></div>
         <button onclick="toggleSettingsSheet(false)" class="text-stone-400 bg-white/5 p-3 rounded-full">✕</button>
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
@@ -337,7 +367,7 @@
         <div><label class="text-xs uppercase text-[#D4AF37] font-bold block mb-1">Maid Daily Payout</label><input type="number" id="m-rate-maid" class="premium-input rounded-xl py-2"></div>
       </div>
       <div class="p-6 bg-[#110505] border-t border-[#D4AF37]/10">
-        <button onclick="triggerSaveSettings()" class="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save Settings</button>
+        <button onclick="initiateSettingsSaveSequence()" class="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg active:scale-95">Save Settings</button>
       </div>
     </div>
   </div>
@@ -349,10 +379,10 @@
     const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     const S = { 
-      bookings: {}, tifCustomers: {}, tifMeals: {}, expandedCards: {},
+      bookings: {}, tifCustomers: {}, tifMeals: {}, staffPool: {}, expandedCards: {},
       calMonth: new Date().getMonth(), calYear: new Date().getFullYear(), selectedDate: null,
-      currentService: 'regular', currentLang: 'te', isBookingFormOpen: false, editingBookingId: null,
-      isTiffinFormOpen: false, editingTiffinId: null, voiceFieldStep: null, registryTab: 'cust',
+      currentService: 'regular', voiceLang: 'te-IN', isBookingFormOpen: false, editingBookingId: null,
+      isTiffinFormOpen: false, editingTiffinId: null, registryTab: 'cust',
       settings: { ratePurohit: 1000, rateBrahmin1: 500, rateBrahmin2: 500, rateChef: 2200, rateMaid: 300 }
     };
 
@@ -363,12 +393,13 @@
       try {
         firebase.initializeApp(firebaseConfig);
         document.getElementById('sync-dot').classList.replace('bg-stone-500', 'bg-emerald-500');
-        document.getElementById('sync-text').innerText = "LIVE SYNC ACTIVE";
+        document.getElementById('sync-text').innerText = "SYSTEM LIVE";
         document.getElementById('sync-text').classList.replace('text-[#D4AF37]/80', 'text-emerald-500');
         
         const db = firebase.database();
         db.ref('bookings').on('value', snap => { S.bookings = snap.val() || {}; renderHome(); renderBookings(); renderCalendar(); renderPeople(); calculateAnalytics(); });
         db.ref('tifCustomers').on('value', snap => { S.tifCustomers = snap.val() || {}; renderTiffin(); renderPeople(); });
+        db.ref('staffPool').on('value', snap => { S.staffPool = snap.val() || {}; renderPeople(); populateStaffDropdowns(); });
         db.ref('masterSettings').on('value', snap => { if(snap.val()) { S.settings = snap.val(); loadSettingsToUI(); } });
         
         const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, '');
@@ -415,12 +446,12 @@
               if (clean.startsWith("91") && clean.length > 10) clean = clean.substring(2);
               document.getElementById(phoneFieldId).value = clean;
             }
-            showVoiceToast("👤 Contact Added");
+            showVoiceToast("👤 Contact Selected");
             return;
           }
         }
       } catch (err) { console.warn("Picker failed, using fallback."); }
-      let manualName = prompt("Select Contact not supported. Enter Name:");
+      let manualName = prompt("Enter Name manually:");
       if (manualName) document.getElementById(nameFieldId).value = manualName;
       if (phoneFieldId) {
         let manualPhone = prompt("Enter Phone Number (optional):");
@@ -443,31 +474,61 @@
       return Object.values(S.bookings).filter(b => b.customerName && b.customerName.toLowerCase().trim() === q).length;
     }
 
-    function toggleSahaayaMode() {
-      isSahaaya = !isSahaaya; const btn = document.getElementById('mode-btn'); 
-      if(isSahaaya) {
-        document.documentElement.style.fontSize = "135%"; btn.classList.add('bg-[#D4AF37]/20');
-        playSound('success');
-        if ('speechSynthesis' in window) { 
-          let msgText = "నమస్కారం అమ్మ. ";
-          if(document.getElementById('amma-alerts').innerHTML.includes('Tomorrow')) { msgText += "రేపు ఒక కార్యం ఉంది. దయచేసి కస్టమర్ కి మెసేజ్ పంపండి."; } 
-          else { msgText += "ఈరోజు పనులు చూద్దాం."; }
-          let msg = new SpeechSynthesisUtterance(msgText); msg.lang = 'te-IN'; window.speechSynthesis.speak(msg); 
-        }
-      } else { document.documentElement.style.fontSize = "100%"; btn.classList.remove('bg-[#D4AF37]/20'); S.voiceFieldStep = null; }
+    // --- SMART VOICE ENGINE ---
+    function toggleAppLanguage() {
+      S.voiceLang = (S.voiceLang === 'te-IN') ? 'en-IN' : 'te-IN';
+      document.getElementById('lang-toggle-btn').innerText = (S.voiceLang === 'te-IN') ? 'TE-MIX' : 'ENG';
+      showVoiceToast(S.voiceLang === 'te-IN' ? "Language: Telugu Mix" : "Language: English");
     }
 
-    function startVoiceAssistant() {
-      if (!('webkitSpeechRecognition' in window)) { alert("Voice engine not supported."); return; }
-      playSound('open'); showVoiceToast("🎤 వింటున్నాను...");
-      const recognition = new webkitSpeechRecognition(); recognition.lang = 'te-IN'; recognition.start();
-      recognition.onresult = function(event) {
-        const speechResult = event.results[0][0].transcript.trim(); const cleanResult = speechResult.toLowerCase();
-        if(cleanResult.includes('బుకింగ్') || cleanResult.includes('booking')) { clearFormAndOpenNew(); speakTelugu("బుకింగ్ ఫారం ఓపెన్ చేశాను."); }
-        else if(cleanResult.includes('క్యాలెండర్') || cleanResult.includes('ledger')) { switchScreen('calendar'); }
-        else if(cleanResult.includes('టిఫిన్') || cleanResult.includes('భోజనం')) { switchScreen('tiffin'); }
-        else if(cleanResult.includes('హోమ్')) { switchScreen('home'); }
-      };
+    function speakText(text) {
+      if ('speechSynthesis' in window) { 
+        window.speechSynthesis.cancel();
+        let msg = new SpeechSynthesisUtterance(text); 
+        msg.lang = S.voiceLang; 
+        msg.rate = 0.9;
+        window.speechSynthesis.speak(msg); 
+      }
+    }
+
+    function startSahaayaAssistant() {
+      playSound('open');
+      
+      // Welcome Greeting Logic
+      const todayStr = new Date().toISOString().split('T')[0];
+      const tomorrowStr = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0];
+      const todaysCount = Object.values(S.bookings).filter(b => b.date === todayStr).length;
+      const tomorrowsCount = Object.values(S.bookings).filter(b => b.date === tomorrowStr).length;
+      
+      if(S.voiceLang === 'te-IN') {
+        let greet = "ఓం నమో సుబ్రహ్మణ్యాయ నమః. నమస్కారం అమ్మ. ";
+        if(todaysCount > 0) greet += `ఈరోజు ${todaysCount} బుకింగ్స్ ఉన్నాయి. `;
+        if(tomorrowsCount > 0) greet += `రేపు ${tomorrowsCount} బుకింగ్స్ ఉన్నాయి. దయచేసి మెసేజ్ పంపండి.`;
+        if(todaysCount === 0 && tomorrowsCount === 0) greet += "ఈరోజు మరియు రేపు ఫ్రీ గా ఉన్నారు.";
+        speakText(greet);
+      } else {
+        let greet = "Om Namo Subramanya Namah. Welcome Amma. ";
+        if(todaysCount > 0) greet += `You have ${todaysCount} events today. `;
+        if(tomorrowsCount > 0) greet += `You have ${tomorrowsCount} events tomorrow. Please send reminders.`;
+        speakText(greet);
+      }
+
+      setTimeout(() => {
+        if (!('webkitSpeechRecognition' in window)) return;
+        showVoiceToast("🎤 Listening...");
+        const recognition = new webkitSpeechRecognition(); 
+        recognition.lang = S.voiceLang; 
+        recognition.start();
+        recognition.onresult = function(event) {
+          const speechResult = event.results[0][0].transcript.toLowerCase().trim();
+          if(speechResult.includes('బుకింగ్') || speechResult.includes('booking') || speechResult.includes('karyam') || speechResult.includes('కార్యం') || speechResult.includes('పూజ')) { 
+            openBookingForm(); speakText(S.voiceLang==='te-IN'?"బుకింగ్ ఫారం ఓపెన్ చేశాను.":"Opening booking form."); 
+          }
+          else if(speechResult.includes('క్యాలెండర్') || speechResult.includes('ledger') || speechResult.includes('calendar')) { switchScreen('calendar'); }
+          else if(speechResult.includes('టిఫిన్') || speechResult.includes('భోజనం') || speechResult.includes('meals') || speechResult.includes('tiffin')) { switchScreen('tiffin'); }
+          else if(speechResult.includes('హోమ్') || speechResult.includes('home') || speechResult.includes('dashboard')) { switchScreen('home'); }
+        };
+      }, 3000);
     }
 
     function toggleCardExpand(id) { S.expandedCards[id] = !S.expandedCards[id]; renderHome(); renderBookings(); }
@@ -522,20 +583,20 @@
       setService(b.serviceType || 'regular'); toggleBookingSheet(true);
     }
 
-    function triggerSaveBooking() {
+    function initiateSaveSequence() {
       const name = document.getElementById('f-name').value; const date = document.getElementById('f-date').value;
       if(!name || !date) { alert("Please input Name and Date!"); return; }
       if(checkFloorAllocation() === 'Blocked') { alert("Hard Block: Date is full!"); return; }
 
       initiateDoubleConfirm(
         "Step 1: Save Ceremony", "Commit this ritual booking to the database?", 
-        "Step 2: Sync to Devices", "Are you 100% sure? This updates the calendar instantly.",
+        "Step 2: Final Verify", "Are you sure? This updates the calendar instantly.",
         () => {
           const id = S.editingBookingId ? S.editingBookingId : 'bk_' + Date.now();
           const totalFinal = calculateLiveBalance() + (parseInt(document.getElementById('f-advance').value) || 0); 
           const record = { 
             id: id, customerName: name, phone: document.getElementById('f-phone').value, date: date, 
-            serviceType: S.currentService, lang: S.currentLang, 
+            serviceType: S.currentService, 
             total: totalFinal, totalBasePrice: parseInt(document.getElementById('f-custom-total').value) || 9000,
             extraPersonsCount: parseInt(document.getElementById('f-extra-count').value) || 0,
             extraPrasadamPrice: parseInt(document.getElementById('f-extra-prasadam').value) || 0,
@@ -552,13 +613,13 @@
 
     function triggerDeleteBooking(bookingId) {
       initiateDoubleConfirm(
-        "Step 1: Delete Booking", "Wipe this ritual recording permanently from database?",
-        "Step 2: Final Warning", "Are you completely sure? This removes it from all family devices.",
+        "Step 1: Delete Booking", "Wipe this ritual recording permanently?",
+        "Step 2: Final Warning", "Are you completely sure?",
         () => { playSound('open'); firebase.database().ref(`bookings/${bookingId}`).remove().then(() => { showVoiceToast("🗑 Record Cleared"); }); }
       );
     }
 
-    function openTiffinForm() {
+    function openTiffinModalForNew() {
       S.editingTiffinId = null; document.getElementById('tiffin-sheet-title').innerText = "Add Meal Client";
       document.getElementById('t-name').value = ''; document.getElementById('t-phone').value = '';
       document.getElementById('t-rate-b').value = '60'; document.getElementById('t-rate-l').value = '90'; document.getElementById('t-rate-d').value = '90';
@@ -576,7 +637,7 @@
       toggleTiffinSheet(true);
     }
 
-    function triggerSaveTiffin() {
+    function initiateTiffinSaveSequence() {
       const name = document.getElementById('t-name').value.trim(); if(!name) { alert("Please input name!"); return; }
       initiateDoubleConfirm(
         "Step 1: Save Client", "Confirm entries to this meal subscriber profile?",
@@ -654,7 +715,9 @@
       document.getElementById('m-rate-maid').value = S.settings.rateMaid;
     }
 
-    function triggerSaveSettings() {
+    function openMasterSettings() { toggleSettingsSheet(true); }
+
+    function initiateSettingsSaveSequence() {
       initiateDoubleConfirm(
         "Step 1: Modify Defaults", "Change global fallback operational prices?",
         "Step 2: Confirm Overwrite", "Lock these daily expenses as new configuration norms?",
@@ -678,7 +741,7 @@
       if(phone) { window.location.href = `whatsapp://send?phone=91${phone}&text=${message}`; } else { window.location.href = `whatsapp://send?text=${message}`; }
     }
 
-    // --- EXPANDABLE CARD RENDERING ENGINE ---
+    // --- ACCORDION RENDERERS ---
     function renderHome() {
       let alertsHTML = ''; const hr = new Date().getHours();
       if(hr >= 19) alertsHTML += `<div class="glass-card p-4 rounded-3xl border border-orange-500/40 bg-orange-950/20 flex items-center gap-3"><span class="text-2xl">🌙</span><div><p class="text-orange-400 font-bold text-sm">Tiffin Logs Check Reminder</p><p class="text-xs text-stone-400">Please verify today's Given/Skip meals before bed!</p></div></div>`;
@@ -688,14 +751,14 @@
       const todaysEntries = Object.entries(S.bookings).filter(([k, b]) => b.date === todayStr);
       const tomorrowsEntries = Object.entries(S.bookings).filter(([k, b]) => b.date === tomorrowStr);
       
-      document.getElementById('tod-count').innerText = `${todaysEntries.length} Bookings`;
+      document.getElementById('tod-count').innerText = `${todaysEntries.length} Events`;
       const list = document.getElementById('tod-list');
       
       if(todaysEntries.length === 0) { 
         list.innerHTML = `<div class="text-center p-6 border border-white/5 rounded-3xl bg-black/20"><p class="text-stone-500 text-sm">No ceremonies scheduled for today.</p></div>`; 
       } else { 
         list.innerHTML = todaysEntries.map(([key, b]) => {
-          const bookingId = b.id || key; const po = b.payouts || {}; const remainingBal = (b.total || 9000) - (b.advancePaid || 0);
+          const bookingId = b.id || key; const remainingBal = (b.total || 9000) - (b.advancePaid || 0);
           const isExpanded = S.expandedCards[bookingId];
           return `
             <div class="glass-card rounded-2xl border-l-4 border-l-[#D4AF37] overflow-hidden transition-all duration-300">
@@ -725,17 +788,9 @@
                     <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/20">Paid: ₹${b.advancePaid || 0}</span>
                     <span class="text-[9px] font-bold text-orange-400 bg-orange-950/30 px-2 py-0.5 rounded border border-orange-500/20">Due: ₹${remainingBal}</span>
                     <div class="flex gap-2 mt-2">
-                      <button onclick="event.stopPropagation(); openBookingForEditing('${bookingId}'); switchScreen('bookings');" class="text-[10px] bg-stone-800 px-2.5 py-1.5 rounded font-bold uppercase text-stone-300 border border-white/5">✏️ Edit</button>
-                      <button onclick="event.stopPropagation(); triggerDeleteBooking('${bookingId}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1.5 rounded font-bold uppercase text-red-400">🗑️ Clear</button>
+                      <button onclick="event.stopPropagation(); openBookingForEditing('${bookingId}'); switchScreen('bookings');" class="text-[10px] bg-stone-800 px-2.5 py-1.5 rounded font-bold uppercase text-stone-300 border border-white/5 shadow-md">✏️ Edit</button>
+                      <button onclick="event.stopPropagation(); triggerDeleteBooking('${bookingId}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1.5 rounded font-bold uppercase text-red-400 shadow-md">🗑️ Clear</button>
                     </div>
-                  </div>
-                </div>
-                <div class="border-t border-white/5 pt-3">
-                  <div class="grid grid-cols-2 gap-2 text-[10px]">
-                    <button onclick="event.stopPropagation(); toggleStaffPayment('${bookingId}', 'purohit')" class="p-2 rounded-xl font-bold flex justify-between ${po.purohit === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Purohit</span> <span>₹${S.settings.ratePurohit}</span></button>
-                    <button onclick="event.stopPropagation(); toggleStaffPayment('${bookingId}', 'brahmin1')" class="p-2 rounded-xl font-bold flex justify-between ${po.brahmin1 === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Brahmin 1</span> <span>₹${S.settings.rateBrahmin1 || 500}</span></button>
-                    <button onclick="event.stopPropagation(); toggleStaffPayment('${bookingId}', 'brahmin2')" class="p-2 rounded-xl font-bold flex justify-between ${po.brahmin2 === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Brahmin 2</span> <span>₹${S.settings.rateBrahmin2 || 500}</span></button>
-                    <button onclick="event.stopPropagation(); toggleStaffPayment('${bookingId}', 'chef')" class="p-2 rounded-xl font-bold flex justify-between ${po.chef === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Chef</span> <span>₹${S.settings.rateChef}</span></button>
                   </div>
                 </div>
               </div>` : ''}
@@ -786,8 +841,8 @@
                   <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/20">Paid: ₹${b.advancePaid || 0}</span>
                   <span class="text-[9px] font-bold text-orange-400 bg-orange-950/30 px-2 py-0.5 rounded border border-orange-500/20">Due: ₹${remainingBal}</span>
                   <div class="flex gap-2 mt-2">
-                    <button onclick="event.stopPropagation(); openBookingForEditing('${bookingId}')" class="text-[10px] bg-stone-800 px-2.5 py-1.5 rounded font-bold uppercase text-stone-300 border border-white/5">✏️ Edit</button>
-                    <button onclick="event.stopPropagation(); triggerDeleteBooking('${bookingId}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1.5 rounded font-bold uppercase text-red-400">🗑️ Clear</button>
+                    <button onclick="event.stopPropagation(); openBookingForEditing('${bookingId}')" class="text-[10px] bg-stone-800 px-2.5 py-1.5 rounded font-bold uppercase text-stone-300 border border-white/5 shadow-md">✏️ Edit</button>
+                    <button onclick="event.stopPropagation(); triggerDeleteBooking('${bookingId}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1.5 rounded font-bold uppercase text-red-400 shadow-md">🗑️ Clear</button>
                   </div>
                 </div>
               </div>
@@ -805,20 +860,26 @@
     }
 
     function renderCalendar() {
-      document.getElementById('cal-month-lbl').innerText = `${MONTHS[S.calMonth]} ${S.calYear}`; const grid = document.getElementById('cal-grid'); const counts = {}; Object.values(S.bookings).forEach(b => { if(b.date) counts[b.date] = (counts[b.date] || 0) + 1; });
+      document.getElementById('cal-month-lbl').innerText = `${MONTHS[S.calMonth]} ${S.calYear}`; 
+      const grid = document.getElementById('cal-grid'); 
+      const counts = {}; Object.values(S.bookings).forEach(b => { if(b.date) counts[b.date] = (counts[b.date] || 0) + 1; });
       const firstDay = new Date(S.calYear, S.calMonth, 1).getDay(); const daysInMonth = new Date(S.calYear, S.calMonth + 1, 0).getDate(); const todayStr = new Date().toISOString().split('T')[0];
       let html = ''; for(let i=0; i<firstDay; i++) html += `<div class="cal-day empty"></div>`;
+      
       for(let d=1; d<=daysInMonth; d++) {
-        const dateStr = `${S.calYear}-${String(S.calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const count = counts[dateStr] || 0; const isToday = dateStr === todayStr; const isPast = new Date(dateStr) < new Date(todayStr);
-        let dotHTML = ''; if(count === 1) dotHTML = `<div class="cal-dot bg-[#D4AF37]"></div>`; else if(count >= 2) dotHTML = `<div class="flex gap-1 mt-1"><div class="cal-dot bg-red-500"></div><div class="cal-dot bg-red-500"></div></div>`;
+        const dateStr = `${S.calYear}-${String(S.calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
+        const count = counts[dateStr] || 0; const isToday = dateStr === todayStr; const isPast = new Date(dateStr) < new Date(todayStr);
+        let dotHTML = ''; if(count === 1) dotHTML = `<div class="absolute -bottom-1 text-[8px]">🕉️</div>`; else if(count >= 2) dotHTML = `<div class="absolute -bottom-1 text-[8px]">🕉️🕉️</div>`;
         
         const vInfo = getVedicDayInfo(new Date(S.calYear, S.calMonth, d)); let sacredStyleClass = 'bg-white/5 text-stone-300'; let markerEmoji = '';
         if(vInfo.tithi === 'Pournami') { sacredStyleClass = 'border border-amber-400 bg-amber-500/10 text-amber-200'; markerEmoji = '<span class="text-[8px] absolute top-0.5 right-1">🌕</span>'; }
         else if(vInfo.tithi === 'Amavasya') { sacredStyleClass = 'border border-stone-400 bg-stone-700/30 text-stone-400'; markerEmoji = '<span class="text-[8px] absolute top-0.5 right-1">🌑</span>'; }
         else if(vInfo.ti === 10) { sacredStyleClass = 'border border-orange-500/40 bg-orange-500/10 text-orange-300'; markerEmoji = '<span class="text-[7px] absolute top-0.5 right-1">🔸</span>'; }
         
-        if (S.selectedDate === dateStr) sacredStyleClass = 'border-2 border-amber-400 shadow-[0_0_12px_#D4AF37] bg-amber-900/30 text-white scale-105';
-        html += `<div onclick="selectDate('${dateStr}')" class="cal-day ${isToday && S.selectedDate!==dateStr ? 'today' : sacredStyleClass} ${isPast ? 'past' : ''} border text-xs relative font-bold">${d}${markerEmoji}${dotHTML}</div>`;
+        if(count > 0 && S.selectedDate !== dateStr) { sacredStyleClass = 'booked'; } // Beautiful highlight logic
+        if (S.selectedDate === dateStr) sacredStyleClass = 'border-2 border-amber-400 shadow-[0_0_12px_#D4AF37] bg-amber-900/30 text-white scale-105 z-10';
+        
+        html += `<div onclick="selectDate('${dateStr}')" class="cal-day ${isToday && S.selectedDate!==dateStr ? 'today' : sacredStyleClass} ${isPast ? 'past' : ''} border text-xs relative font-bold transition-all">${d}${markerEmoji}${dotHTML}</div>`;
       }
       grid.innerHTML = html;
     }
@@ -829,43 +890,138 @@
     function selectDate(dateStr) {
       S.selectedDate = dateStr; renderCalendar();
       const parts = dateStr.split('-'); const dObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])); const v = getVedicDayInfo(dObj);
-      const bks = Object.entries(S.bookings).filter(([k, b]) => b.date === dateStr); document.getElementById('sel-date-lbl').innerText = `Selected Date: ${dateStr}`;
+      const bks = Object.entries(S.bookings).filter(([k, b]) => b.date === dateStr); document.getElementById('sel-date-lbl').innerText = `Date Selected: ${dateStr}`;
       const list = document.getElementById('sel-date-list');
-      let headerVedicHTML = `<div class="p-4 bg-black/40 border border-[#D4AF37]/30 rounded-2xl text-xs space-y-1.5"><p class="text-[#D4AF37] uppercase tracking-widest font-bold text-[10px]">Panchanga Alignment</p><div class="grid grid-cols-2 gap-2 text-stone-300 font-semibold"><div>Masa: ${v.masa}</div><div>Paksha: ${v.paksha}</div><div>Tithi: ${v.tithi}</div><div>Nakshatra: ${v.nakshatra}</div></div></div>`;
-      if(bks.length === 0) { list.innerHTML = headerVedicHTML + `<p class="text-stone-500 text-sm text-center py-3">No ceremonies registered.</p>`; } 
+      let headerVedicHTML = `<div class="p-4 bg-black/40 border border-[#D4AF37]/30 rounded-2xl text-xs space-y-1.5 shadow-inner"><p class="text-[#D4AF37] uppercase tracking-widest font-bold text-[10px]">Panchanga Alignment</p><div class="grid grid-cols-2 gap-2 text-stone-300 font-semibold"><div>Masa: ${v.masa}</div><div>Paksha: ${v.paksha}</div><div>Tithi: ${v.tithi}</div><div>Nakshatra: ${v.nakshatra}</div></div></div>`;
+      if(bks.length === 0) { list.innerHTML = headerVedicHTML + `<p class="text-stone-500 text-sm text-center py-3">No ceremonies registered on this date.</p>`; } 
       else {
         list.innerHTML = headerVedicHTML + bks.map(([key, b]) => {
           const bookingId = b.id || key;
           return `
-            <div class="glass-card p-4 rounded-xl border border-white/10 flex justify-between items-center">
+            <div class="glass-card p-4 rounded-xl border border-white/10 flex justify-between items-center shadow-md">
               <div>
                 <h4 class="text-white font-bold text-base">${b.customerName}</h4>
                 <p class="text-xs text-[#D4AF37] font-bold uppercase mt-0.5">${b.serviceType} • ${b.floor || 'First Floor'}</p>
               </div>
-              <div class="text-right flex flex-col items-end"><span class="text-white font-bold text-sm">₹${b.total.toLocaleString()}</span><button onclick="openBookingForEditing('${bookingId}'); switchScreen('bookings');" class="text-[10px] text-stone-400 font-bold uppercase mt-1 border border-white/10 px-2 py-1 rounded">View/Edit ✏️</button></div>
+              <div class="text-right flex flex-col items-end"><span class="text-white font-bold text-sm">₹${b.total.toLocaleString()}</span><button onclick="openBookingForEditing('${bookingId}'); switchScreen('bookings');" class="text-[10px] text-stone-300 font-bold uppercase mt-1 border border-white/10 px-3 py-1.5 rounded active:scale-95 bg-black/40">View/Edit ✏️</button></div>
             </div>`;
         }).join('');
       }
       document.getElementById('cal-details').classList.remove('hidden');
     }
 
+    // --- MEALS RENDER ENGINE WITH FAIL-SAFES ---
+    function renderTiffin() {
+      const list = document.getElementById('tiffin-list'); 
+      const customers = Object.entries(S.tifCustomers || {});
+      if(customers.length === 0) { list.innerHTML = `<div class="text-center p-6 border border-white/5 rounded-3xl bg-black/20"><p class="text-stone-500 text-sm">No meal subscribers. Tap '+' to create profile.</p></div>`; return; }
+      
+      list.innerHTML = customers.map(([key, cust]) => {
+        if(!cust) return '';
+        const custId = cust.id || key;
+        return `
+          <div class="glass-card rounded-2xl overflow-hidden border-l-4 border-l-[#D4AF37]">
+            <div class="bg-black/20 px-4 py-3 flex items-center justify-between border-b border-white/5">
+              <div>
+                <span class="font-bold text-white text-xl block leading-tight">${cust.name}</span>
+                <span class="text-[9px] uppercase tracking-wider text-stone-400 font-bold">Rates: B:₹${cust.rateB||60} | L:₹${cust.rateL||90} | D:₹${cust.rateD||90}</span>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="openTiffinForEditing('${custId}')" class="text-xs bg-stone-800 text-stone-300 px-2.5 py-1 rounded font-bold border border-white/5 active:scale-95 shadow">✏️ Edit</button>
+                <button onclick="triggerDeleteTiffin('${custId}')" class="text-xs bg-red-950/20 text-red-400 px-2.5 py-1 rounded font-bold border border-red-900/20 active:scale-95 shadow">🗑️</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 p-3">
+              ${getTiffinStatusHTML(cust, custId, 'b', 'Bkfst', '☀️')}
+              ${getTiffinStatusHTML(cust, custId, 'l', 'Lunch', '🌤️')}
+              ${getTiffinStatusHTML(cust, custId, 'd', 'Dinner', '🌙')}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function getTiffinStatusHTML(cust, custId, mealKey, label, emoji) {
+      const prefAllowed = cust[mealKey === 'b' ? 'prefB' : mealKey === 'l' ? 'prefL' : 'prefD'] !== false;
+      const dailyRecord = (S.tifMeals && S.tifMeals[custId] && S.tifMeals[custId][mealKey]);
+      
+      let status = dailyRecord ? dailyRecord.status : (prefAllowed ? 'given' : 'skip');
+      let count = dailyRecord ? dailyRecord.count : 1;
+      
+      let cssClass = 'meal-pending'; let text = `${emoji} ${label}`;
+      if(status === 'given') { cssClass = 'meal-given'; text = count > 1 ? `✅ ${label} (${count})` : `✅ ${label}`; } 
+      else if(status === 'skip') { cssClass = 'meal-skip'; text = `⛔ Skip`; }
+      
+      return `
+        <div class="flex flex-col gap-1">
+          <button onclick="cycleMealStatus('${custId}', '${mealKey}', '${status}', ${count})" class="py-4 rounded-xl flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${cssClass} shadow-md"><span class="text-xs font-bold tracking-widest uppercase">${text}</span></button>
+          ${status === 'given' ? `<div class="flex justify-between bg-black/40 rounded-lg p-0.5 border border-white/5 text-[10px] font-bold"><button onclick="adjustGuestCount('${custId}','${mealKey}',-1,${count})" class="px-3 py-1 text-stone-400 active:scale-90">-</button><span class="text-stone-300 py-1">Guests</span><button onclick="adjustGuestCount('${custId}','${mealKey}',1,${count})" class="px-3 py-1 text-emerald-400 active:scale-90">+</button></div>` : ''}
+        </div>`;
+    }
+
+    // --- REGISTRY & STAFF POOL MANAGEMENT ---
     function toggleRegistryTab(mode) {
       S.registryTab = mode;
       document.getElementById('btn-reg-cust').className = mode === 'cust' ? "px-3 py-1.5 rounded-lg bg-stone-700 text-white shadow-md" : "px-3 py-1.5 rounded-lg text-stone-500";
       document.getElementById('btn-reg-staff').className = mode === 'staff' ? "px-3 py-1.5 rounded-lg bg-stone-700 text-white shadow-md" : "px-3 py-1.5 rounded-lg text-stone-500";
+      document.getElementById('staff-actions').className = mode === 'staff' ? "block mb-3" : "hidden";
       renderPeople();
+    }
+
+    async function addStaffToPool() {
+      try {
+        if ('contacts' in navigator && 'select' in navigator.contacts) {
+          const contacts = await navigator.contacts.select(['name'], { multiple: false });
+          if (contacts && contacts[0] && contacts[0].name && contacts[0].name.length > 0) {
+            let role = prompt("Enter Role (Purohit, Brahmin, Chef, Maid):", "Purohit");
+            if(role) {
+              const id = 'st_' + Date.now();
+              firebase.database().ref('staffPool/' + id).set({ id: id, name: contacts[0].name[0], role: role });
+              showVoiceToast("Staff Added!");
+            }
+          }
+        } else { throw new Error("API not available"); }
+      } catch (e) {
+        let manualName = prompt("Enter Staff Name:");
+        if(manualName) {
+           let role = prompt("Enter Role (Purohit, Brahmin, Chef, Maid):", "Purohit");
+           if(role) {
+              const id = 'st_' + Date.now();
+              firebase.database().ref('staffPool/' + id).set({ id: id, name: manualName, role: role });
+              showVoiceToast("Staff Added!");
+           }
+        }
+      }
+    }
+
+    function removeStaffFromPool(id) {
+       initiateDoubleConfirm("Step 1: Delete Staff", "Remove this staff member from your registry?", "Step 2: Confirm", "Are you sure?", () => {
+         firebase.database().ref('staffPool/' + id).remove();
+       });
+    }
+
+    function populateStaffDropdowns() {
+      const staffList = Object.values(S.staffPool || {});
+      const purohits = staffList.filter(s => s.role.toLowerCase().includes('purohit')).map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      const brahmins = staffList.filter(s => s.role.toLowerCase().includes('brahmin')).map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      const chefs = staffList.filter(s => s.role.toLowerCase().includes('chef')).map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      
+      const pDrop = document.getElementById('f-staff-purohit'); if(pDrop) pDrop.innerHTML = `<option value="">-- Unassigned --</option>` + purohits;
+      const b1Drop = document.getElementById('f-staff-brahmin1'); if(b1Drop) b1Drop.innerHTML = `<option value="">-- Unassigned --</option>` + brahmins;
+      const b2Drop = document.getElementById('f-staff-brahmin2'); if(b2Drop) b2Drop.innerHTML = `<option value="">-- Unassigned --</option>` + brahmins;
+      const cDrop = document.getElementById('f-staff-chef'); if(cDrop) cDrop.innerHTML = `<option value="">-- Unassigned --</option>` + chefs;
     }
 
     function renderPeople() {
       const list = document.getElementById('people-list'); const searchTerm = document.getElementById('search-people').value.toLowerCase();
       
       if (S.registryTab === 'staff') {
-        const defaultStaff = [
-          { name: "Purohit Pool Members", phone: "", role: "Lead Purohits" },
-          { name: "Brahmin Pool Members", phone: "", role: "Assisting Brahmins" },
-          { name: "Chef Pool Members", phone: "", role: "Catering Staff" }
-        ];
-        list.innerHTML = defaultStaff.map(p => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-amber-500"><div><h4 class="text-white font-bold text-lg">${p.name}</h4><p class="text-[9px] text-stone-400 font-bold uppercase mt-1">${p.role}</p></div></div>`).join('');
+        const staffArr = Object.values(S.staffPool || {}).filter(s => s.name.toLowerCase().includes(searchTerm));
+        if(staffArr.length === 0) { list.innerHTML = `<p class="text-stone-500 text-sm text-center py-4">No staff registered. Click Add Staff above.</p>`; return; }
+        list.innerHTML = staffArr.map(p => `
+          <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-amber-500 shadow-md">
+            <div><h4 class="text-white font-bold text-lg">${p.name}</h4><p class="text-[9px] text-stone-400 font-bold uppercase mt-1">${p.role}</p></div>
+            <button onclick="removeStaffFromPool('${p.id}')" class="text-xs bg-red-950/20 text-red-400 px-3 py-1.5 rounded-lg font-bold border border-red-900/20 active:scale-90">🗑️</button>
+          </div>`).join('');
         return;
       }
 
@@ -877,14 +1033,14 @@
       if(filtered.length === 0) { list.innerHTML = `<p class="text-stone-500 text-sm text-center py-4">No match records found.</p>`; return; }
       
       list.innerHTML = filtered.map(p => `
-        <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-[#D4AF37]">
+        <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-[#D4AF37] shadow-md">
           <div>
-            <div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl leading-tight">${p.name}</h4><span class="text-[9px] bg-stone-800 text-[#D4AF37] px-2 rounded-full font-bold">Orders: ${getCustomerFrequencyCount(p.name)}</span></div>
+            <div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl">${p.name}</h4><span class="text-[9px] bg-stone-800 text-[#D4AF37] px-2 rounded-full font-bold">Orders: ${getCustomerFrequencyCount(p.name)}</span></div>
             <p class="text-[10px] text-stone-400 font-bold uppercase mt-1">${p.type} Client ${p.phone ? '• ' + p.phone : ''}</p>
           </div>
           <div class="flex gap-2">
-            ${p.phone ? `<a href="tel:${p.phone}" class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl border border-blue-500/30 shadow-lg active:scale-90">📞</a>` : ''}
-            ${p.phone ? `<a href="https://wa.me/91${p.phone}" class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/30 shadow-lg active:scale-90">💬</a>` : ''}
+            ${p.phone ? `<a href="tel:${p.phone}" class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl border border-blue-500/30 shadow active:scale-90">📞</a>` : ''}
+            ${p.phone ? `<a href="https://wa.me/91${p.phone}" class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/30 shadow active:scale-90">💬</a>` : ''}
           </div>
         </div>`).join('');
     }
@@ -900,7 +1056,7 @@
     function setService(type) { S.currentService = type; document.getElementById('btn-regular').className = type==='regular'?"flex-1 py-3 text-xs uppercase tracking-widest font-bold rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-md":"flex-1 py-3 text-xs uppercase font-bold rounded-lg text-stone-500"; document.getElementById('btn-muthidya').className = type==='muthidya'?"flex-1 py-3 text-xs uppercase font-bold rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-md":"flex-1 py-3 text-xs uppercase font-bold rounded-lg text-stone-500"; if(!S.editingBookingId) { document.getElementById('f-custom-total').value = type==='regular' ? 9000 : 9500; } calculateLiveBalance(); }
     
     function toggleBookingSheet(show) {
-      if(show) { playSound('open'); if(!document.getElementById('f-date').value) document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; checkFloorAllocation(); calculateLiveBalance(); }
+      if(show) { playSound('open'); if(!document.getElementById('f-date').value) document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; checkFloorAllocation(); calculateLiveBalance(); populateStaffDropdowns(); }
       S.isBookingFormOpen = show; const content = document.getElementById('sheet-content'); const sheet = document.getElementById('booking-sheet');
       show ? (sheet.classList.remove('pointer-events-none'), content.classList.add('sheet-open')) : (content.classList.remove('sheet-open'), setTimeout(() => sheet.classList.add('pointer-events-none'), 400));
     }
@@ -911,10 +1067,6 @@
     function toggleTiffinSheet(show) {
       S.isTiffinFormOpen = show; const content = document.getElementById('tiff-content'); const sheet = document.getElementById('tiffin-sheet');
       show ? (sheet.classList.remove('pointer-events-none'), content.classList.add('sheet-open')) : (content.classList.remove('sheet-open'), setTimeout(() => sheet.classList.add('pointer-events-none'), 400));
-    }
-    function updatePanchanga() {
-      const info = getVedicDayInfo(new Date()); document.getElementById('ptithi').innerText = info.tithi; document.getElementById('ppaksha').innerText = info.paksha;
-      document.getElementById('pmasa').innerText = info.masa; document.getElementById('pnaksh').innerText = info.nakshatra;
     }
   </script>
 </body>
