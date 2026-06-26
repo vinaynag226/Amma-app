@@ -17,7 +17,6 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--maroon-dark); -webkit-tap-highlight-color: transparent; transition: font-size 0.3s ease; }
     h1, h2, h3, h4, .vedic-font { font-family: 'Lora', serif; }
     
-    /* Solid optimized backgrounds specifically to maximize FPS execution frames on Samsung M13 hardware architectures */
     .glass-card { background: #360b0b; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); }
     .gold-gradient-text { background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .bottom-sheet { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); z-index: 100; }
@@ -42,6 +41,18 @@
   <!-- Background Wallpaper Layer -->
   <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#591010] via-[#2A0808] to-[#110202] -z-10"></div>
 
+  <!-- App-Level Non-Blocking Custom Confirmation Dialog Layer Module -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div class="bg-[#2A0808] border-2 border-[#D4AF37] rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+      <h3 id="confirm-title" class="text-xl font-bold text-white font-serif tracking-wide">Confirm Action</h3>
+      <p id="confirm-msg" class="text-stone-300 text-sm leading-relaxed"></p>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeConfirmModal(false)" class="flex-1 py-3 bg-stone-900 border border-white/10 text-stone-400 font-bold rounded-xl text-xs uppercase tracking-widest active:scale-95">Cancel</button>
+        <button onclick="closeConfirmModal(true)" class="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black font-bold rounded-xl text-xs uppercase tracking-widest active:scale-95 shadow-lg">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Speech Notification HUD Display Box -->
   <div id="voice-toast" class="hidden fixed top-24 left-1/2 -translate-x-1/2 bg-black/90 border border-[#D4AF37] text-white px-6 py-3 rounded-full text-sm font-bold z-50 shadow-2xl whitespace-nowrap">
     🎤 Listening...
@@ -55,7 +66,7 @@
     </div>
     <div class="flex items-center gap-2">
       <button onclick="toggleSettingsSheet(true)" class="p-2.5 text-stone-400 bg-white/5 border border-white/10 rounded-full text-base active:scale-90">⚙️</button>
-      <button onclick="toggleSahaayaMode()" id="mode-btn" class="glass-card px-4 py-2 rounded-full text-xs font-bold text-[#D4AF37] tracking-widest uppercase active:scale-95 transition-all flex items-center gap-2">
+      <button onclick="toggleSahaayaMode()" id="mode-btn" class="glass-card px-4 py-2 rounded-full text-xs font-bold text-[#D4AF37] tracking-widest uppercase active:scale-95 flex items-center gap-2">
         <span class="text-lg">👩‍👦</span> Sahaaya Mode
       </button>
     </div>
@@ -88,7 +99,7 @@
       </div>
 
       <!-- New Booking Action Card -->
-      <div onclick="toggleBookingSheet(true)" class="glass-card rounded-3xl p-6 relative overflow-hidden group cursor-pointer border-l-4 border-l-[#D4AF37] active:scale-[0.98]">
+      <div onclick="clearFormAndOpenNew()" class="glass-card rounded-3xl p-6 relative overflow-hidden group cursor-pointer border-l-4 border-l-[#D4AF37] active:scale-[0.98]">
         <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">🕉️</div>
         <div class="relative z-10 flex justify-between items-center">
           <div><h3 class="text-xl font-bold text-white tracking-wide">Create New Booking</h3><p class="text-[#D4AF37]/70 text-sm mt-1.5 tracking-wide">Schedule a sacred ritual</p></div>
@@ -108,7 +119,6 @@
 
     <!-- VIEW 2: CALENDAR LEDGER VIEW -->
     <div id="scr-calendar" class="app-screen hidden space-y-5">
-      <!-- Shared Revenue & Payout P&L HUD -->
       <div class="grid grid-cols-2 gap-3">
         <div class="glass-card p-4 rounded-2xl border-l-4 border-emerald-500">
           <span class="text-[10px] text-stone-400 font-bold uppercase tracking-widest">Est. Revenue</span>
@@ -120,7 +130,6 @@
         </div>
       </div>
 
-      <!-- Astronomical Visual Highlights Key Header Banner -->
       <div class="glass-card p-3 rounded-2xl flex justify-center gap-4 text-[10px] font-bold uppercase tracking-wider text-stone-400">
         <div class="flex items-center gap-1"><span class="text-amber-400">🌕</span> Pournami</div>
         <div class="flex items-center gap-1"><span class="text-stone-300">🌑</span> Amavasya</div>
@@ -164,7 +173,6 @@
       <div id="people-list" class="space-y-3 pt-2"></div>
     </div>
 
-    <!-- Bottom structural window spacer to prevent content from getting cut off behind fixed nav bar -->
     <div class="h-36 w-full clear-both"></div>
   </main>
 
@@ -187,20 +195,29 @@
     <div id="sheet-content" class="relative w-full h-[92vh] bg-[#1a0a0a] border-t border-[#D4AF37]/30 rounded-t-[32px] flex flex-col shadow-2xl bottom-sheet pointer-events-auto">
       <div class="w-full flex justify-center pt-3 pb-2"><div class="w-12 h-1.5 bg-[#D4AF37]/30 rounded-full"></div></div>
       <div class="px-6 pb-3 border-b border-[#D4AF37]/10 flex justify-between items-center">
-        <div><h2 class="text-2xl font-bold text-white vedic-font tracking-wide">New Ceremony</h2></div>
+        <div><h2 id="booking-sheet-title" class="text-2xl font-bold text-white vedic-font tracking-wide">New Ceremony</h2></div>
         <button onclick="toggleBookingSheet(false)" class="text-stone-400 bg-white/5 p-3 rounded-full">✕</button>
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
         
-        <!-- Contact Address Book Sync Button Module -->
-        <button onclick="selectMobileContact()" class="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/40 text-[#D4AF37] py-3.5 rounded-2xl font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all">
-          👤 Pick from Phone Contacts
+        <button onclick="selectMobileContact('f-name','f-phone')" class="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/40 text-[#D4AF37] py-3.5 rounded-2xl font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2">
+          👤 Pick Client from Contacts
         </button>
 
         <div class="space-y-4">
-          <input type="text" id="f-name" placeholder="Customer Name" class="premium-input rounded-t-xl text-xl py-4">
-          <input type="tel" id="f-phone" placeholder="Phone Number" class="premium-input py-4">
-          <div class="flex bg-black/40 p-1.5 rounded-b-xl border-b border-x border-[#D4AF37]/30">
+          <div>
+            <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Customer Name</label>
+            <input type="text" id="f-name" placeholder="Customer Name" class="premium-input rounded-xl text-xl py-3">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Phone Number</label>
+            <input type="tel" id="f-phone" placeholder="Phone Number" class="premium-input py-3">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Custom Base Amount (₹)</label>
+            <input type="number" id="f-custom-total" oninput="calculateLiveBalance()" value="9000" class="premium-input py-3 text-white font-bold">
+          </div>
+          <div class="flex bg-black/40 p-1.5 rounded-xl border border-white/5">
             <button onclick="setLang('te')" id="btn-lang-te" class="flex-1 py-3 text-sm font-bold rounded-lg bg-stone-700 text-white shadow-md">Telugu</button>
             <button onclick="setLang('kn')" id="btn-lang-kn" class="flex-1 py-3 text-sm font-bold rounded-lg text-stone-500">Kannada</button>
           </div>
@@ -220,28 +237,62 @@
           </div>
         </div>
 
-        <!-- Financial Accounting Payment Collection Subsystem Modules -->
+        <!-- Dynamic Staff Contact Picker Slots Module -->
+        <div class="space-y-3 bg-black/30 p-4 rounded-2xl border border-white/5">
+          <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Assigned Operational Staff</label>
+          
+          <div class="space-y-3">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Purohit</span>
+              <div class="flex gap-2">
+                <input type="text" id="f-staff-purohit" placeholder="Select Purohit" class="premium-input py-2 text-sm flex-1">
+                <button onclick="selectMobileContact('f-staff-purohit')" class="bg-white/5 border border-white/10 px-4 rounded-xl text-sm">👤</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Brahmin Helper 1</span>
+              <div class="flex gap-2">
+                <input type="text" id="f-staff-brahmin1" placeholder="Select Brahmin 1" class="premium-input py-2 text-sm flex-1">
+                <button onclick="selectMobileContact('f-staff-brahmin1')" class="bg-white/5 border border-white/10 px-4 rounded-xl text-sm">👤</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Brahmin Helper 2</span>
+              <div class="flex gap-2">
+                <input type="text" id="f-staff-brahmin2" placeholder="Select Brahmin 2" class="premium-input py-2 text-sm flex-1">
+                <button onclick="selectMobileContact('f-staff-brahmin2')" class="bg-white/5 border border-white/10 px-4 rounded-xl text-sm">👤</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Chef</span>
+              <div class="flex gap-2">
+                <input type="text" id="f-staff-chef" placeholder="Select Chef" class="premium-input py-2 text-sm flex-1">
+                <button onclick="selectMobileContact('f-staff-chef')" class="bg-white/5 border border-white/10 px-4 rounded-xl text-sm">👤</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3 bg-black/30 p-4 rounded-2xl border border-white/5">
           <div class="col-span-2"><label class="block text-[10px] uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Advance Amount Paid (₹)</label><input type="number" id="f-advance" oninput="calculateLiveBalance()" value="0" class="premium-input rounded-xl py-2.5 text-lg"></div>
           <div class="col-span-2 mt-2">
             <label class="block text-[10px] uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Payment Mode</label>
             <select id="f-paymode" class="w-full bg-stone-900 border border-[#D4AF37]/40 rounded-xl p-3 text-white text-sm outline-none">
+              <option value="Cash" selected>Cash (Default)</option>
               <option value="Bank Transfer / UPI">Bank Transfer / UPI</option>
-              <option value="Cash">Cash</option>
             </select>
           </div>
         </div>
 
-        <!-- Special Operational Instructions Text Area Pane -->
         <div class="space-y-2">
           <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest">Special Instructions</label>
-          <textarea id="f-instructions" rows="2" placeholder="Ex: Rig Veda, extra meals, specific items needed..." class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#D4AF37]"></textarea>
+          <textarea id="f-instructions" rows="2" placeholder="Ex: Yajur Veda, extra meals, unique settings..." class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#D4AF37]"></textarea>
         </div>
 
       </div>
       <div class="p-6 bg-[#110505] border-t border-[#D4AF37]/10 rounded-t-[32px] flex justify-between items-center">
         <div><p class="text-xs font-bold text-stone-500 tracking-widest uppercase">Balance Due</p><p class="text-3xl font-bold text-orange-400 mt-0.5 tracking-wider" id="live-total">₹9,000</p></div>
-        <button id="btn-save-booking" onclick="saveBookingToCloud()" class="bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg">Save</button>
+        <button id="btn-save-booking" onclick="triggerSaveWorkflow()" class="bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg">Save</button>
       </div>
     </div>
   </div>
@@ -262,7 +313,7 @@
         <div><label class="text-xs uppercase text-[#D4AF37] font-bold block mb-1">Maid Daily Payout</label><input type="number" id="m-rate-maid" class="premium-input rounded-xl py-3"></div>
       </div>
       <div class="p-6 bg-[#110505] border-t border-[#D4AF37]/10">
-        <button onclick="saveMasterSettings()" class="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg">Save Settings</button>
+        <button onclick="triggerMasterSettingsSave()" class="w-full bg-gradient-to-r from-[#D4AF37] to-[#AA771C] text-black py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg">Save Settings</button>
       </div>
     </div>
   </div>
@@ -282,9 +333,12 @@
       currentService: 'regular', 
       currentLang: 'te', 
       isBookingFormOpen: false, 
+      editingBookingId: null,
       voiceFieldStep: null,
       settings: { ratePurohit: 1000, rateBrahmin: 500, rateChef: 2200, rateMaid: 300 }
     };
+
+    let activeConfirmCallback = null;
 
     const firebaseConfig = { apiKey: "AIzaSyCDzLnVOkLWSlbHi3nMzum2RsUOGT-529U", authDomain: "ananthashree-ee68c.firebaseapp.com", databaseURL: "https://ananthashree-ee68c-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "ananthashree-ee68c", storageBucket: "ananthashree-ee68c.firebasestorage.app", appId: "1:554778775618:web:2f5fee9075dc45034adddb" };
     
@@ -316,50 +370,67 @@
       setTimeout(() => { toast.classList.add('hidden'); toast.classList.remove('toast-anim'); }, duration);
     }
 
-    // --- STRATEGIC CENTRALIZED VEDIC ASTRONOMICAL DATE CALCULATOR ---
+    // --- REWRITE: APP-LEVEL INLINE MODALS TO PREVENT CHROME POPUP CRASHES ---
+    function runCustomConfirm(title, msg, callback) {
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-msg').innerText = msg;
+      activeConfirmCallback = callback;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal(isConfirmed) {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      if (isConfirmed && activeConfirmCallback) {
+        activeConfirmCallback();
+      }
+      activeConfirmCallback = null;
+    }
+
     function getVedicDayInfo(dateObj) {
       const baseDate = new Date(2022, 0, 2);
       const d1 = Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
       const d2 = Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
       const diff = Math.floor((d1 - d2) / 86400000);
-      
       const ld = ((diff % 30) + 30) % 30;
       const isShukla = ld < 15;
       const ti = isShukla ? ld % 15 : (ld - 15) % 15;
-      
       let tithiName = TITHI_LIST[Math.min(ti, 15)];
       let pakshaName = isShukla ? 'Shukla' : 'Krishna';
-      
       if (ld === 14) { tithiName = 'Pournami'; pakshaName = 'Shukla'; }
       if (ld === 29) { tithiName = 'Amavasya'; pakshaName = 'Krishna'; }
-      
       const nakI = ((Math.floor((d1 - Date.UTC(2022, 0, 1)) / 86400000) % 27) + 27) % 27;
       return { tithi: tithiName, paksha: pakshaName, masa: MASA_LIST[((dateObj.getMonth() + 10) % 12)], nakshatra: NAKSHATRA[nakI], ti: ti };
     }
 
-    // --- MOBILE PHONE HARDWARE ADDRESS BOOK IMPORTER (CONTACTS API) ---
-    async function selectMobileContact() {
+    function getCustomerFrequencyCount(phoneOrName) {
+      if(!phoneOrName) return 0;
+      const query = phoneOrName.toLowerCase().trim();
+      return Object.values(S.bookings).filter(b => 
+        (b.customerName && b.customerName.toLowerCase().trim() === query) || 
+        (b.phone && b.phone.trim() === query)
+      ).length;
+    }
+
+    async function selectMobileContact(nameFieldId, phoneFieldId = null) {
       if (!('contacts' in navigator && 'select' in navigator.contacts)) {
-        alert("Your phone or browser doesn't support direct contact picking. Please select or type manually.");
+        const fallback = prompt("Enter Name manually:");
+        if (fallback) document.getElementById(nameFieldId).value = fallback;
         return;
       }
       try {
         const props = ['name', 'tel'];
-        const opts = { multiple: false };
-        const contacts = await navigator.contacts.select(props, opts);
+        const contacts = await navigator.contacts.select(props, { multiple: false });
         if (contacts && contacts.length > 0) {
           const contact = contacts[0];
           if (contact.name && contact.name.length > 0) {
-            document.getElementById('f-name').value = contact.name[0];
+            document.getElementById(nameFieldId).value = contact.name[0];
           }
-          if (contact.tel && contact.tel.length > 0) {
+          if (phoneFieldId && contact.tel && contact.tel.length > 0) {
             let cleanPhone = contact.tel[0].replace(/[^0-9]/g, "");
-            if (cleanPhone.startsWith("91") && cleanPhone.length > 10) {
-              cleanPhone = cleanPhone.substring(2);
-            }
-            document.getElementById('f-phone').value = cleanPhone;
+            if (cleanPhone.startsWith("91") && cleanPhone.length > 10) cleanPhone = cleanPhone.substring(2);
+            document.getElementById(phoneFieldId).value = cleanPhone;
           }
-          showVoiceToast("👤 Contact Imported Successfully");
+          showVoiceToast("👤 Contact Imported");
         }
       } catch (err) { console.error(err); }
     }
@@ -397,7 +468,7 @@
         }
 
         if(cleanResult.includes('బుకింగ్') || cleanResult.includes('booking') || cleanResult.includes('కొత్త') || cleanResult.includes('కార్యం')) { 
-          toggleBookingSheet(true); S.voiceFieldStep = 'name'; speakTelugu("బుకింగ్ ఫారం ఓపెన్ చేశాను. కస్టమర్ పేరు చెప్పండి.");
+          clearFormAndOpenNew(); S.voiceFieldStep = 'name'; speakTelugu("బుకింగ్ ఫారం ఓపెన్ చేశాను. కస్టమర్ పేరు చెప్పండి.");
           setTimeout(() => { startVoiceAssistant(); }, 3200);
         }
         else if(cleanResult.includes('క్యాలెండర్') || cleanResult.includes('calendar') || cleanResult.includes('లెడ్జర్')) { switchScreen('calendar'); speakTelugu("క్యాలెండర్ ఓపెన్ చేశాను."); } 
@@ -408,7 +479,7 @@
 
     function checkFloorAllocation() {
       const dateVal = document.getElementById('f-date').value; if(!dateVal) return 'First Floor';
-      const count = Object.values(S.bookings).filter(b => b.date === dateVal).length;
+      const count = Object.values(S.bookings).filter(b => b.date === dateVal && b.id !== S.editingBookingId).length;
       const targetDiv = document.getElementById('floor-suggestion');
       if(count === 0) { targetDiv.innerText = "⭐ Automatically Routing To: FIRST FLOOR"; return 'First Floor'; }
       if(count === 1) { targetDiv.innerText = "⚡ First floor busy. Routing To: GROUND FLOOR"; return 'Ground Floor'; }
@@ -416,63 +487,113 @@
     }
 
     function calculateLiveBalance() {
-      let base = S.currentService === 'regular' ? 9000 : 9500;
+      let base = parseInt(document.getElementById('f-custom-total').value) || 0;
       let adv = parseInt(document.getElementById('f-advance').value) || 0;
       let bal = base - adv;
       document.getElementById('live-total').innerText = '₹' + (bal >= 0 ? bal : 0).toLocaleString('en-IN');
       return base;
     }
 
-    // --- BACK-TO-BACK DOUBLE CONFIRMATION SECURITY INTERFACE TRIGGERS ---
-    function deleteBooking(bookingId) {
-      if(!confirm("First Confirmation:\nDo you really want to clear this ceremony record?")) return;
-      if(!confirm("FINAL SECURITY WARNING:\nThis will permanently erase this booking from all family devices simultaneously. Proceed?")) return;
-      
+    // --- REWRITE: INTEGRATED ONE-TIME EDIT ENTRY INTERCEPTORS ---
+    function openBookingForEditing(bookingId) {
+      const b = S.bookings[bookingId]; if(!b) return;
       playSound('open');
-      firebase.database().ref(`bookings/${bookingId}`).remove()
-        .then(() => { showVoiceToast("🗑️ Booking Deleted Successfully"); })
-        .catch(err => alert("Deletion Error: " + err.message));
-    }
-
-    function saveMasterSettings() {
-      if(!confirm("First Confirmation:\nChange master default operational payout parameters?")) return;
-      if(!confirm("FINAL SECURITY CHECK:\nAre you absolutely sure? This will shift payment values for all future daily entries.")) return;
+      S.editingBookingId = bookingId;
       
-      const updated = {
-        ratePurohit: parseInt(document.getElementById('m-rate-purohit').value) || 1000,
-        rateBrahmin: parseInt(document.getElementById('m-rate-brahmin').value) || 500,
-        rateChef: parseInt(document.getElementById('m-rate-chef').value) || 2200,
-        rateMaid: parseInt(document.getElementById('m-rate-maid').value) || 300
-      };
-      firebase.database().ref('masterSettings').set(updated).then(() => { playSound('success'); toggleSettingsSheet(false); });
+      document.getElementById('booking-sheet-title').innerText = "Edit Ceremony Entry";
+      document.getElementById('f-name').value = b.customerName || '';
+      document.getElementById('f-phone').value = b.phone || '';
+      document.getElementById('f-custom-total').value = b.total || 9000;
+      document.getElementById('f-date').value = b.date || '';
+      document.getElementById('f-advance').value = b.advancePaid || 0;
+      document.getElementById('f-paymode').value = b.paymentMode || 'Cash';
+      document.getElementById('f-instructions').value = b.specialInstructions || '';
+      
+      document.getElementById('f-staff-purohit').value = b.staffPurohit || '';
+      document.getElementById('f-staff-brahmin1').value = b.staffBrahmin1 || '';
+      document.getElementById('f-staff-brahmin2').value = b.staffBrahmin2 || '';
+      document.getElementById('f-staff-chef').value = b.staffChef || '';
+      
+      setService(b.serviceType || 'regular');
+      toggleBookingSheet(true);
     }
 
-    function saveBookingToCloud() {
-      const name = document.getElementById('f-name').value; const date = document.getElementById('f-date').value; const phone = document.getElementById('f-phone').value; 
-      if(!name || !date) { alert("Please fill fields!"); return; }
+    function clearFormAndOpenNew() {
+      S.editingBookingId = null;
+      document.getElementById('booking-sheet-title').innerText = "New Ceremony";
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-phone').value = '';
+      document.getElementById('f-custom-total').value = '9000';
+      document.getElementById('f-advance').value = '0';
+      document.getElementById('f-paymode').value = 'Cash';
+      document.getElementById('f-instructions').value = '';
+      document.getElementById('f-staff-purohit').value = '';
+      document.getElementById('f-staff-brahmin1').value = '';
+      document.getElementById('f-staff-brahmin2').value = '';
+      document.getElementById('f-staff-chef').value = '';
+      toggleBookingSheet(true);
+    }
+
+    function triggerDeleteWorkflow(bookingId) {
+      runCustomConfirm("First Confirmation", "Do you want to delete this ritual entry?", () => {
+        runCustomConfirm("FINAL SECURITY LOCK", "Are you 100% sure? This deletes data across all family mobiles.", () => {
+          playSound('open');
+          firebase.database().ref(`bookings/${bookingId}`).remove()
+            .then(() => { showVoiceToast("🗑️ Record Cleared"); })
+            .catch(err => alert(err.message));
+        });
+      });
+    }
+
+    function triggerMasterSettingsSave() {
+      runCustomConfirm("Modify Expenses", "Change global fallback payouts?", () => {
+        runCustomConfirm("Confirm Master Shift", "Update defaults for all future calculations?", () => {
+          const updated = {
+            ratePurohit: parseInt(document.getElementById('m-rate-purohit').value) || 1000,
+            rateBrahmin: parseInt(document.getElementById('m-rate-brahmin').value) || 500,
+            rateChef: parseInt(document.getElementById('m-rate-chef').value) || 2200,
+            rateMaid: parseInt(document.getElementById('m-rate-maid').value) || 300
+          };
+          firebase.database().ref('masterSettings').set(updated).then(() => { playSound('success'); toggleSettingsSheet(false); });
+        });
+      });
+    }
+
+    function triggerSaveWorkflow() {
+      const name = document.getElementById('f-name').value; 
+      const date = document.getElementById('f-date').value; 
+      if(!name || !date) { alert("Please input Name and Date!"); return; }
       
       const floorDecision = checkFloorAllocation();
-      if(floorDecision === 'Blocked') { alert("Hard block triggered! 2 Bookings already registered on this date."); return; }
+      if(floorDecision === 'Blocked') { alert("Hard Block: Date is full!"); return; }
       
-      if(!confirm("First Confirmation:\nAre you ready to commit this new booking record?")) return;
-      if(!confirm("FINAL RECORD CHECK:\nBroadcast this ritual event to all operational mobile layouts now?")) return;
-      
-      const baseAmt = S.currentService === 'regular' ? 9000 : 9500;
-      const advAmt = parseInt(document.getElementById('f-advance').value) || 0;
-      const payMode = document.getElementById('f-paymode').value;
-      const notes = document.getElementById('f-instructions').value;
-      const id = 'bk_' + Date.now();
-      
-      const record = { 
-        id: id, customerName: name, phone: phone, date: date, serviceType: S.currentService, 
-        lang: S.currentLang, total: baseAmt, advancePaid: advAmt, paymentMode: payMode, 
-        specialInstructions: notes, floor: floorDecision, createdAt: Date.now() 
-      };
-      
-      firebase.database().ref('bookings/' + id).set(record).then(() => { 
-        playSound('success'); toggleBookingSheet(false); 
-        document.getElementById('f-name').value = ''; document.getElementById('f-phone').value = ''; 
-        document.getElementById('f-advance').value = '0'; document.getElementById('f-instructions').value = '';
+      runCustomConfirm("Save Entry", "Do you want to save this ceremony configuration?", () => {
+        const baseAmt = parseInt(document.getElementById('f-custom-total').value) || 9000;
+        const advAmt = parseInt(document.getElementById('f-advance').value) || 0;
+        const id = S.editingBookingId ? S.editingBookingId : 'bk_' + Date.now();
+        
+        const record = { 
+          id: id, 
+          customerName: name, 
+          phone: document.getElementById('f-phone').value, 
+          date: date, 
+          serviceType: S.currentService, 
+          lang: S.currentLang, 
+          total: baseAmt, 
+          advancePaid: advAmt, 
+          paymentMode: document.getElementById('f-paymode').value, 
+          specialInstructions: document.getElementById('f-instructions').value,
+          staffPurohit: document.getElementById('f-staff-purohit').value,
+          staffBrahmin1: document.getElementById('f-staff-brahmin1').value,
+          staffBrahmin2: document.getElementById('f-staff-brahmin2').value,
+          staffChef: document.getElementById('f-staff-chef').value,
+          floor: floorDecision, 
+          createdAt: Date.now() 
+        };
+        
+        firebase.database().ref('bookings/' + id).set(record).then(() => { 
+          playSound('success'); toggleBookingSheet(false); S.editingBookingId = null;
+        });
       });
     }
 
@@ -514,8 +635,10 @@
     }
 
     function renderHome() {
-      const today = new Date(); const todayStr = today.toISOString().split('T')[0];
-      const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1); const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      const todayStr = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); 
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
       const allBks = Object.values(S.bookings); 
       const todaysBks = allBks.filter(b => b.date === todayStr); 
       const tomorrowsBks = allBks.filter(b => b.date === tomorrowStr);
@@ -527,21 +650,36 @@
       else { 
         list.innerHTML = todaysBks.map(b => {
           const po = b.payouts || {};
-          const adv = b.advancePaid || 0;
-          const remainingBal = b.total - adv;
+          const remainingBal = (b.total || 9000) - (b.advancePaid || 0);
+          const freq = getCustomerFrequencyCount(b.customerName);
           return `
             <div class="glass-card p-5 rounded-2xl border-l-4 border-l-[#D4AF37] space-y-4">
               <div class="flex justify-between items-start">
-                <div class="space-y-1">
-                  <h4 class="text-white font-bold text-xl">${b.customerName}</h4>
+                <div class="space-y-1 flex-1 pr-2">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="text-white font-bold text-xl leading-tight">${b.customerName}</h4>
+                    <span class="text-[9px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded-full font-bold">Orders: ${freq}</span>
+                  </div>
                   <p class="text-xs text-[#D4AF37]/80 uppercase tracking-widest font-bold">${b.serviceType} • ${b.floor || 'First Floor'}</p>
+                  
+                  <!-- Staff List Display UI Row Layer -->
+                  <div class="text-[11px] text-stone-400 font-semibold space-y-0.5 pt-1">
+                    ${b.staffPurohit ? `<div>🔸 <span class="text-stone-300">Purohit:</span> ${b.staffPurohit}</div>` : ''}
+                    ${b.staffBrahmin1 ? `<div>🔸 <span class="text-stone-300">Brahmin 1:</span> ${b.staffBrahmin1}</div>` : ''}
+                    ${b.staffBrahmin2 ? `<div>🔸 <span class="text-stone-300">Brahmin 2:</span> ${b.staffBrahmin2}</div>` : ''}
+                    ${b.staffChef ? `<div>🔸 <span class="text-stone-300">Chef:</span> ${b.staffChef}</div>` : ''}
+                  </div>
+
                   ${b.specialInstructions ? `<p class="text-xs text-stone-400 italic bg-black/20 p-2 rounded-lg mt-1 border border-white/5">📝 ${b.specialInstructions}</p>` : ''}
                 </div>
-                <div class="text-right flex flex-col items-end gap-2">
-                  <span class="block text-white font-bold text-xl">₹${b.total.toLocaleString()}</span>
-                  <span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30">Paid: ₹${adv} via ${b.paymentMode || 'UPI'}</span>
-                  <span class="text-[10px] uppercase font-bold text-orange-400 bg-orange-950/40 px-2 py-0.5 rounded border border-orange-500/30">Due: ₹${remainingBal}</span>
-                  <button onclick="deleteBooking('${b.id}')" class="text-xs bg-red-950/40 text-red-400 border border-red-900/50 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider mt-1">🗑️ Clear</button>
+                <div class="text-right flex flex-col items-end gap-1.5 shrink-0">
+                  <span class="block text-white font-bold text-xl">₹${(b.total || 9000).toLocaleString()}</span>
+                  <span class="text-[9px] uppercase font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/20">Paid: ₹${b.advancePaid || 0}</span>
+                  <span class="text-[9px] uppercase font-bold text-orange-400 bg-orange-950/40 px-2 py-0.5 rounded border border-orange-500/20">Due: ₹${remainingBal}</span>
+                  <div class="flex gap-2 mt-1">
+                    <button onclick="openBookingForEditing('${b.id}')" class="text-xs bg-stone-800 text-stone-300 px-2.5 py-1 rounded-md font-bold uppercase border border-white/10">✏️ Edit</button>
+                    <button onclick="triggerDeleteWorkflow('${b.id}')" class="text-xs bg-red-950/40 text-red-400 border border-red-900/40 px-2.5 py-1 rounded-md font-bold uppercase">🗑️ Clear</button>
+                  </div>
                 </div>
               </div>
               <div class="border-t border-white/10 pt-3">
@@ -565,16 +703,19 @@
             <div class="glass-card p-5 rounded-3xl border border-emerald-500/30 bg-emerald-900/10 shadow-lg flex flex-col gap-4">
               <div class="flex justify-between items-start">
                 <div><p class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">📅 Ceremony Tomorrow!</p><h4 class="text-white font-bold text-lg">${b.customerName}</h4></div>
-                <button onclick="deleteBooking('${b.id}')" class="text-xs bg-red-950/40 text-red-400 border border-red-900/40 px-2 py-1 rounded-md font-bold">🗑️ Delete</button>
+                <div class="flex gap-2"><button onclick="openBookingForEditing('${b.id}')" class="text-xs bg-stone-800 text-stone-300 px-2 py-1 rounded border border-white/10 font-bold">✏️ Edit</button><button onclick="triggerDeleteWorkflow('${b.id}')" class="text-xs bg-red-950/40 text-red-400 border border-red-900/40 px-2 py-1 rounded font-bold">🗑️ Delete</button></div>
               </div>
-              <button onclick="sendWhatsAppReminder('${b.customerName}', '${b.lang || 'te'}', '${b.phone || ''}')" class="w-full bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366] py-3 rounded-xl flex items-center justify-center font-bold text-sm gap-2 active:scale-95"><span class="text-xl">💬</span> Remind Customer</button>
+              <button onclick="sendWhatsAppReminder('${b.customerName}', '${b.lang || 'te'}', '${b.phone || ''}')" class="w-full bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366] py-3 rounded-xl flex items-center justify-center font-bold text-sm gap-2"><span class="text-xl">💬</span> Remind Customer</button>
             </div>`;
         });
       }
       
       const customers = Object.values(S.tifCustomers);
       if(customers.length > 0) {
-        let pendingBreakfasts = 0; customers.forEach(c => { if(!S.tifMeals[c.id] || S.tifMeals[c.id]['b'] !== 'given' && S.tifMeals[c.id]['b'] !== 'skip') { pendingBreakfasts++; } });
+        let pendingBreakfasts = 0; customers.forEach(c => { 
+          const currentStatus = (S.tifMeals[c.id] && S.tifMeals[c.id]['b']) || 'given';
+          if(currentStatus !== 'given' && currentStatus !== 'skip') { pendingBreakfasts++; } 
+        });
         if(pendingBreakfasts > 0) { alertsHTML += `<div onclick="switchScreen('tiffin')" class="glass-card p-4 rounded-3xl border border-amber-500/30 bg-amber-900/10 flex items-center gap-3 cursor-pointer active:scale-95"><span class="text-2xl">☀️</span><div><p class="text-amber-400 font-bold text-sm">Amma, ${pendingBreakfasts} Breakfasts are pending.</p><p class="text-xs text-stone-400">Tap here to open Tiffin page.</p></div></div>`; }
       }
       document.getElementById('amma-alerts').innerHTML = alertsHTML;
@@ -589,7 +730,6 @@
         const dateStr = `${S.calYear}-${String(S.calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const count = counts[dateStr] || 0; const isToday = dateStr === todayStr; const isPast = new Date(dateStr) < new Date(todayStr);
         let dotHTML = ''; if(count === 1) dotHTML = `<div class="cal-dot bg-[#D4AF37]"></div>`; else if(count >= 2) dotHTML = `<div class="flex gap-1 mt-1"><div class="cal-dot bg-red-500"></div><div class="cal-dot bg-red-500"></div></div>`;
         
-        // Compute astronomical phase layers to highlight specific visual boundaries
         const vInfo = getVedicDayInfo(new Date(S.calYear, S.calMonth, d));
         let sacredStyleClass = 'bg-white/5 text-stone-300';
         let markerEmoji = '';
@@ -604,30 +744,74 @@
     }
     function calMove(dir) { S.calMonth += dir; if(S.calMonth < 0) { S.calMonth = 11; S.calYear--; } else if(S.calMonth > 11) { S.calMonth = 0; S.calYear++; } renderCalendar(); }
     
+    // --- REWRITE: CALENDAR TAP DATE FULL REVERSE PANCHANGA LOOKUP EXPANSION ENGINE ---
     function selectDate(dateStr) {
-      const bks = Object.values(S.bookings).filter(b => b.date === dateStr); document.getElementById('sel-date-lbl').innerText = `Ceremonies on ${dateStr}`; const list = document.getElementById('sel-date-list');
-      if(bks.length === 0) { list.innerHTML = `<p class="text-stone-500 text-sm">No ceremonies on this date.</p>`; } 
-      else { 
-        list.innerHTML = bks.map(b => `
-          <div class="glass-card p-4 rounded-xl border border-white/10 border-l-4 border-l-[#D4AF37] flex justify-between items-center">
-            <div><h4 class="text-white font-bold text-lg">${b.customerName}</h4><p class="text-xs text-[#D4AF37] uppercase tracking-widest font-bold mt-1">${b.serviceType} • ${b.floor || 'First Floor'}</p></div>
-            <button onclick="deleteBooking('${b.id}')" class="text-xs bg-red-950/40 text-red-400 border border-red-900/50 px-2 py-1 rounded font-bold">🗑️ Delete</button>
-          </div>`).join(''); 
+      const parts = dateStr.split('-');
+      const dObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      const v = getVedicDayInfo(dObj);
+      
+      const bks = Object.values(S.bookings).filter(b => b.date === dateStr); 
+      document.getElementById('sel-date-lbl').innerText = `${dateStr}`; 
+      const list = document.getElementById('sel-date-list');
+      
+      let headerVedicHTML = `
+        <div class="p-4 bg-black/40 border border-[#D4AF37]/30 rounded-2xl space-y-2 mb-2 text-xs">
+          <p class="text-[#D4AF37] uppercase tracking-widest font-bold font-serif text-sm">Vedic Date Coordinates</p>
+          <div class="grid grid-cols-2 gap-2 text-stone-300 font-semibold">
+            <div><span class="text-stone-500 font-bold">Masa:</span> ${v.masa}</div>
+            <div><span class="text-stone-500 font-bold">Paksha:</span> ${v.paksha}</div>
+            <div><span class="text-stone-500 font-bold">Tithi:</span> ${v.tithi}</div>
+            <div><span class="text-stone-500 font-bold">Nakshatra:</span> ${v.nakshatra}</div>
+          </div>
+        </div>`;
+
+      if(bks.length === 0) { 
+        list.innerHTML = headerVedicHTML + `<p class="text-stone-500 text-sm text-center py-4">No ceremonies registered on this date window.</p>`; 
+      } else { 
+        list.innerHTML = headerVedicHTML + bks.map(b => {
+          const adv = b.advancePaid || 0;
+          const due = (b.total || 9000) - adv;
+          return `
+            <div class="glass-card p-4 rounded-xl border border-white/10 border-l-4 border-l-[#D4AF37] space-y-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="text-white font-bold text-lg">${b.customerName}</h4>
+                  <p class="text-xs text-[#D4AF37] uppercase tracking-widest font-bold mt-0.5">${b.serviceType} • ${b.floor || 'First Floor'}</p>
+                  
+                  <div class="text-[11px] text-stone-400 mt-1 space-y-0.5">
+                    ${b.staffPurohit ? `<div>• Purohit: ${b.staffPurohit}</div>` : ''}
+                    ${b.staffChef ? `<div>• Chef: ${b.staffChef}</div>` : ''}
+                  </div>
+                </div>
+                <div class="text-right flex flex-col items-end gap-1">
+                  <span class="text-white font-bold text-base">₹${(b.total || 9000).toLocaleString()}</span>
+                  <span class="text-[9px] text-stone-400">Paid: ₹${adv} | Due: ₹${due}</span>
+                  <div class="flex gap-1.5 mt-2">
+                    <button onclick="openBookingForEditing('${b.id}')" class="text-[10px] bg-stone-800 text-stone-300 px-2 py-0.5 rounded border border-white/10 font-bold">✏️ Edit</button>
+                    <button onclick="triggerDeleteWorkflow('${b.id}')" class="text-[10px] bg-red-950/40 text-red-400 border border-red-900/30 px-2 py-0.5 rounded font-bold">🗑️ Clear</button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+        }).join(''); 
       }
       document.getElementById('cal-details').classList.remove('hidden');
     }
 
+    // --- REWRITE: AUTOMATED TIFFIN STATE INITIALIZATION LAYER (DEFAULT GIVEN) ---
     function renderTiffin() {
       const list = document.getElementById('tiffin-list'); const customers = Object.values(S.tifCustomers);
       if(customers.length === 0) { list.innerHTML = `<div class="text-center p-6 border border-white/5 rounded-3xl bg-black/20"><p class="text-stone-500 text-sm">No Customers yet. Tap '+' to create.</p></div>`; return; }
       list.innerHTML = customers.map(cust => `<div class="glass-card rounded-2xl overflow-hidden border-l-4 border-l-[#D4AF37]"><div class="bg-black/20 px-4 py-4 flex items-center justify-between border-b border-white/5"><div><span class="font-bold text-white text-xl block">${cust.name}</span></div><span class="text-xs font-bold text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1.5 rounded-md tracking-wider">₹${cust.rate}</span></div><div class="grid grid-cols-3 gap-2 p-3">${getTiffinStatusHTML(cust.id, 'b', 'Bkfst', '☀️')}${getTiffinStatusHTML(cust.id, 'l', 'Lunch', '🌤️')}${getTiffinStatusHTML(cust.id, 'd', 'Dinner', '🌙')}</div></div>`).join('');
     }
     function getTiffinStatusHTML(custId, mealKey, label, emoji) {
-      const status = (S.tifMeals[custId] && S.tifMeals[custId][mealKey]) || 'pending'; let cssClass = 'meal-pending'; let text = `${emoji} ${label}`;
+      // FIX: Default status set to 'given' to minimize everyday screen tapping actions
+      const status = (S.tifMeals[custId] && S.tifMeals[custId][mealKey]) || 'given'; 
+      let cssClass = 'meal-pending'; let text = `${emoji} ${label}`;
       if(status === 'given') { cssClass = 'meal-given'; text = `✅ ${label}`; } else if(status === 'skip') { cssClass = 'meal-skip'; text = `⛔ Skip`; }
       return `<button onclick="cycleMealStatus('${custId}', '${mealKey}')" class="py-4 rounded-xl flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${cssClass}"><span class="text-xs font-bold tracking-widest uppercase">${text}</span></button>`;
     }
-    function cycleMealStatus(custId, mealKey) { playSound('open'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, ''); const current = (S.tifMeals[custId] && S.tifMeals[custId][mealKey]) || 'pending'; let next = 'given'; if(current === 'given') next = 'skip'; else if(current === 'skip') next = 'pending'; firebase.database().ref(`tifMeals/${todayKey}/${custId}/${mealKey}`).set(next); }
+    function cycleMealStatus(custId, mealKey) { playSound('open'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, ''); const current = (S.tifMeals[custId] && S.tifMeals[custId][mealKey]) || 'given'; let next = 'given'; if(current === 'given') next = 'skip'; else if(current === 'skip') next = 'pending'; firebase.database().ref(`tifMeals/${todayKey}/${custId}/${mealKey}`).set(next); }
     function markAllTiffinGiven() { playSound('success'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, ''); const updates = {}; Object.values(S.tifCustomers).forEach(cust => { updates[`${cust.id}/b`] = 'given'; updates[`${cust.id}/l`] = 'given'; updates[`${cust.id}/d`] = 'given'; }); firebase.database().ref(`tifMeals/${todayKey}`).set(updates); }
     function quickAddTiffinCustomer() { const name = prompt("Customer Name:"); if(!name) return; const rate = prompt("Rate Per Meal (₹):", "60"); if(!rate) return; const id = 'tc_' + Date.now(); firebase.database().ref('tifCustomers/' + id).set({ id: id, name: name, rate: parseInt(rate), createdAt: Date.now() }); }
 
@@ -637,17 +821,21 @@
       Object.values(S.tifCustomers).forEach(c => { const nameKey = c.name.toLowerCase().trim(); if(!peopleMap[nameKey]) { peopleMap[nameKey] = { name: c.name, phone: '', type: 'Tiffin' }; } });
       const filtered = Object.values(peopleMap).filter(p => p.name.toLowerCase().includes(searchTerm));
       if(filtered.length === 0) { list.innerHTML = `<p class="text-stone-500 text-sm text-center">No records.</p>`; return; }
-      list.innerHTML = filtered.map(p => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-[#D4AF37]"><div><h4 class="text-white font-bold text-xl">${p.name}</h4><p class="text-[10px] text-stone-400 font-bold uppercase mt-1">${p.type}</p></div><div class="flex gap-2">${p.phone ? `<a href="tel:${p.phone}" class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">📞</a>` : ''}</div></div>`).join('');
+      list.innerHTML = filtered.map(p => {
+        const freq = getCustomerFrequencyCount(p.name);
+        return `<div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-[#D4AF37]"><div><div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl">${p.name}</h4><span class="text-[9px] bg-stone-800 text-[#D4AF37] px-2 py-0.5 rounded-full font-bold">Count: ${freq}</span></div><p class="text-[10px] text-stone-400 font-bold uppercase mt-1">${p.type} ${p.phone ? '• ' + p.phone : ''}</p></div><div class="flex gap-2">${p.phone ? `<a href="tel:${p.phone}" class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">📞</a>` : ''}</div></div>`;
+      }).join('');
     }
 
     function switchScreen(target) {
       document.querySelectorAll('.app-screen').forEach(scr => scr.classList.add('hidden')); document.getElementById('scr-' + target).classList.remove('hidden');
       document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-[#D4AF37]'); btn.classList.add('text-stone-500'); });
       document.getElementById('nav-' + target).classList.remove('text-stone-500'); document.getElementById('nav-' + target).classList.add('text-[#D4AF37]');
+      if(target === 'people') renderPeople();
     }
     
-    function setLang(lang) { S.currentLang = lang; }
-    function setService(type) { S.currentService = type; calculateLiveBalance(); }
+    function setLang(lang) { S.currentLang = lang; document.getElementById('btn-lang-te').className = lang==='te' ? "flex-1 py-3 text-sm font-bold rounded-lg bg-stone-700 text-white shadow-md":"flex-1 py-3 text-sm font-bold rounded-lg text-stone-500"; document.getElementById('btn-lang-kn').className = lang==='kn' ? "flex-1 py-3 text-sm font-bold rounded-lg bg-stone-700 text-white shadow-md":"flex-1 py-3 text-sm font-bold rounded-lg text-stone-500"; }
+    function setService(type) { S.currentService = type; document.getElementById('btn-regular').className = type==='regular' ? "flex-1 py-4 text-sm uppercase tracking-widest font-bold rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-md" : "flex-1 py-4 text-sm uppercase tracking-widest font-bold rounded-lg text-stone-500"; document.getElementById('btn-muthidya').className = type==='muthidya' ? "flex-1 py-4 text-sm uppercase tracking-widest font-bold rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-md" : "flex-1 py-4 text-sm uppercase tracking-widest font-bold rounded-lg text-stone-500"; if(!S.editingBookingId) { document.getElementById('f-custom-total').value = type==='regular' ? 9000 : 9500; } calculateLiveBalance(); }
     
     function toggleBookingSheet(show) {
       if(show) { playSound('open'); if(!document.getElementById('f-date').value) document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; checkFloorAllocation(); calculateLiveBalance(); }
@@ -661,10 +849,8 @@
     
     function updatePanchanga() {
       const info = getVedicDayInfo(new Date());
-      document.getElementById('ptithi').innerText = info.tithi; 
-      document.getElementById('ppaksha').innerText = info.paksha;
-      document.getElementById('pmasa').innerText = info.masa; 
-      document.getElementById('pnaksh').innerText = info.nakshatra;
+      document.getElementById('ptithi').innerText = info.tithi; document.getElementById('ppaksha').innerText = info.paksha;
+      document.getElementById('pmasa').innerText = info.masa; document.getElementById('pnaksh').innerText = info.nakshatra;
     }
   </script>
 </body>
