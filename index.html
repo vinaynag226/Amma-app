@@ -11,42 +11,40 @@
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #2A0808; color: #e7e5e4; }
     .glass-card { background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); border: 1px solid rgba(212, 175, 55, 0.15); }
-    .bottom-sheet { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+    .booking-sheet { position: fixed; bottom: 0; left: 0; width: 100%; height: 80vh; background: #1a0a0a; border-radius: 32px 32px 0 0; transform: translateY(100%); transition: transform 0.4s ease; z-index: 50; padding: 24px; border-top: 1px solid #D4AF37; }
     .sheet-open { transform: translateY(0); }
-    .premium-input { width: 100%; background: rgba(0,0,0,0.3); border-bottom: 2px solid #D4AF37; padding: 16px; color: white; font-size: 16px; }
+    .premium-input { width: 100%; background: rgba(0,0,0,0.3); border-bottom: 2px solid #D4AF37; padding: 16px; color: white; font-size: 16px; margin-bottom: 24px; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
-  <header class="p-5 border-b border-[#D4AF37]/20 flex justify-between items-center">
+  <header class="p-5 border-b border-[#D4AF37]/20">
     <h1 class="text-xl font-bold text-[#D4AF37]">Anantha Shree</h1>
   </header>
 
-  <main class="flex-1 overflow-y-auto px-5 pt-4 pb-[120px]" style="padding-bottom: max(120px, env(safe-area-inset-bottom));">
+  <main class="flex-1 overflow-y-auto px-5 pt-4 pb-32">
     <h2 class="text-center text-white py-4">Welcome Back, Ji</h2>
     <div class="glass-card p-6 rounded-3xl">
       <h3 class="text-xs uppercase text-[#D4AF37] mb-3">Quick Actions</h3>
-      <button onclick="toggleBookingSheet(true)" class="w-full bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] py-4 rounded-xl font-bold">New Booking</button>
+      <button onclick="toggleSheet(true)" class="w-full bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] py-4 rounded-xl font-bold">New Booking</button>
     </div>
 
     <!-- Booking Form -->
-    <div id="booking-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
-      <div id="sheet-content" class="bottom-sheet w-full h-[80vh] bg-[#1a0a0a] rounded-t-[32px] p-6 pointer-events-auto border-t border-[#D4AF37]/30">
-        <h2 class="text-2xl text-white mb-4">New Booking</h2>
-        <input type="text" id="f-name" placeholder="Customer Name" class="premium-input rounded-xl mb-6">
-        <button onclick="saveBookingToCloud()" class="w-full bg-[#D4AF37] text-black py-4 rounded-xl font-bold">Save</button>
-      </div>
+    <div id="booking-sheet" class="booking-sheet">
+      <h2 class="text-2xl text-white mb-4">New Booking</h2>
+      <input type="text" id="f-name" placeholder="Customer Name" class="premium-input">
+      <button onclick="saveBooking()" class="w-full bg-[#D4AF37] text-black py-4 rounded-xl font-bold">Save</button>
+      <button onclick="toggleSheet(false)" class="w-full mt-4 text-stone-500 py-2">Close</button>
     </div>
   </main>
 
   <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] glass-card rounded-full h-20 px-6 flex items-center justify-between z-40">
     <div class="text-[#D4AF37] text-xs">Home</div>
-    <button id="voice-mic-btn" onclick="startVoiceAssistant()" class="w-16 h-16 bg-teal-500 rounded-full text-white font-bold text-2xl shadow-lg">🎤</button>
+    <button onclick="startVoice()" class="w-16 h-16 bg-teal-500 rounded-full text-white font-bold text-2xl shadow-lg">🎤</button>
     <div class="text-stone-500 text-xs">People</div>
   </nav>
 
   <script>
-    // Firebase Config Integrated
     const firebaseConfig = { 
         apiKey: "AIzaSyCDzLnVOkLWSlbHi3nMzum2RsUOGT-529U", 
         authDomain: "ananthashree-ee68c.firebaseapp.com", 
@@ -60,32 +58,32 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function toggleBookingSheet(show) {
+    function toggleSheet(show) {
         document.getElementById('booking-sheet').classList.toggle('sheet-open', show);
     }
 
-    function startVoiceAssistant() {
+    function startVoice() {
       if ('webkitSpeechRecognition' in window) {
-        const recognition = new webkitSpeechRecognition();
-        recognition.lang = 'te-IN';
-        recognition.start();
-        recognition.onresult = (event) => {
-          const text = event.results[0][0].transcript.toLowerCase();
+        const rec = new webkitSpeechRecognition();
+        rec.lang = 'te-IN';
+        rec.start();
+        rec.onresult = (e) => {
+          const text = e.results[0][0].transcript.toLowerCase();
           if (text.includes('booking') || text.includes('బుకింగ్')) {
-            toggleBookingSheet(true);
-            const speech = new SpeechSynthesisUtterance("Booking form opened");
-            speech.lang = 'te-IN';
-            window.speechSynthesis.speak(speech);
+            toggleSheet(true);
+            const s = new SpeechSynthesisUtterance("Opening booking form");
+            s.lang = 'te-IN';
+            window.speechSynthesis.speak(s);
           }
         };
       }
     }
 
-    function saveBookingToCloud() {
+    function saveBooking() {
       const name = document.getElementById('f-name').value;
       if(name) {
           db.ref('bookings').push({ name: name, date: new Date().toISOString() });
-          toggleBookingSheet(false);
+          toggleSheet(false);
           document.getElementById('f-name').value = '';
       }
     }
