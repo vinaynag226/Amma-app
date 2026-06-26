@@ -65,7 +65,7 @@
     </div>
     <div class="flex items-center gap-2">
       <button onclick="toggleSettingsSheet(true)" class="p-2.5 text-stone-400 bg-white/5 border border-white/10 rounded-full text-base active:scale-90">⚙️</button>
-      <button onclick="toggleSahaayaMode()" id="mode-btn" class="glass-card px-4 py-2 rounded-full text-xs font-bold text-[#D4AF37] tracking-widest uppercase active:scale-95 flex items-center gap-2">
+      <button onclick="toggleSahaayaMode()" id="mode-btn" class="glass-card px-4 py-2 rounded-full text-xs font-bold text-[#D4AF37] tracking-widest uppercase active:scale-95 transition-all flex items-center gap-2">
         <span class="text-lg">👩‍👦</span> Sahaaya Mode
       </button>
     </div>
@@ -107,6 +107,15 @@
           <span class="text-2xl block mb-1">☀️</span>
           <span class="text-xs font-bold uppercase tracking-wider text-white">Add Meal Client</span>
         </div>
+      </div>
+
+      <!-- Today's Live Ceremonies List Box Overview -->
+      <div class="pt-2">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold uppercase tracking-widest text-[#D4AF37]/80">Today's Scheduled Events</h3>
+          <span class="text-xs bg-white/5 px-2 py-1 rounded-md text-stone-400" id="tod-count">0 Bookings</span>
+        </div>
+        <div id="tod-list" class="space-y-3"></div>
       </div>
     </div>
 
@@ -183,7 +192,7 @@
     🎤
   </button>
 
-  <!-- 5-Tab Dynamic Global Bottom Navigation Controls Frame -->
+  <!-- 5-Tab Navigation Framework controls line -->
   <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[96%] max-w-md glass-card rounded-full h-[74px] px-4 flex items-center justify-between z-40 bg-[#2A0808]">
     <button onclick="switchScreen('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-1 text-[#D4AF37] flex-1"><span class="text-lg">🏡</span><span class="text-[8px] font-bold uppercase tracking-tight">Home</span></button>
     <button onclick="switchScreen('bookings')" id="nav-bookings" class="nav-btn flex flex-col items-center gap-1 text-stone-500 flex-1"><span class="text-lg">📜</span><span class="text-[8px] font-bold uppercase tracking-tight">Bookings</span></button>
@@ -231,10 +240,10 @@
         <div class="space-y-3 bg-black/30 p-4 rounded-2xl border border-white/5">
           <label class="block text-xs uppercase text-[#D4AF37] font-bold tracking-widest mb-1">Assigned Operational Staff</label>
           <div class="space-y-3">
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Purohit (Default ₹1000)</span><div class="flex gap-2"><input type="text" id="f-staff-purohit" placeholder="Select Purohit" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-purohit')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 1 (Default ₹500)</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin1" placeholder="Select Brahmin 1" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-brahmin1')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 2 (Default ₹500)</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin2" placeholder="Select Brahmin 2" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-brahmin2')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
-            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Chef (Editable Fallback Max ₹2500)</span><div class="flex gap-2"><input type="text" id="f-staff-chef" placeholder="Select Chef" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-chef')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Purohit</span><div class="flex gap-2"><input type="text" id="f-staff-purohit" placeholder="Select Purohit" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-purohit')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 1</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin1" placeholder="Select Brahmin 1" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-brahmin1')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Brahmin Helper 2</span><div class="flex gap-2"><input type="text" id="f-staff-brahmin2" placeholder="Select Brahmin 2" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-brahmin2')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
+            <div><span class="text-[10px] text-stone-400 block font-bold mb-0.5">Chef (Fallback Limit Max ₹2500)</span><div class="flex gap-2"><input type="text" id="f-staff-chef" placeholder="Select Chef" class="premium-input py-1.5 text-sm flex-1"><button onclick="selectMobileContact('f-staff-chef')" class="bg-white/5 border border-white/10 px-4 rounded-xl">👤</button></div></div>
           </div>
         </div>
 
@@ -262,23 +271,31 @@
   <!-- DIALOG PANEL 2: CUSTOM MEAL CUSTOMER PROFILE CREATOR/EDITOR -->
   <div id="tiffin-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
     <div id="tiff-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-400 pointer-events-none" onclick="toggleTiffinSheet(false)"></div>
-    <div id="tiff-content" class="relative w-full h-[85vh] bg-[#1a0a0a] border-t border-emerald-500/40 rounded-t-[32px] flex flex-col bottom-sheet pointer-events-auto">
+    <div id="tiff-content" class="relative w-full h-[88vh] bg-[#1a0a0a] border-t border-emerald-500/40 rounded-t-[32px] flex flex-col bottom-sheet pointer-events-auto">
       <div class="w-full flex justify-center pt-3 pb-2"><div class="w-12 h-1.5 bg-emerald-500/30 rounded-full"></div></div>
       <div class="px-6 pb-3 border-b border-white/10 flex justify-between items-center">
         <div><h2 id="tiffin-sheet-title" class="text-2xl font-bold text-white font-serif tracking-wide">Add Meal Client</h2></div>
         <button onclick="toggleTiffinSheet(false)" class="text-stone-400 bg-white/5 p-3 rounded-full">✕</button>
       </div>
-      <div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+      <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Customer Full Name</label><input type="text" id="t-name" placeholder="Enter Name" class="premium-input rounded-xl py-2"></div>
-        <div><label class="block text-xs uppercase text-emerald-400 font-bold mb-1">Custom Base Rate Per Meal (₹)</label><input type="number" id="t-rate" value="60" class="premium-input rounded-xl py-2"></div>
+        
+        <!-- FIX: Split single generic rate into three separate editable pricing segments -->
+        <div class="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-3">
+          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Individual Meal Pricing Structures (₹)</label>
+          <div class="grid grid-cols-3 gap-2">
+            <div><span class="text-[9px] font-bold text-stone-400 block mb-1">Breakfast</span><input type="number" id="t-rate-b" value="60" class="premium-input py-2 text-center text-sm rounded-xl"></div>
+            <div><span class="text-[9px] font-bold text-stone-400 block mb-1">Lunch</span><input type="number" id="t-rate-l" value="90" class="premium-input py-2 text-center text-sm rounded-xl"></div>
+            <div><span class="text-[9px] font-bold text-stone-400 block mb-1">Dinner</span><input type="number" id="t-rate-d" value="90" class="premium-input py-2 text-center text-sm rounded-xl"></div>
+          </div>
+        </div>
         
         <div class="space-y-3 bg-black/30 p-4 rounded-2xl border border-white/5">
-          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Default Core Preferences Profile</label>
-          <p class="text-[10px] text-stone-500 font-medium">Unchecked meals will default to 'Skip' status automatically every day.</p>
+          <label class="block text-xs uppercase text-emerald-400 font-bold tracking-wider">Default Active Delivery Schedule Profile</label>
           <div class="space-y-2 pt-1">
-            <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-b" checked class="h-5 w-5 rounded accent-emerald-500"> Breakfast Active Profile</label>
-            <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-l" checked class="h-5 w-5 rounded accent-emerald-500"> Lunch Active Profile</label>
-            <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-d" checked class="h-5 w-5 rounded accent-emerald-500"> Dinner Active Profile</label>
+            <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-b" checked class="h-5 w-5 rounded accent-emerald-500"> Breakfast Active</label>
+            <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-l" checked class="h-5 w-5 rounded accent-emerald-500"> Lunch Active</label>
+            <label class="flex items-center gap-3 text-white font-bold"><input type="checkbox" id="t-pref-d" checked class="h-5 w-5 rounded accent-emerald-500"> Dinner Active</label>
           </div>
         </div>
       </div>
@@ -491,10 +508,12 @@
       });
     }
 
-    // --- REWRITE INTERFACE: TIFFIN ADVANCED SPECIFICATIONS FORM SYSTEMS ---
     function openTiffinModalForNew() {
       S.editingTiffinId = null; document.getElementById('tiffin-sheet-title').innerText = "Add Meal Client";
-      document.getElementById('t-name').value = ''; document.getElementById('t-rate').value = '60';
+      document.getElementById('t-name').value = ''; 
+      document.getElementById('t-rate-b').value = '60';
+      document.getElementById('t-rate-l').value = '90';
+      document.getElementById('t-rate-d').value = '90';
       document.getElementById('t-pref-b').checked = true; document.getElementById('t-pref-l').checked = true; document.getElementById('t-pref-d').checked = true;
       toggleTiffinSheet(true);
     }
@@ -504,7 +523,9 @@
       playSound('open'); S.editingTiffinId = custId;
       document.getElementById('tiffin-sheet-title').innerText = "Edit Meal Profile";
       document.getElementById('t-name').value = c.name || '';
-      document.getElementById('t-rate').value = c.rate || 60;
+      document.getElementById('t-rate-b').value = c.rateB || 60;
+      document.getElementById('t-rate-l').value = c.rateL || 90;
+      document.getElementById('t-rate-d').value = c.rateD || 90;
       document.getElementById('t-pref-b').checked = c.prefB !== false;
       document.getElementById('t-pref-l').checked = c.prefL !== false;
       document.getElementById('t-pref-d').checked = c.prefD !== false;
@@ -515,8 +536,13 @@
       const name = document.getElementById('t-name').value.trim(); if(!name) { alert("Please input name!"); return; }
       const id = S.editingTiffinId ? S.editingTiffinId : 'tc_' + Date.now();
       const profile = {
-        id: id, name: name, rate: parseInt(document.getElementById('t-rate').value) || 60,
-        prefB: document.getElementById('t-pref-b').checked, prefL: document.getElementById('t-pref-l').checked, prefD: document.getElementById('t-pref-d').checked,
+        id: id, name: name, 
+        rateB: parseInt(document.getElementById('t-rate-b').value) || 60,
+        rateL: parseInt(document.getElementById('t-rate-l').value) || 90,
+        rateD: parseInt(document.getElementById('t-rate-d').value) || 90,
+        prefB: document.getElementById('t-pref-b').checked, 
+        prefL: document.getElementById('t-pref-l').checked, 
+        prefD: document.getElementById('t-pref-d').checked,
         createdAt: Date.now()
       };
       firebase.database().ref('tifCustomers/' + id).set(profile).then(() => { playSound('success'); toggleTiffinSheet(false); S.editingTiffinId = null; });
@@ -556,25 +582,56 @@
       });
     }
 
+    // --- FIX: CORE BASE SNAPSHOT OVERHAUL (EXTRACT KEYS DIRECTLY AS SAFE PATHS) ---
     function renderHome() {
       let alertsHTML = ''; const hr = new Date().getHours();
       if(hr >= 19) {
         alertsHTML += `<div class="glass-card p-4 rounded-3xl border border-orange-500/40 bg-orange-950/20 flex items-center gap-3"><span class="text-2xl">🌙</span><div><p class="text-orange-400 font-bold text-sm">Amma, Tiffin Logs Check Reminder</p><p class="text-xs text-stone-400">Please check today's meals to make sure all Given/Skip values are accurate before bed!</p></div></div>`;
       }
+      const todayStr = new Date().toISOString().split('T')[0];
       const tomorrowStr = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0];
-      Object.values(S.bookings).filter(b => b.date === tomorrowStr).forEach(b => {
+      
+      const todaysEntries = Object.entries(S.bookings).filter(([k, b]) => b.date === todayStr);
+      const tomorrowsEntries = Object.entries(S.bookings).filter(([k, b]) => b.date === tomorrowStr);
+      
+      document.getElementById('tod-count').innerText = `${todaysEntries.length} Bookings`;
+      const list = document.getElementById('tod-list');
+      
+      if(todaysEntries.length === 0) { 
+        list.innerHTML = `<div class="text-center p-6 border border-white/5 rounded-3xl bg-black/20"><p class="text-stone-500 text-sm">No ceremonies scheduled for today.</p></div>`; 
+      } else { 
+        list.innerHTML = todaysEntries.map(([key, b]) => {
+          const bookingId = b.id || key; // Safe Key Fallback Engine Fix
+          const remainingBal = (b.total || 9000) - (b.advancePaid || 0);
+          return `
+            <div class="glass-card p-5 rounded-2xl border-l-4 border-l-[#D4AF37] flex justify-between items-center">
+              <div>
+                <h4 class="text-white font-bold text-xl leading-tight">${b.customerName}</h4>
+                <p class="text-xs text-[#D4AF37]/80 uppercase tracking-widest font-bold mt-0.5">${b.serviceType} • ${b.floor || 'First Floor'}</p>
+                <div class="text-[11px] text-stone-400 font-medium mt-1">Due Balance: <span class="text-orange-400 font-bold">₹${remainingBal}</span></div>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="openBookingForEditing('${bookingId}')" class="text-xs bg-stone-800 text-stone-300 px-3 py-1.5 rounded-xl font-bold">✏️ Edit</button>
+                <button onclick="triggerDeleteWorkflow('${bookingId}')" class="text-xs bg-red-950/40 text-red-400 px-3 py-1.5 rounded-xl font-bold">🗑️ Clear</button>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      tomorrowsEntries.forEach(([key, b]) => {
         alertsHTML += `<div class="glass-card p-5 rounded-3xl border border-emerald-500/30 bg-emerald-900/10 shadow-lg flex flex-col gap-3"><div><p class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-0.5">📅 Ceremony Tomorrow</p><h4 class="text-white font-bold text-lg">${b.customerName}</h4></div><button onclick="sendWhatsAppReminder('${b.customerName}', '${b.lang || 'te'}', '${b.phone || ''}')" class="bg-[#25D366]/20 text-[#25D366] py-2.5 rounded-xl text-xs font-bold">💬 Launch WhatsApp Reminder</button></div>`;
       });
       document.getElementById('amma-alerts').innerHTML = alertsHTML || `<p class="text-stone-500 text-xs text-center py-2">No pending dashboard alerts for today.</p>`;
     }
 
-    // --- RENDER REWRITE: SEPARATE BOOKINGS VIEW TAB LAYER ENGINE ---
     function renderBookings() {
-      const arr = Object.values(S.bookings).sort((a,b) => new Date(b.date) - new Date(a.date));
+      const arr = Object.entries(S.bookings).sort((a,b) => new Date(b[1].date) - new Date(a[1].date));
       document.getElementById('master-booking-count').innerText = `${arr.length} Registered`;
       const container = document.getElementById('master-bookings-list');
       if(arr.length === 0) { container.innerHTML = `<p class="text-stone-500 text-sm text-center py-8">No ceremony records saved in database.</p>`; return; }
-      container.innerHTML = arr.map(b => {
+      
+      container.innerHTML = arr.map(([key, b]) => {
+        const bookingId = b.id || key; // Safe Key Fallback Engine Fix
         const po = b.payouts || {}; const remainingBal = b.total - (b.advancePaid || 0);
         return `
           <div class="glass-card p-5 rounded-2xl border-l-4 border-l-[#D4AF37] space-y-4">
@@ -583,8 +640,8 @@
                 <div class="flex items-center gap-2"><h4 class="text-white font-bold text-xl">${b.customerName}</h4><span class="text-[9px] bg-stone-800 text-[#D4AF37] px-2 py-0.5 rounded-full font-bold">Orders: ${getCustomerFrequencyCount(b.customerName)}</span></div>
                 <p class="text-xs text-[#D4AF37]/90 font-bold mt-0.5 uppercase tracking-wider">${b.date} • ${b.floor || 'First Floor'}</p>
                 <div class="text-[11px] text-stone-400 font-medium space-y-0.5 pt-1.5">
-                  ${b.staffPurohit ? `<div>• <span class="text-stone-500">Purohit:</span> ${b.staffPurohit}</div>` : ''}
-                  ${b.staffChef ? `<div>• <span class="text-stone-500">Chef:</span> ${b.staffChef}</div>` : ''}
+                  ${b.staffPurohit ? `<div>• Purohit: ${b.staffPurohit}</div>` : ''}
+                  ${b.staffChef ? `<div>• Chef: ${b.staffChef}</div>` : ''}
                 </div>
                 ${b.specialInstructions ? `<p class="text-xs text-stone-400 bg-black/20 p-2 rounded-lg mt-2 italic">📝 ${b.specialInstructions}</p>` : ''}
               </div>
@@ -593,17 +650,17 @@
                 <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/30 px-2 rounded border border-emerald-500/20">Paid: ₹${b.advancePaid || 0}</span>
                 <span class="text-[9px] font-bold text-orange-400 bg-orange-950/30 px-2 rounded border border-orange-500/20">Due: ₹${remainingBal}</span>
                 <div class="flex gap-2 mt-2">
-                  <button onclick="openBookingForEditing('${b.id}')" class="text-[10px] bg-stone-800 px-2.5 py-1 rounded font-bold uppercase text-stone-300">✏️ Edit</button>
-                  <button onclick="triggerDeleteWorkflow('${b.id}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1 rounded font-bold uppercase text-red-400">🗑️ Clear</button>
+                  <button onclick="openBookingForEditing('${bookingId}')" class="text-[10px] bg-stone-800 px-2.5 py-1 rounded font-bold uppercase text-stone-300">✏️ Edit</button>
+                  <button onclick="triggerDeleteWorkflow('${bookingId}')" class="text-[10px] bg-red-950/40 border border-red-900/30 px-2.5 py-1 rounded font-bold uppercase text-red-400">🗑️ Clear</button>
                 </div>
               </div>
             </div>
             <div class="border-t border-white/5 pt-3">
               <div class="grid grid-cols-2 gap-2 text-xs">
-                <button onclick="toggleStaffPayment('${b.id}', 'purohit')" class="p-2 rounded-xl font-bold flex justify-between ${po.purohit === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Purohit</span> <span>₹${S.settings.ratePurohit}</span></button>
-                <button onclick="toggleStaffPayment('${b.id}', 'brahmin')" class="p-2 rounded-xl font-bold flex justify-between ${po.brahmin === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Brahmin</span> <span>₹${S.settings.rateBrahmin}</span></button>
-                <button onclick="toggleStaffPayment('${b.id}', 'chef')" class="p-2 rounded-xl font-bold flex justify-between ${po.chef === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Chef</span> <span>₹${S.settings.rateChef}</span></button>
-                <button onclick="toggleStaffPayment('${b.id}', 'maid')" class="p-2 rounded-xl font-bold flex justify-between ${po.maid === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Maid</span> <span>₹${S.settings.rateMaid}</span></button>
+                <button onclick="toggleStaffPayment('${bookingId}', 'purohit')" class="p-2 rounded-xl font-bold flex justify-between ${po.purohit === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Purohit</span> <span>₹${S.settings.ratePurohit}</span></button>
+                <button onclick="toggleStaffPayment('${bookingId}', 'brahmin')" class="p-2 rounded-xl font-bold flex justify-between ${po.brahmin === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Brahmin</span> <span>₹${S.settings.rateBrahmin}</span></button>
+                <button onclick="toggleStaffPayment('${bookingId}', 'chef')" class="p-2 rounded-xl font-bold flex justify-between ${po.chef === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Chef</span> <span>₹${S.settings.rateChef}</span></button>
+                <button onclick="toggleStaffPayment('${bookingId}', 'maid')" class="p-2 rounded-xl font-bold flex justify-between ${po.maid === 'paid' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/40' : 'bg-stone-900 text-stone-400'}"><span>Maid</span> <span>₹${S.settings.rateMaid}</span></button>
               </div>
             </div>
           </div>`;
@@ -623,7 +680,6 @@
         else if(vInfo.tithi === 'Amavasya') { sacredStyleClass = 'border border-stone-400 bg-stone-700/30 text-stone-400'; markerEmoji = '<span class="text-[8px] absolute top-0.5 right-1">🌑</span>'; }
         else if(vInfo.ti === 10) { sacredStyleClass = 'border border-orange-500/40 bg-orange-500/10 text-orange-300'; markerEmoji = '<span class="text-[7px] absolute top-0.5 right-1">🔸</span>'; }
         
-        // FIX: Active glowing lock border state layer calculation wrapper
         if (S.selectedDate === dateStr) sacredStyleClass = 'border-2 border-amber-400 shadow-[0_0_12px_#D4AF37] bg-amber-900/30 text-white scale-105';
         html += `<div onclick="selectDate('${dateStr}')" class="cal-day ${isToday && S.selectedDate!==dateStr ? 'today' : sacredStyleClass} ${isPast ? 'past' : ''} border text-xs relative font-bold">${d}${markerEmoji}${dotHTML}</div>`;
       }
@@ -634,51 +690,54 @@
     function selectDate(dateStr) {
       S.selectedDate = dateStr; renderCalendar();
       const parts = dateStr.split('-'); const dObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])); const v = getVedicDayInfo(dObj);
-      const bks = Object.values(S.bookings).filter(b => b.date === dateStr); document.getElementById('sel-date-lbl').innerText = `Selected Date: ${dateStr}`;
+      const bks = Object.entries(S.bookings).filter(([k, b]) => b.date === dateStr); document.getElementById('sel-date-lbl').innerText = `Selected Date: ${dateStr}`;
       const list = document.getElementById('sel-date-list');
       let headerVedicHTML = `<div class="p-4 bg-black/40 border border-[#D4AF37]/30 rounded-2xl text-xs space-y-1.5"><p class="text-[#D4AF37] uppercase tracking-widest font-bold text-[10px]">Panchanga Alignment</p><div class="grid grid-cols-2 gap-2 text-stone-300 font-semibold"><div>Masa: ${v.masa}</div><div>Paksha: ${v.paksha}</div><div>Tithi: ${v.tithi}</div><div>Nakshatra: ${v.nakshatra}</div></div></div>`;
       if(bks.length === 0) { list.innerHTML = headerVedicHTML + `<p class="text-stone-500 text-sm text-center py-3">No ceremonies registered.</p>`; } 
       else {
-        list.innerHTML = headerVedicHTML + bks.map(b => `
-          <div class="glass-card p-4 rounded-xl border border-white/10 flex justify-between items-center">
-            <div><h4 class="text-white font-bold text-base">${b.customerName}</h4><p class="text-xs text-[#D4AF37] font-bold uppercase mt-0.5">${b.serviceType} • ${b.floor || 'First Floor'}</p></div>
-            <div class="text-right flex flex-col items-end"><span class="text-white font-bold text-sm">₹${b.total.toLocaleString()}</span><button onclick="openBookingForEditing('${b.id}')" class="text-[10px] text-stone-400 font-bold uppercase mt-1">View/Edit ✏️</button></div>
-          </div>`).join('');
+        list.innerHTML = headerVedicHTML + bks.map(([key, b]) => {
+          const bookingId = b.id || key;
+          return `
+            <div class="glass-card p-4 rounded-xl border border-white/10 flex justify-between items-center">
+              <div><h4 class="text-white font-bold text-base">${b.customerName}</h4><p class="text-xs text-[#D4AF37] font-bold uppercase mt-0.5">${b.serviceType} • ${b.floor || 'First Floor'}</p></div>
+              <div class="text-right flex flex-col items-end"><span class="text-white font-bold text-sm">₹${b.total.toLocaleString()}</span><button onclick="openBookingForEditing('${bookingId}')" class="text-[10px] text-stone-400 font-bold uppercase mt-1">View/Edit ✏️</button></div>
+            </div>`;
+        }).join('');
       }
       document.getElementById('cal-details').classList.remove('hidden');
     }
 
-    // --- REWRITE INTERFACE: TIFFIN DYNAMIC LOGISTICS RENDERING ENGINE LAYER ---
     function renderTiffin() {
-      const list = document.getElementById('tiffin-list'); const customers = Object.values(S.tifCustomers);
+      const list = document.getElementById('tiffin-list'); const customers = Object.entries(S.tifCustomers);
       if(customers.length === 0) { list.innerHTML = `<div class="text-center p-6 border border-white/5 rounded-3xl bg-black/20"><p class="text-stone-500 text-sm">No meal subscribers. Tap '+' to create profile.</p></div>`; return; }
-      list.innerHTML = customers.map(cust => {
+      
+      list.innerHTML = customers.map(([key, cust]) => {
+        const custId = cust.id || key; // Safe Key Fallback Fix
         return `
           <div class="glass-card rounded-2xl overflow-hidden border-l-4 border-l-[#D4AF37]">
             <div class="bg-black/20 px-4 py-3 flex items-center justify-between border-b border-white/5">
               <div>
                 <span class="font-bold text-white text-xl block leading-tight">${cust.name}</span>
-                <span class="text-[9px] uppercase tracking-wider text-stone-400 font-bold">Meal Base Allocation: ₹${cust.rate || 60}</span>
+                <span class="text-[9px] uppercase tracking-wider text-stone-400 font-bold">Rates: B:₹${cust.rateB||60} | L:₹${cust.rateL||90} | D:₹${cust.rateD||90}</span>
               </div>
               <div class="flex gap-2">
-                <button onclick="openTiffinForEditing('${cust.id}')" class="text-xs bg-stone-800 text-stone-300 px-2.5 py-1 rounded font-bold border border-white/5">✏️ Profile</button>
-                <button onclick="triggerTiffinDelete('${cust.id}')" class="text-xs bg-red-950/20 text-red-400 px-2.5 py-1 rounded font-bold border border-red-900/20">🗑️</button>
+                <button onclick="openTiffinForEditing('${custId}')" class="text-xs bg-stone-800 text-stone-300 px-2.5 py-1 rounded font-bold border border-white/5">✏️ Profile</button>
+                <button onclick="triggerTiffinDelete('${custId}')" class="text-xs bg-red-950/20 text-red-400 px-2.5 py-1 rounded font-bold border border-red-900/20">🗑️</button>
               </div>
             </div>
             <div class="grid grid-cols-3 gap-2 p-3">
-              ${getTiffinStatusHTML(cust, 'b', 'Bkfst', '☀️')}
-              ${getTiffinStatusHTML(cust, 'l', 'Lunch', '🌤️')}
-              ${getTiffinStatusHTML(cust, 'd', 'Dinner', '🌙')}
+              ${getTiffinStatusHTML(cust, custId, 'b', 'Bkfst', '☀️')}
+              ${getTiffinStatusHTML(cust, custId, 'l', 'Lunch', '🌤️')}
+              ${getTiffinStatusHTML(cust, custId, 'd', 'Dinner', '🌙')}
             </div>
           </div>`;
       }).join('');
     }
 
-    function getTiffinStatusHTML(cust, mealKey, label, emoji) {
+    function getTiffinStatusHTML(cust, custId, mealKey, label, emoji) {
       const prefAllowed = cust[mealKey === 'b' ? 'prefB' : mealKey === 'l' ? 'prefL' : 'prefD'] !== false;
-      const dailyRecord = S.tifMeals[cust.id] && S.tifMeals[cust.id][mealKey];
+      const dailyRecord = S.tifMeals[custId] && S.tifMeals[custId][mealKey];
       
-      // Compute actual operational initial state based on custom preferences
       let status = dailyRecord ? dailyRecord.status : (prefAllowed ? 'given' : 'skip');
       let count = dailyRecord ? dailyRecord.count : 1;
       
@@ -688,8 +747,8 @@
       
       return `
         <div class="flex flex-col gap-1">
-          <button onclick="cycleMealStatus('${cust.id}', '${mealKey}', '${status}', ${count})" class="py-4 rounded-xl flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${cssClass}"><span class="text-xs font-bold tracking-widest uppercase">${text}</span></button>
-          ${status === 'given' ? `<div class="flex justify-between bg-black/40 rounded-lg p-0.5 border border-white/5 text-[10px] font-bold"><button onclick="adjustGuestCount('${cust.id}','${mealKey}',-1,${count})" class="px-2 text-stone-400">-</button><span class="text-stone-300">Guests</span><button onclick="adjustGuestCount('${cust.id}','${mealKey}',1,${count})" class="px-2 text-emerald-400">+</button></div>` : ''}
+          <button onclick="cycleMealStatus('${custId}', '${mealKey}', '${status}', ${count})" class="py-4 rounded-xl flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${cssClass}"><span class="text-xs font-bold tracking-widest uppercase">${text}</span></button>
+          ${status === 'given' ? `<div class="flex justify-between bg-black/40 rounded-lg p-0.5 border border-white/5 text-[10px] font-bold"><button onclick="adjustGuestCount('${custId}','${mealKey}',-1,${count})" class="px-2 text-stone-400">-</button><span class="text-stone-300">Guests</span><button onclick="adjustGuestCount('${custId}','${mealKey}',1,${count})" class="px-2 text-emerald-400">+</button></div>` : ''}
         </div>`;
     }
 
@@ -707,10 +766,11 @@
 
     function markAllTiffinGiven() {
       playSound('success'); const todayKey = new Date().toISOString().split('T')[0].replace(/-/g, ''); const updates = {};
-      Object.values(S.tifCustomers).forEach(c => {
-        updates[`${c.id}/b`] = { status: c.prefB!==false?'given':'skip', count: 1 };
-        updates[`${c.id}/l`] = { status: c.prefL!==false?'given':'skip', count: 1 };
-        updates[`${c.id}/d`] = { status: c.prefD!==false?'given':'skip', count: 1 };
+      Object.entries(S.tifCustomers).forEach(([key, c]) => {
+        const custId = c.id || key;
+        updates[`${custId}/b`] = { status: c.prefB!==false?'given':'skip', count: 1 };
+        updates[`${custId}/l`] = { status: c.prefL!==false?'given':'skip', count: 1 };
+        updates[`${custId}/d`] = { status: c.prefD!==false?'given':'skip', count: 1 };
       });
       firebase.database().ref(`tifMeals/${todayKey}`).set(updates);
     }
