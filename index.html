@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>Anantha Shree Pro Enterprise</title>
+
+<!-- ============ PWA META ============ -->
+<meta name="theme-color" content="#2A070B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Anantha Shree" />
+
+<!-- ============ FONTS ============ -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- ============ TAILWIND (CDN) ============ -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          maroon:  { 950:'#1C0407', 900:'#2A070B', 800:'#3D0C11', 700:'#521218', 600:'#6B1A21' },
+          gold:    { 500:'#D4A94A', 400:'#E2BE6C', 300:'#EFD9A7', 600:'#B08A2E' },
+          cream:   '#F5E9D3',
+          creamdim:'#CBB894',
+          saffron: '#E8853D'
+        },
+        fontFamily: {
+          display: ['Marcellus','serif'],
+          body:    ['Mukta','sans-serif']
+        }
+      }
+    }
+  };
+</script>
+
+<!-- ============ FIREBASE v9 COMPAT (CDN) ============ -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+  /* ---------- Base ---------- */
+  html, body { height: 100%; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: #2A070B;
+    background-image:
+      radial-gradient(1200px 500px at 50% -180px, rgba(212,169,74,0.10), transparent 60%),
+      radial-gradient(900px 600px at 50% 110%, rgba(82,18,24,0.55), transparent 65%);
+    color: #F5E9D3;
+    font-family: 'Mukta', sans-serif;
+    font-size: 17px;
+  }
+
+  /* ---------- Signature: gold rangoli hairline ---------- */
+  .rangoli {
+    height: 7px;
+    background-image: repeating-linear-gradient(45deg, transparent 0 4px, #B08A2E 4px 5px),
+                      repeating-linear-gradient(-45deg, transparent 0 4px, #B08A2E 4px 5px);
+    opacity: .55;
+  }
+
+  /* ---------- Gold engraved title ---------- */
+  .engrave {
+    background: linear-gradient(180deg, #EFD9A7 0%, #D4A94A 55%, #B08A2E 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    letter-spacing: .06em;
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: linear-gradient(180deg, rgba(61,12,17,.92), rgba(42,7,11,.92));
+    border: 1px solid rgba(212,169,74,.28);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  }
+  .card-alert { border-color: rgba(232,133,61,.7); }
+  .card-danger { border-color: rgba(194,84,80,.85); }
+
+  /* ---------- Inputs ---------- */
+  .inp {
+    width: 100%; background: rgba(28,4,7,.75); color: #F5E9D3;
+    border: 1px solid rgba(212,169,74,.35); border-radius: 10px;
+    padding: 10px 12px; font-size: 16px;
+  }
+  .inp:focus { outline: 2px solid #E2BE6C; outline-offset: 1px; }
+  select.inp { appearance: none; }
+  .btn-gold {
+    background: linear-gradient(180deg, #E2BE6C, #B08A2E); color: #2A070B;
+    font-weight: 700; border-radius: 10px; padding: 11px 14px; font-size: 16px;
+  }
+  .btn-line {
+    border: 1px solid rgba(212,169,74,.5); color: #E2BE6C;
+    border-radius: 10px; padding: 10px 14px; font-size: 15px;
+  }
+
+  /* ---------- Chips (checklist / staff assign) ---------- */
+  .chip {
+    display: inline-block; padding: 7px 12px; margin: 0 6px 6px 0;
+    border-radius: 999px; font-size: 13.5px; font-weight: 600;
+    border: 1px solid rgba(212,169,74,.35); color: #CBB894; background: rgba(28,4,7,.6);
+  }
+  .chip.on { background: linear-gradient(180deg,#3F6B3F,#2C4E2C); color: #DFF3DF; border-color: #6FA06F; }
+
+  /* ---------- Meal segmented toggles ---------- */
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .seg button {
+    padding: 9px 0; font-size: 14px; font-weight: 600; border-radius: 9px;
+    border: 1px solid rgba(212,169,74,.28); color: #CBB894; background: rgba(28,4,7,.6);
+  }
+  .seg button.on-given   { background: linear-gradient(180deg,#3F6B3F,#2C4E2C); color: #DFF3DF; border-color: #6FA06F; }
+  .seg button.on-pending { background: linear-gradient(180deg,#6B5A1A,#4E4212); color: #F3EBC9; border-color: #B08A2E; }
+  .seg button.on-skip    { background: linear-gradient(180deg,#6B2020,#4E1616); color: #F3D5D5; border-color: #C25450; }
+
+  .stepbtn {
+    width: 38px; height: 38px; border-radius: 10px; font-size: 20px; font-weight: 700;
+    border: 1px solid rgba(212,169,74,.45); color: #E2BE6C; background: rgba(28,4,7,.6);
+  }
+
+  /* ---------- Bottom nav ---------- */
+  .navtab { color: #CBB894; transition: color .15s ease, transform .15s ease; }
+  .navtab.active { color: #E2BE6C; }
+  .navtab.active .navdot { opacity: 1; transform: scaleX(1); }
+  .navdot {
+    height: 3px; width: 26px; margin: 3px auto 0; border-radius: 2px;
+    background: linear-gradient(90deg, #B08A2E, #EFD9A7, #B08A2E);
+    opacity: 0; transform: scaleX(.3); transition: all .2s ease;
+  }
+
+  /* ---------- Sahaaya mic ---------- */
+  .mic-ring { animation: micpulse 2.6s ease-out infinite; }
+  @keyframes micpulse {
+    0%   { box-shadow: 0 0 0 0 rgba(212,169,74,.45); }
+    70%  { box-shadow: 0 0 0 16px rgba(212,169,74,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,169,74,0); }
+  }
+  #btn-sahaaya.listening {
+    background: linear-gradient(180deg, #E8853D, #C25E1F) !important;
+    animation: micpulse 1s ease-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mic-ring, #btn-sahaaya.listening { animation: none; }
+    .navtab, .navdot { transition: none; }
+  }
+
+  /* ---------- Heard ribbon ---------- */
+  #ribbon {
+    max-height: 0; overflow: hidden; transition: max-height .25s ease;
+    background: linear-gradient(90deg, rgba(176,138,46,.25), rgba(232,133,61,.22), rgba(176,138,46,.25));
+    border-top: 1px solid rgba(212,169,74,.3);
+  }
+  #ribbon.show { max-height: 60px; }
+
+  /* ---------- Connection dot ---------- */
+  .dot { width: 10px; height: 10px; border-radius: 9999px; }
+  .dot.on  { background: #7BC47F; box-shadow: 0 0 8px rgba(123,196,127,.8); }
+  .dot.off { background: #C25450; box-shadow: 0 0 8px rgba(194,84,80,.8); }
+
+  /* ---------- Toast ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: 108px; transform: translateX(-50%) translateY(20px);
+    opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 90;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- Modal ---------- */
+  .modal-bg { background: rgba(12,2,4,.8); backdrop-filter: blur(3px); }
+
+  /* ---------- Receipt ---------- */
+  .receipt {
+    background: linear-gradient(180deg, #FBF4E4, #F1E4C6); color: #3D2A10;
+    border-radius: 14px; border: 1px solid #B08A2E;
+  }
+  .receipt .rule { border-top: 1.5px dashed #B08A2E; }
+
+  /* ---------- Capacity bar ---------- */
+  .capbar { height: 10px; border-radius: 999px; background: rgba(28,4,7,.7); overflow: hidden; border: 1px solid rgba(212,169,74,.3); }
+  .capbar > div { height: 100%; border-radius: 999px; }
+
+  button:focus-visible { outline: 2px solid #E2BE6C; outline-offset: 2px; }
+  .pad-safe-b { padding-bottom: calc(env(safe-area-inset-bottom, 0px)); }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ==================================================== -->
+<!-- HEADER                                               -->
+<!-- ==================================================== -->
+<header class="sticky top-0 z-40">
+  <div class="bg-maroon-950/95 backdrop-blur px-4 pt-3 pb-2 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+        <path d="M17 4 C17 4 13 9 13 12 A4 4 0 0 0 21 12 C21 9 17 4 17 4 Z" fill="#E8853D"/>
+        <path d="M5 20 Q17 28 29 20 Q27 27 17 27 Q7 27 5 20 Z" fill="#D4A94A"/>
+        <ellipse cx="17" cy="20" rx="12" ry="2.4" fill="#B08A2E"/>
+      </svg>
+      <div>
+        <h1 class="font-display text-[22px] leading-none engrave">Anantha Shree</h1>
+        <p id="hdr-sub" class="text-creamdim text-[12px] leading-tight mt-0.5">Pro Enterprise</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 pr-1" aria-live="polite">
+      <span id="conn-dot" class="dot off" aria-hidden="true"></span>
+      <span id="conn-txt" class="text-[12px] text-creamdim">Connecting…</span>
+    </div>
+  </div>
+
+  <!-- Sahaaya "Heard" ribbon -->
+  <div id="ribbon" aria-live="polite">
+    <p id="ribbon-txt" class="px-4 py-2 text-[15px] text-cream truncate">🗣️ Heard: …</p>
+  </div>
+
+  <div class="rangoli"></div>
+</header>
+
+<!-- ==================================================== -->
+<!-- VIEWPORTS                                            -->
+<!-- ==================================================== -->
+<main id="app" class="max-w-md mx-auto px-4 pt-4 pb-32">
+
+  <!-- 1 ▸ HOME -->
+  <section id="view-home" data-view="home">
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Today's Panchanga</h2>
+    <div id="pn-card" class="card p-5">
+      <p class="text-creamdim text-sm">Calculating…</p>
+    </div>
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Pitru Tithi Alerts · Next 30 Days</h2>
+    <div id="pitru-alerts">
+      <div class="card p-4 text-center text-creamdim text-sm">
+        No Pitru anniversaries in the next 30 days. Add family Tithis in the Ledger tab.
+      </div>
+    </div>
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Today's Events</h2>
+    <div id="today-events">
+      <div class="card p-4 text-center text-creamdim text-sm">No ceremonies booked for today.</div>
+    </div>
+
+  </section>
+
+  <!-- 2 ▸ LOG (Ceremonies & Catering) -->
+  <section id="view-log" data-view="log" class="hidden">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-display text-gold-400 text-lg tracking-wide">Ceremonies</h2>
+      <button class="btn-line" onclick="openBooking()">+ New booking</button>
+    </div>
+
+    <!-- Grocery Calculator -->
+    <div class="card p-4 mb-4">
+      <p class="text-gold-300 font-semibold mb-1">Grocery Calculator <span class="text-creamdim font-normal text-[12px]">· 15% protective margin</span></p>
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <input id="gc-head" class="inp" type="number" min="1" placeholder="Headcount" />
+        <input id="gc-date" class="inp" type="date" />
+      </div>
+      <button class="btn-gold w-full" onclick="runGrocery()">Calculate raw materials</button>
+      <div id="gc-out" class="mt-3 hidden"></div>
+    </div>
+
+    <div id="log-list"></div>
+  </section>
+
+  <!-- 3 ▸ LEDGER -->
+  <section id="view-ledger" data-view="ledger" class="hidden">
+
+    <!-- ===== 3-TIER MASTER P&L ===== -->
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Master P&amp;L</h2>
+    <div class="card p-4 mb-2 flex items-center gap-2">
+      <span class="text-creamdim text-[14px] shrink-0">Month:</span>
+      <input id="pnl-month" type="month" class="inp" onchange="renderPnl()" />
+    </div>
+    <div id="pnl-out" class="mb-6"></div>
+
+    <!-- ===== CONFLICT RADAR ===== -->
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Conflict Radar</h2>
+    <div class="card p-4 mb-2 flex items-center gap-2">
+      <span class="text-creamdim text-[14px] shrink-0">Date:</span>
+      <input id="cr-date" type="date" class="inp" onchange="renderRadar()" />
+    </div>
+    <div id="cr-out" class="mb-6"></div>
+
+    <!-- ===== DATE CONVERTER ===== -->
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Date Converter</h2>
+
+    <div class="card p-4 mb-4">
+      <p class="text-gold-300 font-semibold mb-2">Gregorian → Vedic</p>
+      <div class="flex gap-2">
+        <input id="g2v-date" type="date" class="inp flex-1" />
+        <button class="btn-gold shrink-0" onclick="doG2V()">Convert</button>
+      </div>
+      <div id="g2v-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
+    </div>
+
+    <div class="card p-4 mb-4">
+      <p class="text-gold-300 font-semibold mb-2">Vedic → Gregorian</p>
+      <div class="grid grid-cols-2 gap-2">
+        <select id="v2g-masa" class="inp"></select>
+        <select id="v2g-paksha" class="inp">
+          <option value="0">Shukla Paksha</option>
+          <option value="1">Krishna Paksha</option>
+        </select>
+        <select id="v2g-tithi" class="inp"></select>
+        <input id="v2g-year" type="number" class="inp" min="1990" max="2099" />
+      </div>
+      <button class="btn-gold w-full mt-2" onclick="doV2G()">Find date</button>
+      <div id="v2g-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
+    </div>
+
+    <!-- ===== PITRU REGISTRY ===== -->
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Pitru Tithi Register</h2>
+    <div class="card p-4 mb-4">
+      <input id="pt-name" class="inp mb-2" placeholder="Name (e.g. Father — Ramaiah garu)" />
+      <div class="grid grid-cols-3 gap-2">
+        <select id="pt-masa" class="inp"></select>
+        <select id="pt-paksha" class="inp">
+          <option value="0">Shukla</option>
+          <option value="1">Krishna</option>
+        </select>
+        <select id="pt-tithi" class="inp"></select>
+      </div>
+      <button class="btn-gold w-full mt-2" onclick="addPitru()">Add to register</button>
+    </div>
+    <div id="pitru-list"></div>
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Recent Expenses</h2>
+    <div id="exp-recent"></div>
+  </section>
+
+  <!-- 4 ▸ TIFFIN -->
+  <section id="view-tiffin" data-view="tiffin" class="hidden">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-display text-gold-400 text-lg tracking-wide">Tiffin Hub</h2>
+      <button class="btn-line" onclick="openTClient()">+ Add client</button>
+    </div>
+
+    <div class="card p-3 mb-4 flex items-center justify-between">
+      <button class="stepbtn" onclick="shiftTiffinDate(-1)" aria-label="Previous day">‹</button>
+      <div class="text-center">
+        <p id="tf-date-label" class="text-cream font-semibold text-[16px]"></p>
+        <button class="text-gold-300 text-[13px] underline" onclick="setTiffinToday()">Jump to today</button>
+      </div>
+      <button class="stepbtn" onclick="shiftTiffinDate(1)" aria-label="Next day">›</button>
+    </div>
+
+    <div id="tiffin-list"></div>
+  </section>
+
+  <!-- 5 ▸ SETUP -->
+  <section id="view-setup" data-view="setup" class="hidden">
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Staff Registry</h2>
+    <div class="card p-4 mb-3">
+      <input id="st-name" class="inp mb-2" placeholder="Name" />
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <select id="st-role" class="inp">
+          <option>Purohit</option><option>Chef</option><option>Helper</option>
+          <option>Server</option><option>Cleaner</option><option>Driver</option>
+        </select>
+        <input id="st-wage" class="inp" type="number" min="0" placeholder="Wage ₹/day" />
+      </div>
+      <input id="st-phone" class="inp mb-2" type="tel" placeholder="Phone (WhatsApp)" />
+      <button class="btn-gold w-full" onclick="addStaff()">Add to registry</button>
+    </div>
+    <div id="staff-list" class="mb-6"></div>
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Live Market Rate Book</h2>
+    <p class="text-creamdim text-[13px] mb-2">Update today's prices — the grocery calculator and costings use these live rates.</p>
+    <div id="rate-list" class="mb-3"></div>
+    <div class="card p-4 mb-6">
+      <p class="text-gold-300 font-semibold mb-2 text-[15px]">Add a custom item</p>
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <input id="rt-name" class="inp" placeholder="Item (e.g. Jaggery)" />
+        <input id="rt-unit" class="inp" placeholder="Unit (per kg)" />
+      </div>
+      <div class="flex gap-2">
+        <input id="rt-price" class="inp flex-1" type="number" min="0" step="0.5" placeholder="Price ₹" />
+        <button class="btn-gold shrink-0" onclick="addRate()">Add</button>
+      </div>
+    </div>
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Database Backup</h2>
+    <div class="card p-4">
+      <button class="btn-gold w-full mb-2" onclick="exportJSON()">⬇ Export full backup (JSON)</button>
+      <button class="btn-line w-full" onclick="document.getElementById('imp-file').click()">⬆ Import backup (JSON)</button>
+      <input id="imp-file" type="file" accept=".json,application/json" class="hidden" onchange="importJSON(this)" />
+      <p class="text-creamdim text-[12px] mt-3 leading-snug">
+        Export saves everything — bookings, expenses, tiffins, staff, rates and Pitru register — as one file.
+        Import merges a backup into the database using update(); existing records with the same IDs are overwritten, nothing else is wiped.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================================================== -->
+<!-- BOOKING MODAL                                        -->
+<!-- ==================================================== -->
+<div id="modal-booking" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
+  <div class="card w-full max-w-md m-3 p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-display text-gold-400 text-lg">New Booking</h3>
+      <button class="text-creamdim text-2xl leading-none px-2" onclick="closeBooking()" aria-label="Close">×</button>
+    </div>
+
+    <div class="flex gap-2 mb-2">
+      <input id="bk-client" class="inp flex-1" placeholder="Client name" />
+      <button class="btn-line shrink-0" onclick="pickContact()" title="Pick from Contacts">📇</button>
+    </div>
+    <input id="bk-phone" class="inp mb-2" type="tel" placeholder="Phone (WhatsApp)" />
+
+    <div class="grid grid-cols-2 gap-2 mb-2">
+      <input id="bk-date" class="inp" type="date" />
+      <input id="bk-guests" class="inp" type="number" min="0" placeholder="Headcount" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 mb-2">
+      <select id="bk-type" class="inp">
+        <option>Upanayana</option><option>Wedding</option><option>Gruhapravesham</option>
+        <option>Satyanarayana Vratam</option><option>Shraddha / Pitru Karya</option>
+        <option>Birthday</option><option>Corporate</option><option>Other</option>
+      </select>
+      <select id="bk-service" class="inp">
+        <option value="ceremony">Ceremony + Catering</option>
+        <option value="catering">Catering only</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 mb-2">
+      <select id="bk-package" class="inp" onchange="updateBkTotal()">
+        <option value="regular">Regular — ₹9,000</option>
+        <option value="muthidya">Muthidya — ₹9,500</option>
+      </select>
+      <select id="bk-floor" class="inp">
+        <option value="ground">Ground Floor</option>
+        <option value="first">First Floor</option>
+      </select>
+    </div>
+
+    <div class="flex items-center gap-3 mb-2">
+      <span class="text-creamdim text-[14px] flex-1">Extra plates <span class="text-[12px]">(+₹250 each)</span></span>
+      <button class="stepbtn" onclick="stepExtra(-1)" aria-label="Fewer extra plates">−</button>
+      <input id="bk-extra" class="inp !w-16 text-center" type="number" min="0" value="0" onchange="updateBkTotal()" />
+      <button class="stepbtn" onclick="stepExtra(1)" aria-label="More extra plates">+</button>
+    </div>
+
+    <input id="bk-advance" class="inp mb-2" type="number" min="0" placeholder="Advance received (₹)" onchange="updateBkTotal()" />
+
+    <div class="bg-maroon-950/60 rounded-lg p-3 mb-3">
+      <p id="bk-total-line" class="text-gold-300 font-bold text-[17px]">Total: ₹9,000</p>
+      <p id="bk-balance-line" class="text-creamdim text-[13px]">Balance after advance: ₹9,000</p>
+    </div>
+
+    <button class="btn-gold w-full" onclick="saveBooking()">Save booking</button>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- TIFFIN CLIENT MODAL                                  -->
+<!-- ==================================================== -->
+<div id="modal-tclient" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card w-full max-w-md m-3 p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-display text-gold-400 text-lg">New Tiffin Client</h3>
+      <button class="text-creamdim text-2xl leading-none px-2" onclick="closeTClient()" aria-label="Close">×</button>
+    </div>
+    <input id="tc-name" class="inp mb-2" placeholder="Client / family name" />
+    <input id="tc-phone" class="inp mb-2" type="tel" placeholder="Phone (WhatsApp)" />
+    <p class="text-creamdim text-[13px] mb-1">Rate per meal (₹)</p>
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      <input id="tc-rb" class="inp" type="number" min="0" placeholder="B'fast" />
+      <input id="tc-rl" class="inp" type="number" min="0" placeholder="Lunch" />
+      <input id="tc-rd" class="inp" type="number" min="0" placeholder="Dinner" />
+    </div>
+    <button class="btn-gold w-full" onclick="saveTClient()">Save client</button>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- RECEIPT MODAL                                        -->
+<!-- ==================================================== -->
+<div id="modal-receipt" class="hidden fixed inset-0 z-[75] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
+  <div class="w-full max-w-md m-3">
+    <div class="flex justify-end mb-2">
+      <button class="btn-line bg-maroon-950/90" onclick="closeReceipt()">Close ×</button>
+    </div>
+    <div class="card p-3 mb-2 flex items-center gap-2">
+      <span class="text-creamdim text-[14px] shrink-0">Bill month:</span>
+      <input id="rc-month" type="month" class="inp" onchange="refreshReceipt()" />
+    </div>
+    <div id="rc-body" class="receipt p-5"></div>
+    <button id="rc-wa" class="btn-gold w-full mt-3 flex items-center justify-center gap-2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.66 15L2 22l5.16-1.32A10 10 0 1 0 12 2Zm5.47 14.11c-.23.65-1.34 1.24-1.85 1.28-.5.05-.97.24-3.27-.68-2.77-1.1-4.53-3.93-4.67-4.11-.13-.18-1.11-1.48-1.11-2.83 0-1.34.7-2 .95-2.28.25-.27.55-.34.73-.34l.52.01c.17 0 .4-.06.62.48.23.55.78 1.9.85 2.04.07.14.11.3.02.48-.09.18-.14.29-.27.45l-.41.48c-.13.13-.27.28-.12.55.16.27.7 1.16 1.5 1.87 1.03.92 1.9 1.2 2.17 1.34.27.13.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.23.6-.14.25.09 1.58.75 1.85.88.27.14.45.2.52.32.06.11.06.65-.17 1.3Z"/></svg>
+      Send on WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- SAHAAYA MIC + LANGUAGE CHIP                          -->
+<!-- ==================================================== -->
+<button id="chip-lang" class="fixed right-5 bottom-[172px] z-50 btn-line bg-maroon-950/90 text-[13px] px-3 py-1.5"
+        aria-label="Toggle voice language">తెలుగు</button>
+
+<button id="btn-sahaaya" aria-label="Sahaaya voice assistant"
+  class="mic-ring fixed right-4 bottom-24 z-50 w-16 h-16 rounded-full
+         bg-gradient-to-b from-gold-400 to-gold-600 text-maroon-900
+         flex items-center justify-center shadow-xl active:scale-95 transition-transform">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Z"/>
+    <path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V22h2v-2.06A9 9 0 0 0 21 11h-2Z"/>
+  </svg>
+</button>
+
+<!-- ==================================================== -->
+<!-- BOTTOM NAVIGATION                                    -->
+<!-- ==================================================== -->
+<nav class="fixed bottom-0 inset-x-0 z-40">
+  <div class="rangoli"></div>
+  <div class="bg-maroon-950/97 backdrop-blur pad-safe-b">
+    <div class="max-w-md mx-auto grid grid-cols-5">
+
+      <button class="navtab active py-2.5" data-nav="home" aria-label="Home">
+        <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>
+        </svg>
+        <span class="block text-[12px] font-medium">Home</span>
+        <span class="navdot"></span>
+      </button>
+
+      <button class="navtab py-2.5" data-nav="log" aria-label="Ceremony log">
+        <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M7 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M9 8h6M9 12h6M9 16h4"/>
+        </svg>
+        <span class="block text-[12px] font-medium">Log</span>
+        <span class="navdot"></span>
+      </button>
+
+      <button class="navtab py-2.5" data-nav="ledger" aria-label="Ledger">
+        <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v18"/><path d="M5 6h14"/><path d="M5 6 3 11a3 3 0 0 0 6 0L7 6"/><path d="M15 6l-2 5a3 3 0 0 0 6 0l-2-5"/>
+        </svg>
+        <span class="block text-[12px] font-medium">Ledger</span>
+        <span class="navdot"></span>
+      </button>
+
+      <button class="navtab py-2.5" data-nav="tiffin" aria-label="Tiffin">
+        <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 12h16"/><path d="M5 12a7 7 0 0 1 14 0"/><path d="M6 12c0 3.5 2.4 6 6 6s6-2.5 6-6"/><path d="M12 3v2"/>
+        </svg>
+        <span class="block text-[12px] font-medium">Tiffin</span>
+        <span class="navdot"></span>
+      </button>
+
+      <button class="navtab py-2.5" data-nav="setup" aria-label="Setup">
+        <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.51 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.3.62.92 1 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/>
+        </svg>
+        <span class="block text-[12px] font-medium">Setup</span>
+        <span class="navdot"></span>
+      </button>
+
+    </div>
+  </div>
+</nav>
+
+<!-- ==================================================== -->
+<!-- TOAST                                                -->
+<!-- ==================================================== -->
+<div id="toast" class="card px-4 py-2 text-sm text-cream"></div>
+
+<!-- ==================================================== -->
+<!-- APP SCRIPT                                           -->
+<!-- ==================================================== -->
+<script>
+/* =====================================================
+   ANANTHA SHREE PRO ENTERPRISE — STAGE 4 (FINAL)
+   Stage 1 core · Stage 2 Voice/Panchanga · Stage 3 Tiffin/Setup
+   + Booking pricing engine · Grocery calculator
+   + 3-Tier Master P&L · Conflict radars
+   ===================================================== */
+
+/* ---------- Firebase init ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCDzLnVOkLWSlbHi3nMzum2RsUOGT-529U",
+  authDomain: "ananthashree-ee68c.firebaseapp.com",
+  databaseURL: "https://ananthashree-ee68c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ananthashree-ee68c",
+  storageBucket: "ananthashree-ee68c.firebasestorage.app",
+  appId: "1:554778775618:web:2f5fee9075dc45034adddb"
+};
+firebase.initializeApp(firebaseConfig);
+
+/* ---------- Global state ---------- */
+const S = {
+  view: 'home',
+  db:   firebase.database(),
+  online: false,
+  voiceLang: 'te-IN',
+  listening: false,
+  rec: null,
+  pn30: [],
+  tiffinDate: null,
+  billClient: null,
+  cache: {
+    events:    {},   // /events/{id}
+    expenses:  {},   // /expenses/{id}
+    tiffin:    {},   // /tiffin/{clientId}
+    tiffinlog: {},   // /tiffinlog/{clientId}/{YYYY-MM-DD}
+    staff:     {},   // /staff/{id}
+    rates:     {},   // /rates/{id}
+    pitru:     {},   // /pitru/{id}
+    pnl:       {},   // /pnl/{YYYY-MM}  = { overheads, concessions }
+    settings:  {}    // /settings      = { venue: { ground, first } }
+  },
+  listeners: []
+};
+
+/* ---------- Pricing constants ---------- */
+const PKG = { regular: { label:'Regular',  price: 9000 },
+              muthidya:{ label:'Muthidya', price: 9500 } };
+const EXTRA_PLATE = 250;
+const GROCERY_MARGIN = 1.15;   // 15% protective margin
+
+/* ---------- Safe-parse helpers ---------- */
+const num = v => { const n = parseFloat(v);   return isNaN(n) ? 0 : n; };
+const int = v => { const n = parseInt(v, 10); return isNaN(n) ? 0 : n; };
+const txt = v => (v === undefined || v === null) ? '' : String(v).trim();
+const uid = p => (p || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+const esc = s => txt(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isoOf = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const inr = n => '₹' + num(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+/* ---------- Write helper: ALWAYS update(), never set() ---------- */
+function save(path, obj) {
+  const clean = {};
+  Object.keys(obj || {}).forEach(k => { if (obj[k] !== undefined) clean[k] = obj[k]; });
+  return S.db.ref(path).update(clean)
+    .catch(err => { toast('Could not save. Check your connection.', true); console.error(err); });
+}
+function removeKey(parentPath, id) {
+  return S.db.ref(parentPath).update({ [id]: null })
+    .catch(err => { toast('Could not delete.', true); console.error(err); });
+}
+
+/* ---------- Toast ---------- */
+let toastTimer = null;
+function toast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isError ? 'rgba(194,84,80,.7)' : 'rgba(212,169,74,.5)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ---------- Navigation ---------- */
+function nav(view) {
+  S.view = view;
+  document.querySelectorAll('section[data-view]').forEach(sec =>
+    sec.classList.toggle('hidden', sec.dataset.view !== view));
+  document.querySelectorAll('.navtab').forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.nav === view));
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('.navtab').forEach(btn =>
+  btn.addEventListener('click', () => nav(btn.dataset.nav)));
+
+/* ---------- Connection indicator ---------- */
+S.db.ref('.info/connected').on('value', snap => {
+  S.online = snap.val() === true;
+  document.getElementById('conn-dot').className = 'dot ' + (S.online ? 'on' : 'off');
+  document.getElementById('conn-txt').textContent = S.online ? 'Live' : 'Offline';
+});
+
+/* =====================================================
+   PANCHANGA ENGINE (Stage 2, unchanged)
+   ===================================================== */
+const RAD = Math.PI / 180;
+const norm360 = x => ((x % 360) + 360) % 360;
+
+const TITHI_NAMES = ['Padyami','Vidiya','Tadiya','Chavithi','Panchami','Shashthi','Saptami',
+  'Ashtami','Navami','Dasami','Ekadasi','Dwadasi','Trayodasi','Chaturdasi'];
+const MASA_NAMES = ['Chaitra','Vaisakha','Jyeshtha','Ashadha','Sravana','Bhadrapada',
+  'Asvayuja','Kartika','Margasira','Pushya','Magha','Phalguna'];
+const NAK_NAMES = ['Aswini','Bharani','Krittika','Rohini','Mrigasira','Arudra','Punarvasu',
+  'Pushyami','Aslesha','Makha','Pubba','Uttara','Hasta','Chitta','Swati','Visakha','Anuradha',
+  'Jyeshtha','Moola','Purvashadha','Uttarashadha','Sravanam','Dhanishta','Satabhisham',
+  'Purvabhadra','Uttarabhadra','Revati'];
+const PAKSHA_NAMES = ['Shukla Paksha','Krishna Paksha'];
+const VAARA_NAMES = ['Bhanu vaaram','Indu vaaram','Bhauma vaaram','Saumya vaaram',
+  'Guru vaaram','Shukra vaaram','Sthira vaaram'];
+
+function jdAtSunrise(y, m, d) {
+  return Date.UTC(y, m - 1, d, 0, 30) / 86400000 + 2440587.5;
+}
+function sunLong(jd) {
+  const T  = (jd - 2451545.0) / 36525;
+  const L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+  const M  = (357.52911 + 35999.05029 * T - 0.0001537 * T * T) * RAD;
+  const C  = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M)
+           + (0.019993 - 0.000101 * T) * Math.sin(2 * M)
+           + 0.000289 * Math.sin(3 * M);
+  return norm360(L0 + C);
+}
+function moonLong(jd) {
+  const T  = (jd - 2451545.0) / 36525;
+  const L  = 218.3164477 + 481267.88123421 * T;
+  const D  = (297.8501921 + 445267.1114034 * T) * RAD;
+  const M  = (357.5291092 + 35999.0502909  * T) * RAD;
+  const Mp = (134.9633964 + 477198.8675055 * T) * RAD;
+  const F  = (93.2720950  + 483202.0175233 * T) * RAD;
+  const dL =
+      6.288774 * Math.sin(Mp) + 1.274027 * Math.sin(2*D - Mp) + 0.658314 * Math.sin(2*D)
+    + 0.213618 * Math.sin(2*Mp) - 0.185116 * Math.sin(M) - 0.114332 * Math.sin(2*F)
+    + 0.058793 * Math.sin(2*D - 2*Mp) + 0.057066 * Math.sin(2*D - M - Mp)
+    + 0.053322 * Math.sin(2*D + Mp) + 0.045758 * Math.sin(2*D - M)
+    - 0.040923 * Math.sin(M - Mp) - 0.034720 * Math.sin(D) - 0.030383 * Math.sin(M + Mp);
+  return norm360(L + dL);
+}
+function ayanamsa(jd) { return 23.853 + ((jd - 2451545.0) / 365.25) * (50.2888 / 3600); }
+const elong = jd => norm360(moonLong(jd) - sunLong(jd));
+function lastNewMoon(jd) {
+  let t = jd - elong(jd) / 12.190749;
+  for (let i = 0; i < 5; i++) { let e = elong(t); if (e > 180) e -= 360; t -= e / 12.190749; }
+  if (t > jd + 0.001) t -= 29.530588;
+  return t;
+}
+function panchangaFor(y, m, d) {
+  const jd = jdAtSunrise(y, m, d);
+  const aya = ayanamsa(jd);
+  const el  = elong(jd);
+  const tithiNum  = Math.floor(el / 12) + 1;
+  const pakshaIdx = tithiNum <= 15 ? 0 : 1;
+  const tIdx      = ((tithiNum - 1) % 15) + 1;
+  const tithiName = tIdx === 15 ? (pakshaIdx === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[tIdx - 1];
+  const nakIdx    = Math.floor(norm360(moonLong(jd) - aya) / (360 / 27));
+  const nmJD      = lastNewMoon(jd);
+  const sunRashiAtNM = Math.floor(norm360(sunLong(nmJD) - ayanamsa(nmJD)) / 30);
+  const masaIdx   = (sunRashiAtNM + 1) % 12;
+  const dateObj   = new Date(y, m - 1, d);
+  return {
+    y, m, d, iso: isoOf(dateObj), dateObj,
+    masaIdx, masa: MASA_NAMES[masaIdx],
+    pakshaIdx, paksha: PAKSHA_NAMES[pakshaIdx],
+    tIdx, tithiName, tithiNum,
+    nakIdx, nakshatra: NAK_NAMES[nakIdx],
+    vaara: VAARA_NAMES[dateObj.getDay()]
+  };
+}
+function buildPn30() {
+  S.pn30 = [];
+  const t = new Date();
+  for (let i = 0; i <= 30; i++) {
+    const d = new Date(t.getFullYear(), t.getMonth(), t.getDate() + i);
+    S.pn30.push(panchangaFor(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+  }
+}
+
+/* =====================================================
+   HOME RENDERING
+   ===================================================== */
+const fmtIN = d => d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+
+function renderHome() {
+  if (!S.pn30.length) buildPn30();
+  const p = S.pn30[0];
+
+  document.getElementById('pn-card').innerHTML =
+    '<p class="font-display text-[26px] leading-tight engrave">' + esc(p.paksha) + ' ' + esc(p.tithiName) + '</p>' +
+    '<p class="text-gold-300 text-[17px] mt-1">' + esc(p.masa) + ' Masa · ' + esc(p.vaara) + '</p>' +
+    '<div class="mt-3 grid grid-cols-2 gap-2 text-[15px]">' +
+      '<div class="bg-maroon-950/60 rounded-lg px-3 py-2"><span class="text-creamdim block text-[12px]">Nakshatra</span>' + esc(p.nakshatra) + '</div>' +
+      '<div class="bg-maroon-950/60 rounded-lg px-3 py-2"><span class="text-creamdim block text-[12px]">Tithi No.</span>' + p.tIdx + ' of 15</div>' +
+    '</div>' +
+    '<p class="text-creamdim text-[12px] mt-3">Computed at sunrise (Lahiri, amanta). Verify with your panchangam near tithi transitions.</p>';
+
+  const box = document.getElementById('pitru-alerts');
+  const hits = [];
+  Object.values(S.cache.pitru || {}).forEach(pt => {
+    if (!pt || pt.masa === undefined) return;
+    for (const day of S.pn30) {
+      if (day.masaIdx === int(pt.masa) && day.pakshaIdx === int(pt.paksha) && day.tIdx === int(pt.tithi)) {
+        hits.push({ pt, day, diff: Math.round((day.dateObj - S.pn30[0].dateObj) / 86400000) });
+        break;
+      }
+    }
+  });
+  hits.sort((a, b) => a.diff - b.diff);
+  box.innerHTML = hits.length ? hits.map(h =>
+    '<div class="card ' + (h.diff <= 7 ? 'card-alert' : '') + ' p-4 mb-2 flex items-start gap-3">' +
+      '<div class="text-2xl leading-none pt-0.5">🪔</div>' +
+      '<div class="flex-1">' +
+        '<p class="text-cream font-semibold">' + esc(h.pt.name) + '</p>' +
+        '<p class="text-creamdim text-[14px]">' + esc(MASA_NAMES[int(h.pt.masa)]) + ' · ' +
+          esc(PAKSHA_NAMES[int(h.pt.paksha)]) + ' · ' +
+          esc(int(h.pt.tithi) === 15 ? (int(h.pt.paksha) === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[int(h.pt.tithi) - 1]) + '</p>' +
+        '<p class="text-gold-300 text-[15px] mt-1">' + fmtIN(h.day.dateObj) + ' · ' +
+          (h.diff === 0 ? '<b>Today</b>' : 'in ' + h.diff + ' day' + (h.diff > 1 ? 's' : '')) + '</p>' +
+      '</div></div>').join('')
+  : '<div class="card p-4 text-center text-creamdim text-sm">No Pitru anniversaries in the next 30 days. Add family Tithis in the Ledger tab.</div>';
+
+  const evBox = document.getElementById('today-events');
+  const todayISO = S.pn30[0].iso;
+  const evs = Object.values(S.cache.events || {}).filter(e => e && e.date === todayISO);
+  evBox.innerHTML = evs.length ? evs.map(e =>
+    '<div class="card p-4 mb-2">' +
+      '<p class="text-cream font-semibold">' + esc(e.type || 'Event') + ' — ' + esc(e.client) + '</p>' +
+      '<p class="text-creamdim text-[14px]">' + int(e.guests) + ' guests · ' +
+        (e.floor === 'first' ? 'First Floor' : 'Ground Floor') + ' · Total ' + inr(evTotal(e)) + '</p>' +
+    '</div>').join('')
+  : '<div class="card p-4 text-center text-creamdim text-sm">No ceremonies booked for today.</div>';
+}
+
+/* =====================================================
+   CEREMONIES — PRICING, BOOKING, CHECKLIST, STAFF
+   ===================================================== */
+const CHECK_ITEMS = ['Advance received','Menu finalized','Groceries purchased','Staff assigned','Venue confirmed'];
+
+function evTotal(e) {
+  if (e.total !== undefined) return num(e.total);
+  const base = (PKG[e.package] || PKG.regular).price;
+  return base + int(e.extraPlates) * EXTRA_PLATE;
+}
+
+/* ---- live total in the modal ---- */
+function stepExtra(delta) {
+  const el = document.getElementById('bk-extra');
+  el.value = Math.max(0, int(el.value) + delta);
+  updateBkTotal();
+}
+function updateBkTotal() {
+  const pkg = PKG[txt(document.getElementById('bk-package').value)] || PKG.regular;
+  const extra = int(document.getElementById('bk-extra').value);
+  const advance = num(document.getElementById('bk-advance').value);
+  const total = pkg.price + extra * EXTRA_PLATE;
+  document.getElementById('bk-total-line').textContent =
+    'Total: ' + inr(total) + '  (' + pkg.label + (extra ? ' + ' + extra + ' extra plates' : '') + ')';
+  document.getElementById('bk-balance-line').textContent =
+    'Balance after advance: ' + inr(Math.max(0, total - advance));
+}
+
+/* ---- Pick from Contacts (Contact Picker API) ---- */
+async function pickContact() {
+  if (!('contacts' in navigator) || !('select' in navigator.contacts)) {
+    toast('Contact picker needs Chrome on Android. Type the details instead.', true);
+    return;
+  }
+  try {
+    const picked = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+    if (picked && picked[0]) {
+      const c = picked[0];
+      if (c.name && c.name[0]) document.getElementById('bk-client').value = txt(c.name[0]);
+      if (c.tel && c.tel[0])   document.getElementById('bk-phone').value  = txt(c.tel[0]);
+      toast('Contact filled in.');
+    }
+  } catch (e) { /* user cancelled the picker — nothing to do */ }
+}
+
+function openBooking() {
+  document.getElementById('modal-booking').classList.remove('hidden');
+  updateBkTotal();
+}
+function closeBooking() { document.getElementById('modal-booking').classList.add('hidden'); }
+
+function saveBooking() {
+  const client = txt(document.getElementById('bk-client').value);
+  if (!client) { toast('Enter the client name first.', true); return; }
+  const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
+  const pkg = PKG[pkgKey] || PKG.regular;
+  const extra = int(document.getElementById('bk-extra').value);
+  const id = uid('ev');
+  save('events/' + id, {
+    id, client,
+    phone:      txt(document.getElementById('bk-phone').value),
+    date:       txt(document.getElementById('bk-date').value),
+    guests:     int(document.getElementById('bk-guests').value),
+    type:       txt(document.getElementById('bk-type').value),
+    service:    txt(document.getElementById('bk-service').value) || 'ceremony',
+    floor:      txt(document.getElementById('bk-floor').value) || 'ground',
+    package:    pkgKey,
+    basePrice:  pkg.price,
+    extraPlates: extra,
+    extraAmount: extra * EXTRA_PLATE,
+    total:      pkg.price + extra * EXTRA_PLATE,
+    advance:    num(document.getElementById('bk-advance').value),
+    created:    Date.now()
+  }).then(() => {
+    closeBooking(); toast('Booking saved for ' + client + ' — ' + inr(pkg.price + extra * EXTRA_PLATE) + '.');
+    ['bk-client','bk-phone','bk-date','bk-guests','bk-advance'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('bk-extra').value = 0;
+  });
+}
+function delEvent(id, name) {
+  if (confirm('Remove the booking for ' + name + '?')) removeKey('events', id);
+}
+
+/* ---- per-event checklist ---- */
+function toggleCheck(eid, i) {
+  const e = S.cache.events[eid] || {};
+  const cur = !!(e.check && e.check[i]);
+  save('events/' + eid + '/check', { [i]: !cur });
+}
+
+/* ---- per-event staff assignment ---- */
+function toggleAssign(eid, sid) {
+  const e = S.cache.events[eid] || {};
+  const cur = !!(e.staff && e.staff[sid]);
+  S.db.ref('events/' + eid + '/staff').update({ [sid]: cur ? null : true })
+    .catch(err => { toast('Could not update assignment.', true); console.error(err); });
+}
+
+function togglePanel(id) { document.getElementById(id).classList.toggle('hidden'); }
+
+/* ---- WhatsApp booking confirmation ---- */
+function waEvent(eid) {
+  const e = S.cache.events[eid];
+  if (!e) return;
+  const phone = txt(e.phone).replace(/\D/g, '');
+  const waPhone = phone.length === 10 ? '91' + phone : phone;
+  if (!waPhone) { toast('This booking has no phone number.', true); return; }
+  const total = evTotal(e);
+  let msg = '🪔 *Anantha Shree — Booking Confirmation*\n\n' +
+    'Namaskaram ' + e.client + ' garu,\n\n' +
+    'Function: ' + (e.type || 'Event') + '\nDate: ' + (e.date || 'TBD') +
+    '\nHeadcount: ' + int(e.guests) +
+    '\nPackage: ' + (PKG[e.package] ? PKG[e.package].label : 'Regular') + ' — ' + inr(num(e.basePrice) || PKG.regular.price);
+  if (int(e.extraPlates)) msg += '\nExtra plates: ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
+  msg += '\n\n*Total: ' + inr(total) + '*\nAdvance received: ' + inr(num(e.advance)) +
+    '\nBalance: ' + inr(Math.max(0, total - num(e.advance))) + '\n\n🙏 Dhanyavaadamulu — Anantha Shree';
+  window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* ---- pre-fill the grocery calculator from an event ---- */
+function planGrocery(eid) {
+  const e = S.cache.events[eid];
+  if (!e) return;
+  document.getElementById('gc-head').value = int(e.guests) || '';
+  document.getElementById('gc-date').value = txt(e.date);
+  runGrocery();
+  window.scrollTo({ top: 0 });
+}
+
+/* ---- render Log list ---- */
+function renderLog() {
+  const box = document.getElementById('log-list');
+  const evs = Object.values(S.cache.events || {}).filter(Boolean)
+    .sort((a, b) => txt(b.date).localeCompare(txt(a.date)));
+  const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
+
+  if (!evs.length) {
+    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">No ceremonies logged yet.</p>' +
+      '<p class="text-creamdim text-sm mt-2">Tap “New booking”, or tell Sahaaya: “new booking”.</p></div>';
+    return;
+  }
+
+  box.innerHTML = evs.map(e => {
+    const total = evTotal(e);
+    const balance = Math.max(0, total - num(e.advance));
+    const done = CHECK_ITEMS.filter((_, i) => e.check && e.check[i]).length;
+
+    const checkChips = CHECK_ITEMS.map((label, i) =>
+      '<button class="chip ' + (e.check && e.check[i] ? 'on' : '') + '" ' +
+      'onclick="toggleCheck(\'' + e.id + '\',' + i + ')">' +
+      (e.check && e.check[i] ? '✓ ' : '') + label + '</button>').join('');
+
+    const staffChips = staffArr.length ? staffArr.map(s =>
+      '<button class="chip ' + (e.staff && e.staff[s.id] ? 'on' : '') + '" ' +
+      'onclick="toggleAssign(\'' + e.id + '\',\'' + s.id + '\')">' +
+      (e.staff && e.staff[s.id] ? '✓ ' : '') + esc(s.name) + ' <span class="opacity-70">(' + esc(s.role) + ')</span></button>').join('')
+    : '<p class="text-creamdim text-[13px]">Add staff in the Setup tab first.</p>';
+
+    return '<div class="card p-4 mb-4">' +
+      '<div class="flex justify-between items-start">' +
+        '<div>' +
+          '<p class="text-cream font-semibold text-[16px]">' + esc(e.type || 'Event') + ' — ' + esc(e.client) + '</p>' +
+          '<p class="text-creamdim text-[13px]">' + esc(e.date || 'Date TBD') + ' · ' + int(e.guests) + ' pax · ' +
+            (e.floor === 'first' ? 'First Floor' : 'Ground Floor') +
+            (e.service === 'catering' ? ' · Catering only' : '') + '</p>' +
+        '</div>' +
+        '<button class="text-creamdim text-[13px] underline" onclick="delEvent(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">Remove</button>' +
+      '</div>' +
+
+      '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
+        '<div class="flex justify-between"><span class="text-creamdim">' +
+          (PKG[e.package] ? PKG[e.package].label : 'Regular') + ' package</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
+        (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">Extra plates × ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '') +
+        '<div class="flex justify-between text-gold-300 font-bold mt-1"><span>Total</span><span>' + inr(total) + '</span></div>' +
+        '<div class="flex justify-between text-[13px]"><span class="text-creamdim">Advance ' + inr(num(e.advance)) + '</span>' +
+          '<span class="' + (balance > 0 ? 'text-saffron' : 'text-creamdim') + '">Balance ' + inr(balance) + '</span></div>' +
+      '</div>' +
+
+      '<div class="grid grid-cols-3 gap-2 mt-3">' +
+        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evck-' + e.id + '\')">☑ ' + done + '/' + CHECK_ITEMS.length + '</button>' +
+        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evst-' + e.id + '\')">👥 Staff</button>' +
+        '<button class="btn-line text-[13px]" onclick="planGrocery(\'' + e.id + '\')">🧺 Grocery</button>' +
+      '</div>' +
+      '<button class="btn-gold w-full mt-2" onclick="waEvent(\'' + e.id + '\')">💬 WhatsApp confirmation</button>' +
+
+      '<div id="evck-' + e.id + '" class="hidden mt-3">' + checkChips + '</div>' +
+      '<div id="evst-' + e.id + '" class="hidden mt-3">' + staffChips + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* =====================================================
+   GROCERY CALCULATOR — 15% PROTECTIVE MARGIN
+   ===================================================== */
+const GROCERY_TABLE = [
+  { name:'Rice',        unit:'kg',     perPlate:0.120, rateId:'rate_rice',    isRice:true },
+  { name:'Toor Dal',    unit:'kg',     perPlate:0.030, rateId:'rate_dal' },
+  { name:'Vegetables',  unit:'kg',     perPlate:0.150, rateId:null },
+  { name:'Coconuts',    unit:'pieces', perPlate:0.050, rateId:'rate_coconut', whole:true },
+  { name:'Cooking oil', unit:'L',      perPlate:0.020, rateId:null },
+  { name:'Ghee',        unit:'kg',     perPlate:0.006, rateId:null },
+  { name:'Curd/Milk',   unit:'L',      perPlate:0.060, rateId:null }
+];
+function findRate(item) {
+  const stored = S.cache.rates || {};
+  if (item.rateId && stored[item.rateId] && stored[item.rateId].price !== undefined)
+    return num(stored[item.rateId].price);
+  const frag = item.name.toLowerCase().split(' ')[0];
+  const hit = Object.values(stored).find(r => r && txt(r.name).toLowerCase().includes(frag) && r.price !== undefined);
+  return hit ? num(hit.price) : null;
+}
+function runGrocery() {
+  const head = int(document.getElementById('gc-head').value);
+  const dateV = txt(document.getElementById('gc-date').value);
+  const out = document.getElementById('gc-out');
+  if (head < 1) { toast('Enter the headcount first.', true); return; }
+
+  /* Ekadashi / Amavasya rice restriction check */
+  let tithiWarn = '';
+  let riceFactor = 1;
+  if (dateV) {
+    const [y, m, d] = dateV.split('-').map(x => int(x));
+    const p = panchangaFor(y, m, d);
+    if (p.tithiName === 'Ekadasi' || p.tithiName === 'Amavasya') {
+      riceFactor = 0.6;
+      tithiWarn =
+        '<div class="card card-alert p-3 mb-3 text-[14px]">' +
+        '<p class="text-saffron font-semibold">⚠️ ' + p.tithiName + ' on this date</p>' +
+        '<p class="text-creamdim mt-1">Many guests observe a rice fast on ' + p.tithiName +
+        '. Rice below is already reduced by 40% — plan semiya, sabudana or fruit alternatives for observers, and confirm the count with the host.</p></div>';
+    } else {
+      tithiWarn = '<p class="text-creamdim text-[12px] mb-2">Tithi check: ' + p.paksha + ' ' + p.tithiName + ' — no rice restriction.</p>';
+    }
+  }
+
+  let costTotal = 0, hasAllRates = true;
+  const rows = GROCERY_TABLE.map(item => {
+    let qty = head * item.perPlate * GROCERY_MARGIN;
+    if (item.isRice) qty *= riceFactor;
+    qty = item.whole ? Math.ceil(qty) : Math.round(qty * 10) / 10;
+    const rate = findRate(item);
+    let costCell = '<span class="text-creamdim text-[12px]">set rate in Setup</span>';
+    if (rate !== null) { const c = qty * rate; costTotal += c; costCell = inr(c); }
+    else hasAllRates = false;
+    return '<div class="flex justify-between text-[15px] mb-1">' +
+      '<span>' + esc(item.name) + '</span>' +
+      '<span class="text-gold-300">' + qty + ' ' + item.unit + '</span>' +
+      '<span class="w-20 text-right">' + costCell + '</span></div>';
+  }).join('');
+
+  out.classList.remove('hidden');
+  out.innerHTML = tithiWarn +
+    '<div class="bg-maroon-950/60 rounded-lg p-3">' +
+    '<div class="flex justify-between text-[12px] text-creamdim mb-2"><span>Item</span><span>Qty (incl. 15%)</span><span>Est. cost</span></div>' +
+    rows +
+    '<div class="rule border-t border-dashed border-gold-600/50 my-2"></div>' +
+    '<div class="flex justify-between font-bold text-gold-300"><span>Estimated cost' + (hasAllRates ? '' : ' (partial)') + '</span><span>' + inr(costTotal) + '</span></div>' +
+    '<p class="text-creamdim text-[12px] mt-2">Quantities = headcount × per-plate norm × 1.15 protective margin. Costs use the Live Market Rate Book.</p>' +
+    '</div>';
+}
+
+/* =====================================================
+   3-TIER MASTER P&L
+   Gross:  Ceremony + Catering + Tiffin
+   Less:   Wages · Variable groceries · Overheads · Concessions
+   ===================================================== */
+function savePnlField(ym, field, val) {
+  save('pnl/' + ym, { [field]: num(val) }).then(() => renderPnl());
+}
+function expensesByCat(ym) {
+  const sums = {};
+  Object.values(S.cache.expenses || {}).forEach(e => {
+    if (!e || !txt(e.date).startsWith(ym)) return;
+    const cat = txt(e.cat) || 'General';
+    sums[cat] = (sums[cat] || 0) + num(e.amount);
+  });
+  return sums;
+}
+function renderPnl() {
+  const ym = txt(document.getElementById('pnl-month').value);
+  const out = document.getElementById('pnl-out');
+  if (!ym) return;
+  const monthName = new Date(int(ym.slice(0,4)), int(ym.slice(5,7)) - 1, 1)
+    .toLocaleDateString('en-IN', { month:'long', year:'numeric' });
+
+  /* --- Tier 1 & 2: ceremony / catering gross --- */
+  let ceremonyGross = 0, cateringGross = 0, evCount = 0;
+  Object.values(S.cache.events || {}).forEach(e => {
+    if (!e || !txt(e.date).startsWith(ym)) return;
+    evCount++;
+    if (e.service === 'catering') cateringGross += evTotal(e);
+    else ceremonyGross += evTotal(e);
+  });
+
+  /* --- Tier 3: tiffin gross --- */
+  let tiffinGross = 0;
+  Object.keys(S.cache.tiffin || {}).forEach(cid => {
+    if (S.cache.tiffin[cid]) tiffinGross += buildBill(cid, ym).total;
+  });
+
+  const gross = ceremonyGross + cateringGross + tiffinGross;
+
+  /* --- Deductions --- */
+  const cats = expensesByCat(ym);
+  const wages = num(cats['Labour']);
+  const groceries = num(cats['Groceries']) + num(cats['Dairy']) + num(cats['Flowers']);
+  const otherExp = Object.keys(cats).reduce((s, c) =>
+    ['Labour','Groceries','Dairy','Flowers'].includes(c) ? s : s + num(cats[c]), 0);
+  const pnlEntry = (S.cache.pnl && S.cache.pnl[ym]) || {};
+  const overheads = num(pnlEntry.overheads);
+  const concessions = num(pnlEntry.concessions);
+
+  const net = gross - wages - groceries - overheads - concessions - otherExp;
+  const netColor = net >= 0 ? '#7BC47F' : '#E07470';
+
+  const line = (label, val, cls) =>
+    '<div class="flex justify-between text-[15px] mb-1 ' + (cls || '') + '"><span>' + label + '</span><span>' + inr(val) + '</span></div>';
+
+  out.innerHTML =
+    '<div class="card p-4">' +
+      '<p class="text-creamdim text-[13px] mb-2">' + monthName + ' · ' + evCount + ' bookings</p>' +
+
+      '<p class="text-gold-300 font-semibold text-[14px] mb-1">INCOME</p>' +
+      line('Ceremony gross', ceremonyGross) +
+      line('Catering gross', cateringGross) +
+      line('Tiffin gross', tiffinGross) +
+      line('<b>Total gross</b>', gross, 'text-gold-300 border-t border-dashed border-gold-600/50 pt-1') +
+
+      '<p class="text-gold-300 font-semibold text-[14px] mt-3 mb-1">DEDUCTIONS</p>' +
+      line('Wages (Labour expenses)', wages) +
+      line('Variable groceries (Groceries + Dairy + Flowers)', groceries) +
+      (otherExp ? line('Other logged expenses (Fuel, Rent, Transport…)', otherExp) : '') +
+
+      '<div class="flex items-center justify-between gap-2 mb-1">' +
+        '<span class="text-[15px]">Monthly overheads</span>' +
+        '<div class="flex items-center gap-1"><span class="text-creamdim">₹</span>' +
+        '<input class="inp !w-24 text-right" type="number" min="0" value="' + overheads + '" ' +
+        'onchange="savePnlField(\'' + ym + '\',\'overheads\', this.value)" /></div></div>' +
+      '<div class="flex items-center justify-between gap-2 mb-1">' +
+        '<span class="text-[15px]">Concessions given</span>' +
+        '<div class="flex items-center gap-1"><span class="text-creamdim">₹</span>' +
+        '<input class="inp !w-24 text-right" type="number" min="0" value="' + concessions + '" ' +
+        'onchange="savePnlField(\'' + ym + '\',\'concessions\', this.value)" /></div></div>' +
+
+      '<div class="rounded-lg mt-3 p-3 text-center" style="background:rgba(28,4,7,.7);border:1px solid ' + netColor + '55">' +
+        '<p class="text-creamdim text-[12px] tracking-widest uppercase">True Net Profit</p>' +
+        '<p class="font-display text-[30px]" style="color:' + netColor + '">' + inr(net) + '</p>' +
+      '</div>' +
+      '<p class="text-creamdim text-[12px] mt-2">Tiffin gross counts meals marked “Given”. Wages and groceries come from logged expenses — speak them to Sahaaya as they happen.</p>' +
+    '</div>';
+}
+
+/* =====================================================
+   CONFLICT RADAR — STAFF & VENUE FLOORS
+   ===================================================== */
+const FLOOR_DEFAULTS = { ground: 150, first: 100 };
+
+function setVenueCap(which, val) {
+  save('settings/venue', { [which]: int(val) }).then(() => renderRadar());
+}
+function renderRadar() {
+  const dateV = txt(document.getElementById('cr-date').value);
+  const out = document.getElementById('cr-out');
+  if (!dateV) return;
+
+  const evs = Object.values(S.cache.events || {}).filter(e => e && e.date === dateV);
+  const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
+  const venue = (S.cache.settings && S.cache.settings.venue) || {};
+  const caps = { ground: int(venue.ground) || FLOOR_DEFAULTS.ground,
+                 first:  int(venue.first)  || FLOOR_DEFAULTS.first };
+
+  /* ---- Venue floor capacity ---- */
+  const floors = { ground: { label:'Ground Floor', guests:0, evs:[] },
+                   first:  { label:'First Floor',  guests:0, evs:[] } };
+  evs.forEach(e => {
+    const f = e.floor === 'first' ? 'first' : 'ground';
+    floors[f].guests += int(e.guests);
+    floors[f].evs.push(e);
+  });
+
+  const floorHTML = Object.keys(floors).map(k => {
+    const f = floors[k], cap = caps[k];
+    const pct = cap ? Math.round(f.guests / cap * 100) : 0;
+    let status = '✅ OK', color = '#7BC47F';
+    if (pct > 100)     { status = '🚨 OVERBOOKED'; color = '#E07470'; }
+    else if (pct >= 90){ status = '⚠️ Near capacity'; color = '#E8853D'; }
+    return '<div class="card ' + (pct > 100 ? 'card-danger' : (pct >= 90 ? 'card-alert' : '')) + ' p-4 mb-2">' +
+      '<div class="flex justify-between items-center mb-1">' +
+        '<p class="text-cream font-semibold">' + f.label + '</p>' +
+        '<span class="text-[14px] font-bold" style="color:' + color + '">' + status + '</span>' +
+      '</div>' +
+      '<div class="flex justify-between items-center gap-2 text-[14px] text-creamdim mb-1">' +
+        '<span>' + f.guests + ' of ' +
+          '<input class="inp !w-16 !py-1 text-center inline-block" type="number" min="1" value="' + cap + '" ' +
+          'onchange="setVenueCap(\'' + k + '\', this.value)" /> seats (' + pct + '%)</span>' +
+        '<span>' + f.evs.length + ' event' + (f.evs.length === 1 ? '' : 's') + '</span>' +
+      '</div>' +
+      '<div class="capbar"><div style="width:' + Math.min(100, pct) + '%;background:' + color + '"></div></div>' +
+      (f.evs.length ? '<p class="text-creamdim text-[13px] mt-2">' +
+        f.evs.map(e => esc(e.client) + ' (' + int(e.guests) + ')').join(' · ') + '</p>' : '') +
+    '</div>';
+  }).join('');
+
+  /* ---- Staff availability / double-booking ---- */
+  const byStaff = {};
+  evs.forEach(e => {
+    Object.keys(e.staff || {}).forEach(sid => {
+      if (!e.staff[sid]) return;
+      (byStaff[sid] = byStaff[sid] || []).push(e);
+    });
+  });
+  const conflicts = [], busy = [], freeNames = [];
+  staffArr.forEach(s => {
+    const list = byStaff[s.id] || [];
+    if (list.length > 1) conflicts.push({ s, list });
+    else if (list.length === 1) busy.push({ s, e: list[0] });
+    else freeNames.push(s.name + ' (' + s.role + ')');
+  });
+
+  let staffHTML = '';
+  if (!staffArr.length) {
+    staffHTML = '<div class="card p-4 text-center text-creamdim text-sm">Add staff in Setup, then assign them to events in the Log tab to track conflicts.</div>';
+  } else {
+    staffHTML =
+      (conflicts.length ? conflicts.map(c =>
+        '<div class="card card-danger p-4 mb-2">' +
+          '<p class="font-semibold" style="color:#E07470">🚨 ' + esc(c.s.name) + ' (' + esc(c.s.role) + ') is double-booked</p>' +
+          '<p class="text-creamdim text-[14px] mt-1">' + c.list.map(e => esc(e.client) + ' — ' + esc(e.type || 'Event')).join('  ·  ') + '</p>' +
+        '</div>').join('') : '') +
+      (busy.length ?
+        '<div class="card p-4 mb-2"><p class="text-gold-300 font-semibold text-[14px] mb-1">Assigned</p>' +
+        busy.map(b => '<p class="text-[14px] text-creamdim">' + esc(b.s.name) + ' (' + esc(b.s.role) + ') → ' + esc(b.e.client) + '</p>').join('') + '</div>' : '') +
+      '<div class="card p-4 mb-2"><p class="text-gold-300 font-semibold text-[14px] mb-1">Available (' + freeNames.length + ')</p>' +
+        '<p class="text-[14px] text-creamdim">' + (freeNames.length ? freeNames.map(esc).join(' · ') : 'Everyone is assigned this day.') + '</p></div>' +
+      (!conflicts.length ? '<p class="text-[13px] mt-1" style="color:#7BC47F">✅ No staff double-bookings on this date.</p>' : '');
+  }
+
+  out.innerHTML =
+    '<p class="text-gold-300 font-semibold text-[14px] mb-2">VENUE FLOORS</p>' + floorHTML +
+    '<p class="text-gold-300 font-semibold text-[14px] mt-4 mb-2">STAFF</p>' + staffHTML;
+}
+
+/* =====================================================
+   LEDGER — CONVERTERS, PITRU, EXPENSES (Stage 2)
+   ===================================================== */
+function fillSelectors() {
+  const masaOpts  = MASA_NAMES.map((n, i) => '<option value="' + i + '">' + n + '</option>').join('');
+  const tithiOpts = Array.from({length: 15}, (_, i) => {
+    const n = i + 1;
+    const label = n === 15 ? 'Purnima / Amavasya' : n + ' · ' + TITHI_NAMES[i];
+    return '<option value="' + n + '">' + label + '</option>';
+  }).join('');
+  document.getElementById('v2g-masa').innerHTML = masaOpts;
+  document.getElementById('pt-masa').innerHTML  = masaOpts;
+  document.getElementById('v2g-tithi').innerHTML = tithiOpts;
+  document.getElementById('pt-tithi').innerHTML  = tithiOpts;
+  document.getElementById('v2g-year').value = new Date().getFullYear();
+  document.getElementById('g2v-date').value = new Date().toISOString().slice(0, 10);
+}
+function doG2V() {
+  const v = txt(document.getElementById('g2v-date').value);
+  const out = document.getElementById('g2v-out');
+  if (!v) { toast('Pick a date first.', true); return; }
+  const [y, m, d] = v.split('-').map(x => int(x));
+  const p = panchangaFor(y, m, d);
+  out.classList.remove('hidden');
+  out.innerHTML =
+    '<p class="text-gold-300 font-semibold">' + esc(p.masa) + ' Masa · ' + esc(p.paksha) + ' · ' + esc(p.tithiName) + '</p>' +
+    '<p class="text-creamdim">Nakshatra: ' + esc(p.nakshatra) + ' · ' + esc(p.vaara) + '</p>';
+}
+function doV2G() {
+  const masa   = int(document.getElementById('v2g-masa').value);
+  const paksha = int(document.getElementById('v2g-paksha').value);
+  const tithi  = int(document.getElementById('v2g-tithi').value) || 1;
+  const year   = int(document.getElementById('v2g-year').value) || new Date().getFullYear();
+  const out = document.getElementById('v2g-out');
+  const matches = [];
+  for (let i = 0; i < 370; i++) {
+    const d = new Date(year, 0, 1 + i);
+    if (d.getFullYear() > year) break;
+    const p = panchangaFor(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    if (p.masaIdx === masa && p.pakshaIdx === paksha && p.tIdx === tithi) matches.push(p);
+  }
+  out.classList.remove('hidden');
+  out.innerHTML = matches.length
+    ? '<p class="text-gold-300 font-semibold">Falls on:</p>' + matches.map(p =>
+        '<p class="text-cream">' + p.dateObj.toLocaleDateString('en-IN',
+          { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</p>').join('') +
+      (matches.length > 1 ? '<p class="text-creamdim text-[13px] mt-1">Two dates can occur when a tithi spans two sunrises or in an adhika masa year — confirm with your panchangam.</p>' : '')
+    : '<p class="text-creamdim">That tithi does not fall at sunrise in ' + year + ' (it may be a skipped tithi, or in an adhika masa). Try the adjacent tithi or year.</p>';
+}
+function addPitru() {
+  const name = txt(document.getElementById('pt-name').value);
+  if (!name) { toast('Enter a name first.', true); return; }
+  const id = uid('pt');
+  save('pitru/' + id, {
+    id, name,
+    masa:   int(document.getElementById('pt-masa').value),
+    paksha: int(document.getElementById('pt-paksha').value),
+    tithi:  int(document.getElementById('pt-tithi').value) || 1,
+    created: Date.now()
+  }).then(() => {
+    document.getElementById('pt-name').value = '';
+    toast(name + ' added to the Pitru register.');
+  });
+}
+function delPitru(id) {
+  if (confirm('Remove this entry from the Pitru register?')) removeKey('pitru', id);
+}
+function renderPitruList() {
+  const box = document.getElementById('pitru-list');
+  const items = Object.values(S.cache.pitru || {}).filter(Boolean);
+  box.innerHTML = items.length ? items.map(pt =>
+    '<div class="card p-4 mb-2 flex items-center justify-between gap-3">' +
+      '<div><p class="text-cream font-semibold">' + esc(pt.name) + '</p>' +
+      '<p class="text-creamdim text-[14px]">' + esc(MASA_NAMES[int(pt.masa)]) + ' · ' +
+        esc(PAKSHA_NAMES[int(pt.paksha)]) + ' · ' +
+        esc(int(pt.tithi) === 15 ? (int(pt.paksha) === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[int(pt.tithi) - 1]) + '</p></div>' +
+      '<button class="btn-line text-[13px]" onclick="delPitru(\'' + pt.id + '\')">Remove</button>' +
+    '</div>').join('')
+  : '<div class="card p-4 text-center text-creamdim text-sm">No Tithis registered yet.</div>';
+}
+function renderExpRecent() {
+  const box = document.getElementById('exp-recent');
+  const items = Object.values(S.cache.expenses || {}).filter(Boolean)
+    .sort((a, b) => num(b.ts) - num(a.ts)).slice(0, 8);
+  box.innerHTML = items.length
+    ? items.map(e =>
+      '<div class="card p-3 mb-2 flex justify-between text-[15px]">' +
+        '<span>' + esc(e.cat) + (e.src === 'voice' ? ' 🗣️' : '') +
+        ' <span class="text-creamdim text-[12px]">' + esc(e.date || '') + '</span></span>' +
+        '<span class="text-gold-300 font-semibold">' + inr(e.amount) + '</span>' +
+      '</div>').join('')
+    : '<div class="card p-4 text-center text-creamdim text-sm">No expenses yet. Tell Sahaaya: “కూరగాయలు ఖర్చు 500”.</div>';
+}
+
+/* =====================================================
+   TIFFIN SUBSCRIPTION HUB (Stage 3)
+   ===================================================== */
+const MEALS = [ ['b','Breakfast','rateB','gb'], ['l','Lunch','rateL','gl'], ['d','Dinner','rateD','gd'] ];
+const STATUSES = ['given','pending','skip'];
+
+function inVacation(c, iso) {
+  const f = txt(c.vacFrom), t = txt(c.vacTo);
+  return !!(f && t && iso >= f && iso <= t);
+}
+function tlog(cid, iso) {
+  return (S.cache.tiffinlog[cid] && S.cache.tiffinlog[cid][iso]) || {};
+}
+function setTiffinToday() { S.tiffinDate = isoOf(new Date()); renderTiffin(); }
+function shiftTiffinDate(delta) {
+  const [y, m, d] = S.tiffinDate.split('-').map(x => int(x));
+  S.tiffinDate = isoOf(new Date(y, m - 1, d + delta));
+  renderTiffin();
+}
+function openTClient()  { document.getElementById('modal-tclient').classList.remove('hidden'); }
+function closeTClient() { document.getElementById('modal-tclient').classList.add('hidden'); }
+function saveTClient() {
+  const name = txt(document.getElementById('tc-name').value);
+  if (!name) { toast('Enter the client name first.', true); return; }
+  const id = uid('tf');
+  save('tiffin/' + id, {
+    id, name,
+    phone: txt(document.getElementById('tc-phone').value),
+    rateB: num(document.getElementById('tc-rb').value),
+    rateL: num(document.getElementById('tc-rl').value),
+    rateD: num(document.getElementById('tc-rd').value),
+    vacFrom: '', vacTo: '',
+    created: Date.now()
+  }).then(() => {
+    closeTClient(); toast(name + ' added to the tiffin hub.');
+    ['tc-name','tc-phone','tc-rb','tc-rl','tc-rd'].forEach(i => document.getElementById(i).value = '');
+  });
+}
+function delTClient(id, name) {
+  if (confirm('Remove ' + name + ' and stop tracking their tiffins? Past logs stay in the database.')) {
+    removeKey('tiffin', id);
+  }
+}
+function setMeal(cid, iso, meal, status) {
+  save('tiffinlog/' + cid + '/' + iso, { [meal]: status });
+}
+function bumpGuest(cid, iso, gkey, delta) {
+  const cur = int(tlog(cid, iso)[gkey]);
+  save('tiffinlog/' + cid + '/' + iso, { [gkey]: Math.max(0, cur + delta) });
+}
+function saveVacation(cid) {
+  const from = txt(document.getElementById('vac-from-' + cid).value);
+  const to   = txt(document.getElementById('vac-to-' + cid).value);
+  if (!from || !to) { toast('Pick both vacation dates.', true); return; }
+  if (to < from)    { toast('Vacation end must be after the start.', true); return; }
+  save('tiffin/' + cid, { vacFrom: from, vacTo: to })
+    .then(() => toast('Vacation saved. Those days are excluded from billing.'));
+}
+function clearVacation(cid) {
+  save('tiffin/' + cid, { vacFrom: '', vacTo: '' }).then(() => toast('Vacation cleared.'));
+}
+function toggleVacPanel(cid) {
+  document.getElementById('vacpanel-' + cid).classList.toggle('hidden');
+}
+function renderTiffin() {
+  if (!S.tiffinDate) S.tiffinDate = isoOf(new Date());
+  const [y, m, d] = S.tiffinDate.split('-').map(x => int(x));
+  const dObj = new Date(y, m - 1, d);
+  document.getElementById('tf-date-label').textContent =
+    dObj.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
+
+  const box = document.getElementById('tiffin-list');
+  const clients = Object.values(S.cache.tiffin || {}).filter(Boolean)
+    .sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
+
+  if (!clients.length) {
+    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream">No tiffin clients yet.</p>' +
+      '<p class="text-creamdim text-sm mt-2">Tap “Add client” to start a subscription.</p></div>';
+    return;
+  }
+
+  box.innerHTML = clients.map(c => {
+    const iso = S.tiffinDate;
+    const vac = inVacation(c, iso);
+    const log = tlog(c.id, iso);
+
+    const mealRows = vac
+      ? '<div class="bg-maroon-950/60 rounded-lg p-3 text-center text-saffron text-[15px]">🌴 On vacation this day — meals paused, not billed.</div>'
+      : MEALS.map(([k, label, rk, gk]) => {
+          const st = txt(log[k]) || 'pending';
+          const g  = int(log[gk]);
+          return '<div class="mb-3">' +
+            '<div class="flex justify-between items-baseline mb-1">' +
+              '<span class="text-cream text-[15px] font-semibold">' + label + '</span>' +
+              '<span class="text-creamdim text-[12px]">₹' + num(c[rk]) + '/plate</span>' +
+            '</div>' +
+            '<div class="seg">' + STATUSES.map(s =>
+              '<button class="' + (st === s ? 'on-' + s : '') + '" ' +
+              'onclick="setMeal(\'' + c.id + '\',\'' + iso + '\',\'' + k + '\',\'' + s + '\')">' +
+              s.charAt(0).toUpperCase() + s.slice(1) + '</button>').join('') + '</div>' +
+            '<div class="flex items-center gap-3 mt-1.5">' +
+              '<span class="text-creamdim text-[13px]">Guest plates</span>' +
+              '<button class="stepbtn" onclick="bumpGuest(\'' + c.id + '\',\'' + iso + '\',\'' + gk + '\',-1)" aria-label="Fewer guest plates">−</button>' +
+              '<span class="text-gold-300 font-bold text-[17px] w-6 text-center">' + g + '</span>' +
+              '<button class="stepbtn" onclick="bumpGuest(\'' + c.id + '\',\'' + iso + '\',\'' + gk + '\',1)" aria-label="More guest plates">+</button>' +
+            '</div></div>';
+        }).join('');
+
+    return '<div class="card p-4 mb-4">' +
+      '<div class="flex justify-between items-start mb-3">' +
+        '<div>' +
+          '<p class="text-cream font-semibold text-[17px]">' + esc(c.name) +
+            (c.vacFrom && c.vacTo ? ' <span class="text-saffron text-[12px]">🌴 ' + esc(c.vacFrom) + ' → ' + esc(c.vacTo) + '</span>' : '') + '</p>' +
+          (c.phone ? '<p class="text-creamdim text-[13px]">' + esc(c.phone) + '</p>' : '') +
+        '</div>' +
+        '<button class="text-creamdim text-[13px] underline" onclick="delTClient(\'' + c.id + '\',\'' + esc(c.name).replace(/'/g,'') + '\')">Remove</button>' +
+      '</div>' +
+      mealRows +
+      '<div class="grid grid-cols-2 gap-2 mt-3">' +
+        '<button class="btn-line" onclick="toggleVacPanel(\'' + c.id + '\')">🌴 Vacation</button>' +
+        '<button class="btn-gold" onclick="openReceipt(\'' + c.id + '\')">🧾 Monthly bill</button>' +
+      '</div>' +
+      '<div id="vacpanel-' + c.id + '" class="hidden mt-3 bg-maroon-950/60 rounded-lg p-3">' +
+        '<p class="text-creamdim text-[13px] mb-2">Meals in this range are paused and never billed.</p>' +
+        '<div class="grid grid-cols-2 gap-2 mb-2">' +
+          '<input id="vac-from-' + c.id + '" type="date" class="inp" value="' + esc(c.vacFrom) + '" />' +
+          '<input id="vac-to-'   + c.id + '" type="date" class="inp" value="' + esc(c.vacTo)   + '" />' +
+        '</div>' +
+        '<div class="grid grid-cols-2 gap-2">' +
+          '<button class="btn-gold" onclick="saveVacation(\'' + c.id + '\')">Save</button>' +
+          '<button class="btn-line" onclick="clearVacation(\'' + c.id + '\')">Clear</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* =====================================================
+   MONTH-END AUTOMATION + WEB RECEIPT (Stage 3)
+   ===================================================== */
+function buildBill(cid, ym) {
+  const c = S.cache.tiffin[cid] || {};
+  const [y, m] = ym.split('-').map(x => int(x));
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const counts = { b:0, l:0, d:0, gb:0, gl:0, gd:0 };
+  let vacDays = 0;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const iso = y + '-' + String(m).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    if (inVacation(c, iso)) { vacDays++; continue; }
+    const log = tlog(cid, iso);
+    MEALS.forEach(([k, _, __, gk]) => {
+      if (txt(log[k]) === 'given') {
+        counts[k]++;
+        counts[gk] += int(log[gk]);
+      }
+    });
+  }
+  const lines = [];
+  MEALS.forEach(([k, label, rk, gk]) => {
+    const rate = num(c[rk]);
+    if (counts[k] > 0) lines.push({ label: label, qty: counts[k], rate, amt: counts[k] * rate });
+    if (counts[gk] > 0) lines.push({ label: label + ' — guest plates', qty: counts[gk], rate, amt: counts[gk] * rate });
+  });
+  const total = lines.reduce((s, l) => s + l.amt, 0);
+  return { c, ym, y, m, lines, total, vacDays };
+}
+function openReceipt(cid) {
+  S.billClient = cid;
+  const now = new Date();
+  document.getElementById('rc-month').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0');
+  document.getElementById('modal-receipt').classList.remove('hidden');
+  refreshReceipt();
+}
+function closeReceipt() { document.getElementById('modal-receipt').classList.add('hidden'); }
+function refreshReceipt() {
+  const cid = S.billClient;
+  const ym = txt(document.getElementById('rc-month').value);
+  if (!cid || !ym) return;
+  const bill = buildBill(cid, ym);
+  const monthName = new Date(bill.y, bill.m - 1, 1)
+    .toLocaleDateString('en-IN', { month:'long', year:'numeric' });
+
+  document.getElementById('rc-body').innerHTML =
+    '<div class="text-center">' +
+      '<p class="font-display text-[22px] tracking-wide" style="color:#7A5410">Anantha Shree</p>' +
+      '<p class="text-[12px] tracking-widest uppercase" style="color:#A07E3B">Tiffin Services · Monthly Bill</p>' +
+    '</div>' +
+    '<div class="rule my-3"></div>' +
+    '<div class="flex justify-between text-[15px]"><span>Client</span><b>' + esc(bill.c.name) + '</b></div>' +
+    '<div class="flex justify-between text-[15px]"><span>Month</span><b>' + monthName + '</b></div>' +
+    (bill.vacDays ? '<div class="flex justify-between text-[14px]" style="color:#8A6420"><span>Vacation days excluded</span><span>' + bill.vacDays + '</span></div>' : '') +
+    '<div class="rule my-3"></div>' +
+    (bill.lines.length ? bill.lines.map(l =>
+      '<div class="flex justify-between text-[15px] mb-1">' +
+        '<span>' + esc(l.label) + ' × ' + l.qty + ' @ ₹' + l.rate + '</span>' +
+        '<span>₹' + l.amt.toFixed(0) + '</span>' +
+      '</div>').join('')
+    : '<p class="text-center text-[14px]" style="color:#8A6420">No meals marked “Given” this month yet.</p>') +
+    '<div class="rule my-3"></div>' +
+    '<div class="flex justify-between text-[19px] font-bold"><span>Total due</span><span>₹' + bill.total.toFixed(0) + '</span></div>' +
+    '<p class="text-center text-[12px] mt-3" style="color:#A07E3B">🙏 Dhanyavaadamulu — Anantha Shree</p>';
+
+  const waBtn = document.getElementById('rc-wa');
+  const phone = txt(bill.c.phone).replace(/\D/g, '');
+  const waPhone = phone.length === 10 ? '91' + phone : phone;
+  let msg = '🪔 *Anantha Shree — Tiffin Bill*\n' + monthName + '\nClient: ' + bill.c.name + '\n\n';
+  bill.lines.forEach(l => { msg += l.label + ' × ' + l.qty + ' @ ₹' + l.rate + ' = ₹' + l.amt.toFixed(0) + '\n'; });
+  if (bill.vacDays) msg += '(Vacation days excluded: ' + bill.vacDays + ')\n';
+  msg += '\n*Total due: ₹' + bill.total.toFixed(0) + '*\n\n🙏 Dhanyavaadamulu';
+  waBtn.onclick = () => {
+    if (!waPhone) { toast('Add a phone number to this client first.', true); return; }
+    window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(msg), '_blank');
+  };
+}
+
+/* =====================================================
+   SETUP — STAFF, RATES, BACKUP (Stage 3)
+   ===================================================== */
+function addStaff() {
+  const name = txt(document.getElementById('st-name').value);
+  if (!name) { toast('Enter the staff name first.', true); return; }
+  const id = uid('st');
+  save('staff/' + id, {
+    id, name,
+    role:  txt(document.getElementById('st-role').value),
+    wage:  num(document.getElementById('st-wage').value),
+    phone: txt(document.getElementById('st-phone').value),
+    created: Date.now()
+  }).then(() => {
+    ['st-name','st-wage','st-phone'].forEach(i => document.getElementById(i).value = '');
+    toast(name + ' added to the staff registry.');
+  });
+}
+function delStaff(id, name) {
+  if (confirm('Remove ' + name + ' from the staff registry?')) removeKey('staff', id);
+}
+function renderStaff() {
+  const box = document.getElementById('staff-list');
+  const items = Object.values(S.cache.staff || {}).filter(Boolean)
+    .sort((a, b) => txt(a.role).localeCompare(txt(b.role)) || txt(a.name).localeCompare(txt(b.name)));
+  box.innerHTML = items.length ? items.map(s => {
+    const ph = txt(s.phone).replace(/\D/g, '');
+    const wa = ph ? (ph.length === 10 ? '91' + ph : ph) : '';
+    return '<div class="card p-4 mb-2 flex items-center justify-between gap-3">' +
+      '<div class="flex-1">' +
+        '<p class="text-cream font-semibold">' + esc(s.name) + '</p>' +
+        '<p class="text-creamdim text-[14px]">' + esc(s.role) + ' · ₹' + num(s.wage) + '/day' + '</p>' +
+      '</div>' +
+      (wa ? '<a class="btn-line text-[13px]" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+      '<button class="text-creamdim text-[13px] underline" onclick="delStaff(\'' + s.id + '\',\'' + esc(s.name).replace(/'/g,'') + '\')">Remove</button>' +
+    '</div>';
+  }).join('')
+  : '<div class="card p-4 text-center text-creamdim text-sm">No staff registered yet. Add your Purohits and Chefs above.</div>';
+}
+
+const DEFAULT_RATES = [
+  { id:'rate_coconut', name:'Coconut',     unit:'per piece' },
+  { id:'rate_rice',    name:'Rice (Sona)', unit:'per kg' },
+  { id:'rate_dal',     name:'Toor Dal',    unit:'per kg' },
+  { id:'rate_labour',  name:'Labour wage', unit:'per day' }
+];
+function daysAgoLabel(ts) {
+  if (!ts) return 'never updated';
+  const days = Math.floor((Date.now() - num(ts)) / 86400000);
+  return days === 0 ? 'updated today' : 'updated ' + days + ' day' + (days > 1 ? 's' : '') + ' ago';
+}
+function setRate(id, name, unit, val) {
+  save('rates/' + id, { id, name, unit, price: num(val), updated: Date.now() })
+    .then(() => toast(name + ': ₹' + num(val) + ' ' + unit + '.'));
+}
+function addRate() {
+  const name = txt(document.getElementById('rt-name').value);
+  const unit = txt(document.getElementById('rt-unit').value) || 'per unit';
+  const price = num(document.getElementById('rt-price').value);
+  if (!name) { toast('Enter the item name first.', true); return; }
+  const id = uid('rate');
+  save('rates/' + id, { id, name, unit, price, updated: Date.now() })
+    .then(() => {
+      ['rt-name','rt-unit','rt-price'].forEach(i => document.getElementById(i).value = '');
+      toast(name + ' added to the rate book.');
+    });
+}
+function delRate(id, name) {
+  if (confirm('Remove ' + name + ' from the rate book?')) removeKey('rates', id);
+}
+function renderRates() {
+  const box = document.getElementById('rate-list');
+  const stored = S.cache.rates || {};
+  const rows = DEFAULT_RATES.map(d => Object.assign({}, d, stored[d.id] || {}));
+  Object.values(stored).forEach(r => {
+    if (r && !DEFAULT_RATES.some(d => d.id === r.id)) rows.push(r);
+  });
+  box.innerHTML = rows.map(r => {
+    const isDefault = DEFAULT_RATES.some(d => d.id === r.id);
+    return '<div class="card p-3 mb-2 flex items-center gap-3">' +
+      '<div class="flex-1">' +
+        '<p class="text-cream font-semibold text-[15px]">' + esc(r.name) + '</p>' +
+        '<p class="text-creamdim text-[12px]">' + esc(r.unit) + ' · ' + daysAgoLabel(r.updated) + '</p>' +
+      '</div>' +
+      '<div class="flex items-center gap-1">' +
+        '<span class="text-gold-300">₹</span>' +
+        '<input class="inp !w-24 text-right" type="number" min="0" step="0.5" value="' + (r.price !== undefined ? num(r.price) : '') + '" ' +
+          'onchange="setRate(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\',\'' + esc(r.unit).replace(/'/g,'') + '\', this.value)" />' +
+      '</div>' +
+      (!isDefault ? '<button class="text-creamdim text-[13px] underline" onclick="delRate(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\')">✕</button>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function exportJSON() {
+  toast('Preparing backup…');
+  S.db.ref('/').once('value').then(snap => {
+    const data = snap.val() || {};
+    const meta = { app: 'Anantha Shree Pro Enterprise', exported: new Date().toISOString(), version: 4 };
+    const blob = new Blob([JSON.stringify({ meta, data }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ananthashree_backup_' + isoOf(new Date()) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    toast('Backup downloaded. Keep it somewhere safe.');
+  }).catch(err => { toast('Backup failed. Check your connection.', true); console.error(err); });
+}
+function importJSON(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let parsed;
+    try { parsed = JSON.parse(reader.result); }
+    catch (e) { toast('That file is not valid JSON.', true); return; }
+    const data = parsed && parsed.data ? parsed.data : parsed;
+    if (!data || typeof data !== 'object') { toast('No usable data found in that file.', true); return; }
+    const branches = Object.keys(data).join(', ');
+    if (!confirm('Import backup?\n\nBranches found: ' + branches +
+      '\n\nRecords with matching IDs will be overwritten. Nothing else is deleted.')) return;
+    S.db.ref('/').update(data)
+      .then(() => toast('Backup imported successfully.'))
+      .catch(err => { toast('Import failed. Check your connection.', true); console.error(err); });
+  };
+  reader.readAsText(file);
+}
+
+/* =====================================================
+   SAHAAYA VOICE OS (Stage 2)
+   ===================================================== */
+const NAV_WORDS = {
+  home:'home', 'హోమ్':'home', 'ఇల్లు':'home', 'ముఖ్య':'home',
+  log:'log', 'లాగ్':'log', ceremony:'log', ceremonies:'log', 'కార్యక్రమం':'log',
+  ledger:'ledger', 'లెడ్జర్':'ledger', 'ఖాతా':'ledger', account:'ledger', converter:'ledger', profit:'ledger',
+  tiffin:'tiffin', 'టిఫిన్':'tiffin', 'టిఫన్':'tiffin', meal:'tiffin',
+  setup:'setup', 'సెటప్':'setup', settings:'setup', staff:'setup'
+};
+const EXP_WORDS = ['ఖర్చు','ఖర్చులు','kharchu','expense','spent','spend','paid'];
+const BOOK_WORDS = ['booking','book','బుకింగ్','కొత్త బుకింగ్','new event','కొత్త కార్యక్రమం'];
+const CAT_MAP = [
+  [['కూరగాయ','vegetable','కిరాణా','grocery','groceries','rice','బియ్యం','పప్పు','dal'], 'Groceries'],
+  [['పాలు','milk','పెరుగు','curd','ghee','నెయ్యి'], 'Dairy'],
+  [['గ్యాస్','gas','petrol','diesel','పెట్రోల్','డీజిల్','fuel'], 'Fuel'],
+  [['కూలి','labour','labor','staff','worker','పని'], 'Labour'],
+  [['పువ్వు','flower','పూలు'], 'Flowers'],
+  [['అద్దె','rent'], 'Rent'],
+  [['transport','auto','tempo','రవాణా'], 'Transport']
+];
+
+function ribbon(msg, hold) {
+  const r = document.getElementById('ribbon');
+  document.getElementById('ribbon-txt').textContent = msg;
+  r.classList.add('show');
+  clearTimeout(ribbon._t);
+  if (!hold) ribbon._t = setTimeout(() => r.classList.remove('show'), 5000);
+}
+
+function parseCommand(raw) {
+  const t = txt(raw).toLowerCase();
+  if (!t) return;
+
+  const hasExp = EXP_WORDS.some(w => t.includes(w));
+  const numMatch = t.match(/(\d+(?:\.\d+)?)/);
+  if (hasExp && numMatch) {
+    const amount = num(numMatch[1]);
+    let cat = 'General';
+    for (const [keys, name] of CAT_MAP) {
+      if (keys.some(k => t.includes(k))) { cat = name; break; }
+    }
+    const id = uid('ex');
+    save('expenses/' + id, {
+      id, cat, amount,
+      date: isoOf(new Date()),
+      ts: Date.now(), src: 'voice', note: txt(raw)
+    });
+    toast('₹' + amount + ' logged to ' + cat + '.');
+    return;
+  }
+
+  if (BOOK_WORDS.some(w => t.includes(w))) {
+    nav('log'); openBooking(); toast('Booking form opened.');
+    return;
+  }
+
+  for (const w in NAV_WORDS) {
+    if (t.includes(w)) { nav(NAV_WORDS[w]); toast('Opened ' + NAV_WORDS[w] + '.'); return; }
+  }
+
+  toast('Sahaaya heard you, but found no command in that.', true);
+}
+
+function initVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const mic = document.getElementById('btn-sahaaya');
+  const chip = document.getElementById('chip-lang');
+
+  chip.addEventListener('click', () => {
+    S.voiceLang = S.voiceLang === 'te-IN' ? 'en-IN' : 'te-IN';
+    chip.textContent = S.voiceLang === 'te-IN' ? 'తెలుగు' : 'English';
+    toast('Sahaaya listens in ' + (S.voiceLang === 'te-IN' ? 'Telugu' : 'English') + ' now.');
+  });
+
+  if (!SR) {
+    mic.addEventListener('click', () =>
+      toast('Voice needs Chrome or Samsung Internet on this phone.', true));
+    return;
+  }
+
+  mic.addEventListener('click', () => {
+    if (S.listening) { try { S.rec.stop(); } catch (e) {} return; }
+    const rec = new SR();
+    S.rec = rec;
+    rec.lang = S.voiceLang;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    rec.onstart = () => {
+      S.listening = true;
+      mic.classList.add('listening');
+      ribbon('🎙️ Listening (' + (S.voiceLang === 'te-IN' ? 'తెలుగు' : 'English') + ')…', true);
+    };
+    rec.onresult = ev => {
+      const words = txt(ev.results[0][0].transcript);
+      ribbon('🗣️ Heard: ' + words);
+      parseCommand(words);
+    };
+    rec.onerror = ev => {
+      if (ev.error === 'not-allowed') ribbon('Microphone permission is blocked. Allow it in browser settings.');
+      else ribbon('Sahaaya could not hear that. Tap the mic and try again.');
+    };
+    rec.onend = () => {
+      S.listening = false;
+      mic.classList.remove('listening');
+      const r = document.getElementById('ribbon');
+      setTimeout(() => { if (!S.listening) r.classList.remove('show'); }, 4500);
+    };
+    try { rec.start(); } catch (e) { toast('Could not start the microphone.', true); }
+  });
+}
+
+/* =====================================================
+   FIREBASE LISTENERS
+   ===================================================== */
+function attachListeners() {
+  const bind = (path, key, after) => {
+    const ref = S.db.ref(path);
+    const fn = ref.on('value', snap => {
+      S.cache[key] = snap.val() || {};
+      after();
+    });
+    S.listeners.push({ ref, fn });
+  };
+  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); });
+  bind('expenses',  'expenses',  () => { renderExpRecent(); renderPnl(); });
+  bind('pitru',     'pitru',     () => { renderHome(); renderPitruList(); });
+  bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); });
+  bind('tiffinlog', 'tiffinlog', () => {
+    renderTiffin(); renderPnl();
+    if (S.billClient && !document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
+  });
+  bind('staff',     'staff',     () => { renderStaff(); renderLog(); renderRadar(); });
+  bind('rates',     'rates',     () => { renderRates(); });
+  bind('pnl',       'pnl',       () => { renderPnl(); });
+  bind('settings',  'settings',  () => { renderRadar(); });
+}
+
+/* ---------- Header date line ---------- */
+(function headerDate() {
+  const d = new Date();
+  document.getElementById('hdr-sub').textContent =
+    d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+})();
+
+/* ---------- Boot ---------- */
+buildPn30();
+fillSelectors();
+(function initLedgerExtras() {
+  const now = new Date();
+  document.getElementById('pnl-month').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0');
+  document.getElementById('cr-date').value = isoOf(now);
+  document.getElementById('gc-date').value = isoOf(now);
+})();
+renderHome();
+renderPitruList();
+renderExpRecent();
+renderTiffin();
+renderStaff();
+renderRates();
+renderPnl();
+renderRadar();
+attachListeners();
+initVoice();
+nav('home');
+</script>
+</body>
+</html>
