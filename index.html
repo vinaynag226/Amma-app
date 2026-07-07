@@ -2802,10 +2802,52 @@ const RATE_CATEGORIES = [
   { id:'other',     icon:'🧰', labelKey:'cat_other' }
 ];
 const DEFAULT_RATES = [
+  /* ---- existing (unchanged — ids referenced by the Grocery Calculator, do not rename) ---- */
   { id:'rate_coconut', name:'Coconut',     unit:'per piece', cat:'groceries' },
   { id:'rate_rice',    name:'Rice (Sona)', unit:'per kg',    cat:'groceries' },
   { id:'rate_dal',     name:'Toor Dal',    unit:'per kg',    cat:'groceries' },
-  { id:'rate_labour',  name:'Labour wage', unit:'per day',   cat:'other' }
+  { id:'rate_labour',  name:'Labour wage', unit:'per day',   cat:'other' },
+
+  /* ---- 🌾 Groceries — Telugu/Kannada Brahmin ceremony staples (Pitru Karya + Vaikuntha Samaradhana) ---- */
+  { id:'rate_moongdal',    name:'Moong Dal (పెసర పప్పు)',        unit:'per kg',  cat:'groceries' },
+  { id:'rate_chanadal',    name:'Chana Dal (శనగ పప్పు)',         unit:'per kg',  cat:'groceries' },
+  { id:'rate_uraddal',     name:'Urad Dal (మినప్పప్పు)',          unit:'per kg',  cat:'groceries' },
+  { id:'rate_ghee',        name:'Ghee (నెయ్యి)',                 unit:'per kg',  cat:'groceries' },
+  { id:'rate_til',         name:'Black Sesame / Til (నువ్వులు)',  unit:'per kg',  cat:'groceries' },
+  { id:'rate_jaggery',     name:'Jaggery (బెల్లం)',              unit:'per kg',  cat:'groceries' },
+  { id:'rate_sugar',       name:'Sugar (చక్కెర)',                unit:'per kg',  cat:'groceries' },
+  { id:'rate_rocksalt',    name:'Rock Salt (సైంధవ లవణం)',        unit:'per kg',  cat:'groceries' },
+  { id:'rate_tamarind',    name:'Tamarind (చింతపండు)',           unit:'per kg',  cat:'groceries' },
+  { id:'rate_tiloil',      name:'Sesame / Til Oil (నువ్వుల నూనె)', unit:'per litre', cat:'groceries' },
+  { id:'rate_milk',        name:'Milk (పాలు)',                   unit:'per litre', cat:'groceries' },
+  { id:'rate_curd',        name:'Curd (పెరుగు)',                 unit:'per litre', cat:'groceries' },
+  { id:'rate_honey',       name:'Honey (తేనె)',                  unit:'per kg',  cat:'groceries' },
+  { id:'rate_groundnut',   name:'Groundnuts (వేరుశనగలు)',        unit:'per kg',  cat:'groceries' },
+  { id:'rate_rava',        name:'Rava / Sooji (రవ్వ)',            unit:'per kg',  cat:'groceries' },
+  { id:'rate_poha',        name:'Poha / Atukulu (అటుకులు)',       unit:'per kg',  cat:'groceries' },
+  { id:'rate_hing',        name:'Asafoetida / Inguva (ఇంగువ)',    unit:'per 100g', cat:'groceries' },
+  { id:'rate_turmeric',    name:'Turmeric Powder (పసుపు)',        unit:'per kg',  cat:'groceries' },
+  { id:'rate_chilipowder',  name:'Red Chili Powder (కారం పొడి)',   unit:'per kg',  cat:'groceries' },
+  { id:'rate_mustard',     name:'Mustard Seeds (ఆవాలు)',          unit:'per kg',  cat:'groceries' },
+  { id:'rate_cumin',       name:'Cumin Seeds (జీలకర్ర)',          unit:'per kg',  cat:'groceries' },
+  { id:'rate_coriander',   name:'Coriander Seeds (ధనియాలు)',      unit:'per kg',  cat:'groceries' },
+  { id:'rate_fenugreek',   name:'Fenugreek Seeds (మెంతులు)',       unit:'per kg',  cat:'groceries' },
+  { id:'rate_curryleaves', name:'Curry Leaves (కరివేపాకు)',       unit:'per bunch', cat:'groceries' },
+  { id:'rate_papad',       name:'Papad / Vadiyalu (అప్పడాలు)',    unit:'per kg',  cat:'groceries' },
+
+  /* ---- 🥬 Vegetables & Fruits — Pitru Karya + Vaikuntha Samaradhana ---- */
+  { id:'rate_rawbanana',    name:'Raw Banana (అరటికాయ)',        unit:'per kg',    cat:'veg' },
+  { id:'rate_ridgegourd',   name:'Ridge Gourd (బీరకాయ)',        unit:'per kg',    cat:'veg' },
+  { id:'rate_bottlegourd',  name:'Bottle Gourd (సొరకాయ)',       unit:'per kg',    cat:'veg' },
+  { id:'rate_brinjal',      name:'Brinjal (వంకాయ)',             unit:'per kg',    cat:'veg' },
+  { id:'rate_clusterbeans', name:'Cluster Beans (గోరుచిక్కుడు)', unit:'per kg',    cat:'veg' },
+  { id:'rate_carrot',       name:'Carrot (క్యారెట్)',            unit:'per kg',    cat:'veg' },
+  { id:'rate_potato',       name:'Potato (బంగాళదుంప)',          unit:'per kg',    cat:'veg' },
+  { id:'rate_pumpkin',      name:'Pumpkin (గుమ్మడికాయ)',        unit:'per kg',    cat:'veg' },
+  { id:'rate_drumstick',    name:'Drumstick (మునగకాయ)',         unit:'per kg',    cat:'veg' },
+  { id:'rate_okra',         name:'Okra (బెండకాయ)',              unit:'per kg',    cat:'veg' },
+  { id:'rate_bananafruit',  name:'Banana Fruit (అరటిపండు)',     unit:'per dozen', cat:'veg' },
+  { id:'rate_bananaleaves', name:'Banana Leaves (అరటి ఆకులు)',  unit:'per 25 leaves', cat:'veg' }
 ];
 function daysAgoLabel(ts) {
   if (!ts) return t('never_updated');
