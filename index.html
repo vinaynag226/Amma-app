@@ -650,16 +650,41 @@
       <input id="bk-guests" class="inp" type="number" min="0" data-ph="headcount" placeholder="Headcount" />
     </div>
 
-    <select id="bk-type" class="inp mb-2">
-      <option value="Upanayana" data-i18n="ty_upanayana">Upanayana</option>
-      <option value="Wedding" data-i18n="ty_wedding">Wedding</option>
-      <option value="Gruhapravesham" data-i18n="ty_gruha">Gruhapravesham</option>
-      <option value="Satyanarayana Vratam" data-i18n="ty_vratam">Satyanarayana Vratam</option>
+    <select id="bk-type" class="inp mb-2" onchange="onBkTypeChange()">
       <option value="Shraddha / Pitru Karya" data-i18n="ty_shraddha">Shraddha / Pitru Karya</option>
-      <option value="Birthday" data-i18n="ty_birthday">Birthday</option>
-      <option value="Corporate" data-i18n="ty_corporate">Corporate</option>
       <option value="Other" data-i18n="ty_other">Other</option>
     </select>
+
+    <!-- Customer/Relative linking — shown only for Shraddha / Pitru Karya bookings -->
+    <div id="bk-ritual-block" class="hidden">
+      <p class="text-creamdim text-[12px] mb-1" data-i18n="link_customer_lbl">Link to a registered Customer (optional)</p>
+      <select id="bk-customer" class="inp mb-2" onchange="onBkCustomerChange()">
+        <option value="" data-i18n="walkin_opt">— Walk-in (no record) —</option>
+      </select>
+      <select id="bk-relative" class="inp mb-2 hidden" onchange="onBkRelativeChange()">
+        <option value="" data-i18n="pick_relative_opt">— Pick a relative —</option>
+      </select>
+      <p id="bk-veda-display" class="text-creamdim text-[12px] mb-2 hidden"></p>
+
+      <div id="bk-freq-block" class="hidden mb-2">
+        <p class="text-creamdim text-[12px] mb-1" data-i18n="freq_lbl">How often is this performed?</p>
+        <div class="grid grid-cols-3 gap-2">
+          <label id="lbl-freq-onetime" class="chip on w-full text-center cursor-pointer !m-0 py-2">
+            <input type="radio" name="bk-freq" id="bk-freq-onetime" value="onetime" class="hidden" onchange="onBkFreqChange()" checked />
+            <span data-i18n="freq_onetime">One-time</span>
+          </label>
+          <label id="lbl-freq-monthly" class="chip w-full text-center cursor-pointer !m-0 py-2">
+            <input type="radio" name="bk-freq" id="bk-freq-monthly" value="monthly" class="hidden" onchange="onBkFreqChange()" />
+            <span data-i18n="freq_monthly">Monthly</span>
+          </label>
+          <label id="lbl-freq-yearly" class="chip w-full text-center cursor-pointer !m-0 py-2">
+            <input type="radio" name="bk-freq" id="bk-freq-yearly" value="yearly" class="hidden" onchange="onBkFreqChange()" />
+            <span data-i18n="freq_yearly">Yearly</span>
+          </label>
+        </div>
+      </div>
+      <div id="bk-schedule-preview" class="hidden bg-maroon-950/60 rounded-lg p-3 mb-2 text-[13px]"></div>
+    </div>
 
     <div class="grid grid-cols-2 gap-2 mb-2">
       <label id="lbl-svc-ceremony" class="chip on w-full text-center cursor-pointer !m-0 py-2.5">
@@ -1059,6 +1084,15 @@ const I18N = {
     ty_birthday:'Birthday', ty_corporate:'Corporate', ty_other:'Other',
     svc_ceremony:'Ceremony + Catering', svc_catering:'Catering only',
     svc_ceremony_only:'Ceremony Only', svc_catering_only:'Catering Only',
+    link_customer_lbl:'Link to a registered Customer (optional)',
+    walkin_opt:'— Walk-in (no record) —', pick_relative_opt:'— Pick a relative —',
+    freq_lbl:'How often is this performed?',
+    freq_onetime:'One-time', freq_monthly:'Monthly', freq_yearly:'Yearly',
+    masika_word:'Masika',
+    sched_preview_monthly_hdr:'{n} monthly bookings will be created:',
+    sched_preview_yearly_hdr:'Next Varshika booking:',
+    sched_preview_yearly_note:'Future years will keep showing automatically on this relative in the Ledger — create that booking when it gets closer.',
+    bookings_created_note:'bookings created for',
     pkg_regular:'Regular — ₹9,000', pkg_muthidya:'Muthidya — ₹9,500',
     extra_plates:'Extra plates', each_note:'(+₹250 each)',
     advance_ph:'Advance received (₹)',
@@ -1313,6 +1347,15 @@ const I18N = {
     ty_birthday:'పుట్టినరోజు', ty_corporate:'కార్పొరేట్', ty_other:'ఇతరం',
     svc_ceremony:'కార్యక్రమం + క్యాటరింగ్', svc_catering:'క్యాటరింగ్ మాత్రమే',
     svc_ceremony_only:'కార్యక్రమం మాత్రమే', svc_catering_only:'క్యాటరింగ్ మాత్రమే',
+    link_customer_lbl:'నమోదైన కస్టమర్‌తో లింక్ చేయండి (ఐచ్ఛికం)',
+    walkin_opt:'— వాక్-ఇన్ (రికార్డు లేదు) —', pick_relative_opt:'— బంధువును ఎంచుకోండి —',
+    freq_lbl:'ఇది ఎంత తరచుగా చేస్తారు?',
+    freq_onetime:'ఒకసారి', freq_monthly:'నెలవారీ', freq_yearly:'వార్షికం',
+    masika_word:'మాసికం',
+    sched_preview_monthly_hdr:'{n} నెలవారీ బుకింగ్‌లు చేర్చబడతాయి:',
+    sched_preview_yearly_hdr:'తదుపరి వార్షిక బుకింగ్:',
+    sched_preview_yearly_note:'రాబోయే సంవత్సరాలు ఈ బంధువు కార్డులో లెడ్జర్‌లో స్వయంచాలకంగా చూపిస్తూనే ఉంటాయి — దగ్గరవుతున్నప్పుడు ఆ బుకింగ్ చేయండి.',
+    bookings_created_note:'బుకింగ్‌లు చేర్చబడ్డాయి —',
     pkg_regular:'రెగ్యులర్ — ₹9,000', pkg_muthidya:'ముత్తైదువ — ₹9,500',
     extra_plates:'అదనపు ప్లేట్లు', each_note:'(ఒక్కొక్కటి +₹250)',
     advance_ph:'తీసుకున్న అడ్వాన్స్ (₹)',
@@ -1430,6 +1473,7 @@ const S = {
   relativeFormCustomerId: null,
   editingRelativeId: null,
   relativeConfirmTarget: null,
+  bkSelectedRelative: null,
   cache: {
     events:    {},
     expenses:  {},
@@ -1741,8 +1785,121 @@ function openBooking() {
     document.getElementById('bk-service-ceremony').checked = true;
   }
   onServiceToggle();
+  populateCustomerSelect();
+  onBkTypeChange();
   updateBkTotal();
 }
+/* ---------- Ritual booking: link to Customer/Relative, ask frequency, preview schedule ---------- */
+function onBkTypeChange() {
+  const isRitual = txt(document.getElementById('bk-type').value) === 'Shraddha / Pitru Karya';
+  document.getElementById('bk-ritual-block').classList.toggle('hidden', !isRitual);
+  if (!isRitual) resetRitualLinking();
+}
+function populateCustomerSelect() {
+  const sel = document.getElementById('bk-customer');
+  const customers = Object.values(S.cache.customers || {}).filter(Boolean)
+    .sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
+  sel.innerHTML = '<option value="">' + t('walkin_opt') + '</option>' +
+    customers.map(cu => '<option value="' + cu.id + '">' + esc(cu.name) + (cu.phone ? ' · ' + esc(cu.phone) : '') + '</option>').join('');
+}
+function onBkCustomerChange() {
+  const cid = txt(document.getElementById('bk-customer').value);
+  const relSel = document.getElementById('bk-relative');
+  if (!cid) {
+    relSel.classList.add('hidden');
+    relSel.innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>';
+    resetRitualLinking(true /* keep block visible, just clear selection downstream */);
+    return;
+  }
+  const relatives = Object.values(S.cache.relatives || {}).filter(r => r && r.customerId === cid);
+  relSel.innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>' +
+    relatives.map(r => '<option value="' + r.id + '">' + esc(r.name) + ' (' + esc(tRelation(r.relation)) + ')</option>').join('');
+  relSel.classList.remove('hidden');
+  document.getElementById('bk-veda-display').classList.add('hidden');
+  document.getElementById('bk-freq-block').classList.add('hidden');
+  document.getElementById('bk-schedule-preview').classList.add('hidden');
+  S.bkSelectedRelative = null;
+}
+function onBkRelativeChange() {
+  const rid = txt(document.getElementById('bk-relative').value);
+  const veda = document.getElementById('bk-veda-display');
+  const freqBlock = document.getElementById('bk-freq-block');
+  if (!rid) {
+    veda.classList.add('hidden');
+    freqBlock.classList.add('hidden');
+    document.getElementById('bk-schedule-preview').classList.add('hidden');
+    S.bkSelectedRelative = null;
+    return;
+  }
+  const rel = S.cache.relatives[rid];
+  if (!rel) return;
+  S.bkSelectedRelative = rel;
+  const cu = S.cache.customers[rel.customerId];
+  /* Auto-fill client/phone only if currently empty, so manual edits are never clobbered. */
+  const clientField = document.getElementById('bk-client');
+  const phoneField = document.getElementById('bk-phone');
+  if (!txt(clientField.value)) clientField.value = rel.name + ' (' + tRelation(rel.relation) + ')';
+  if (!txt(phoneField.value) && cu && cu.phone) phoneField.value = cu.phone;
+  veda.textContent = t('veda_lbl') + ': ' + tVeda(rel.vedaShakha);
+  veda.classList.remove('hidden');
+  freqBlock.classList.remove('hidden');
+  /* Reset frequency back to one-time each time a different relative is picked. */
+  document.getElementById('bk-freq-onetime').checked = true;
+  onBkFreqChange();
+}
+function resetRitualLinking(keepBlockOpen) {
+  document.getElementById('bk-relative').classList.add('hidden');
+  document.getElementById('bk-relative').innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>';
+  document.getElementById('bk-veda-display').classList.add('hidden');
+  document.getElementById('bk-freq-block').classList.add('hidden');
+  document.getElementById('bk-schedule-preview').classList.add('hidden');
+  document.getElementById('bk-freq-onetime').checked = true;
+  S.bkSelectedRelative = null;
+  if (!keepBlockOpen) document.getElementById('bk-customer').value = '';
+}
+function onBkFreqChange() {
+  const freq = document.querySelector('input[name="bk-freq"]:checked').value;
+  ['onetime','monthly','yearly'].forEach(f =>
+    document.getElementById('lbl-freq-' + f).classList.toggle('on', f === freq));
+  renderSchedulePreview(freq);
+}
+/* Full list of remaining monthly Masika occurrences (not just the next one) — used for the schedule preview
+   and for actually generating each booking when "Monthly" is confirmed. */
+function remainingMasikaDates(rel) {
+  const pakshaIdx = int(rel.paksha), tIdx = int(rel.tithi) || 1;
+  const info = relativeScheduleInfo(rel);
+  const dates = [];
+  if (info.masikaDone) return dates;
+  let cursor = new Date(); cursor.setHours(0, 0, 0, 0);
+  for (let idx = info.masikaCount + 1; idx <= 12; idx++) {
+    const p = nextMonthlyTithiOccurrence(pakshaIdx, tIdx, cursor);
+    if (!p) break;
+    dates.push({ index: idx, p });
+    cursor = new Date(p.dateObj);
+    cursor.setDate(cursor.getDate() + 1); /* step past this occurrence before searching for the next */
+  }
+  return dates;
+}
+function renderSchedulePreview(freq) {
+  const box = document.getElementById('bk-schedule-preview');
+  const rel = S.bkSelectedRelative;
+  if (!rel || freq === 'onetime') { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  if (freq === 'monthly') {
+    const dates = remainingMasikaDates(rel);
+    box.innerHTML = !dates.length
+      ? '<p class="text-creamdim">' + t('masika_complete_note') + '</p>'
+      : '<p class="text-gold-300 font-semibold mb-1">' + t('sched_preview_monthly_hdr').replace('{n}', dates.length) + '</p>' +
+        dates.map(d => '<p class="text-cream">' + t('masika_word') + ' ' + d.index + '/12 — ' + esc(fmtSchedDate(d.p)) + '</p>').join('');
+  } else if (freq === 'yearly') {
+    const info = relativeScheduleInfo(rel);
+    box.innerHTML =
+      '<p class="text-gold-300 font-semibold mb-1">' + t('sched_preview_yearly_hdr') + '</p>' +
+      '<p class="text-cream">' + esc(fmtSchedDate(info.nextVarshika)) + '</p>' +
+      '<p class="text-creamdim text-[11px] mt-1">' + t('sched_preview_yearly_note') + '</p>';
+  }
+  box.classList.remove('hidden');
+}
+
 function closeBooking() { document.getElementById('modal-booking').classList.add('hidden'); }
 function saveBooking() {
   const client = txt(document.getElementById('bk-client').value);
@@ -1754,14 +1911,41 @@ function saveBooking() {
   const surcharge = num(document.getElementById('bk-surcharge').value);
   const surchargeNote = txt(document.getElementById('bk-surcharge-note').value);
   const service = document.getElementById('bk-service-catering').checked ? 'catering' : 'ceremony';
-  const id = uid('ev');
-  save('events/' + id, {
-    id, client,
+  const type = txt(document.getElementById('bk-type').value);
+  const isRitual = type === 'Shraddha / Pitru Karya' && !document.getElementById('bk-ritual-block').classList.contains('hidden');
+  const rel = isRitual ? S.bkSelectedRelative : null;
+  const freqEl = document.querySelector('input[name="bk-freq"]:checked');
+  const freq = (rel && freqEl) ? freqEl.value : 'onetime';
+
+  const ritualMeta = rel ? {
+    customerId: rel.customerId,
+    relativeId: rel.id,
+    vedaShakha: rel.vedaShakha,
+    relation:   rel.relation
+  } : {};
+
+  /* Work out the actual date(s) to book, based on the chosen frequency. */
+  let occurrences; /* array of { date, masikaIndex? } */
+  if (freq === 'monthly') {
+    const dates = remainingMasikaDates(rel);
+    if (!dates.length) { toast(t('masika_complete_note'), true); return; }
+    occurrences = dates.map(d => ({ date: d.p.iso, masikaIndex: d.index }));
+  } else if (freq === 'yearly') {
+    const info = relativeScheduleInfo(rel);
+    if (!info.nextVarshika) { toast(t('pt_next_unknown'), true); return; }
+    occurrences = [{ date: info.nextVarshika.iso }];
+  } else {
+    const dateVal = txt(document.getElementById('bk-date').value);
+    if (!dateVal) { toast(t('err_date'), true); return; }
+    occurrences = [{ date: dateVal }];
+  }
+
+  const baseFields = {
+    client,
     phone:          txt(document.getElementById('bk-phone').value),
-    date:           txt(document.getElementById('bk-date').value),
     guests:         int(document.getElementById('bk-guests').value),
-    type:           txt(document.getElementById('bk-type').value),
-    service:        service,
+    type,
+    service,
     floor:          txt(document.getElementById('bk-floor').value) || 'first',
     package:        pkgKey,
     basePrice:      pkg.price,
@@ -1774,16 +1958,35 @@ function saveBooking() {
     advance:        num(document.getElementById('bk-advance').value),
     locked:         true,
     created:        Date.now()
-  }).then(() => {
-    closeBooking();
-    toast(t('booking_saved') + ' ' + client + ' — ' + inr(pkg.price + extra * EXTRA_PLATE + prasadam + surcharge));
-    ['bk-client','bk-phone','bk-date','bk-guests','bk-advance','bk-prasadam','bk-surcharge','bk-surcharge-note'].forEach(i => document.getElementById(i).value = '');
-    document.getElementById('bk-extra').value = 0;
-    document.getElementById('bk-floor').value = 'first';
-    document.getElementById('bk-service-ceremony').checked = true;
-    onServiceToggle();
-    updateBkTotal();
+  };
+  const seriesId = occurrences.length > 1 ? uid('series') : null;
+  const updates = {};
+  occurrences.forEach(occ => {
+    const id = uid('ev');
+    const evData = Object.assign({ id }, baseFields, ritualMeta, { date: occ.date, ritualFrequency: freq });
+    if (seriesId) evData.seriesId = seriesId;
+    if (occ.masikaIndex !== undefined) evData.masikaIndex = occ.masikaIndex;
+    updates['events/' + id] = evData;
   });
+
+  S.db.ref('/').update(updates).then(() => {
+    closeBooking();
+    toast(occurrences.length > 1
+      ? occurrences.length + ' ' + t('bookings_created_note') + ' — ' + client
+      : t('booking_saved') + ' ' + client + ' — ' + inr(baseFields.total));
+    resetBookingForm();
+  }).catch(err => { toast(t('err_save'), true); console.error(err); });
+}
+function resetBookingForm() {
+  ['bk-client','bk-phone','bk-date','bk-guests','bk-advance','bk-prasadam','bk-surcharge','bk-surcharge-note'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('bk-extra').value = 0;
+  document.getElementById('bk-floor').value = 'first';
+  document.getElementById('bk-service-ceremony').checked = true;
+  document.getElementById('bk-type').value = 'Shraddha / Pitru Karya';
+  onServiceToggle();
+  onBkTypeChange();
+  resetRitualLinking();
+  updateBkTotal();
 }
 /* ---------- Post-save lockout: inline edits guarded, removal via double-confirm ---------- */
 function toggleLock(id) {
@@ -2021,6 +2224,10 @@ function renderLog() {
           '<p class="text-creamdim text-[13px]">' + esc(e.date || t('date_tbd')) + ' · ' + int(e.guests) + ' ' + t('pax') + ' · ' +
             (e.floor === 'first' ? t('floor_first') : t('floor_ground')) +
             (e.service === 'catering' ? ' · ' + t('svc_catering') : '') + '</p>' +
+          (e.vedaShakha ? '<p class="text-creamdim text-[12px] mt-0.5">' + esc(tVeda(e.vedaShakha)) +
+            (e.relation ? ' · ' + esc(tRelation(e.relation)) : '') +
+            (e.ritualFrequency === 'monthly' && e.masikaIndex ? ' · ' + t('masika_word') + ' ' + e.masikaIndex + '/12' : '') +
+            (e.ritualFrequency === 'yearly' ? ' · ' + t('next_varshika_lbl') : '') + '</p>' : '') +
         '</div>' +
         '<button class="text-[12px] ' + (isLocked ? 'text-creamdim' : 'text-gold-300') + ' underline shrink-0 ml-2 whitespace-nowrap" onclick="toggleLock(\'' + e.id + '\')">' +
           (isLocked ? t('lock_locked') : t('lock_unlocked')) +
@@ -2381,12 +2588,14 @@ function doV2G() {
    ===================================================== */
 /* Note: nextPitruOccurrence() (defined later in this file) does the Masa+Paksha+Tithi
    annual scan; function declarations are hoisted, so it's safely callable from here. */
-/* Scans forward (up to ~40 days) for the next date matching this Paksha+Tithi, ignoring Masa —
-   i.e. the next monthly Masika occurrence. */
+/* Scans forward for the next date matching this Paksha+Tithi, ignoring Masa — i.e. the
+   next monthly Masika occurrence. Window is 70 days (not ~30) because an adhika masa
+   (intercalary lunar month) can occasionally push the gap between consecutive same-Tithi
+   dates out to ~59 days instead of the usual ~29.5 — confirmed by direct testing. */
 function nextMonthlyTithiOccurrence(pakshaIdx, tIdx, fromDate) {
   const start = fromDate ? new Date(fromDate) : new Date();
   start.setHours(0, 0, 0, 0);
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 70; i++) {
     const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
     const p = panchangaFor(d.getFullYear(), d.getMonth() + 1, d.getDate());
     if (p.pakshaIdx === pakshaIdx && p.tIdx === tIdx) return p;
