@@ -476,63 +476,116 @@
   <!-- 5 ▸ SETUP -->
   <section id="view-setup" data-view="setup" class="hidden">
 
-    <!-- App language (per-device) -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="app_lang">App Language</h2>
-    <div class="card p-4 mb-6">
-      <div class="grid grid-cols-2 gap-2">
-        <button id="lang-en" class="btn-line" onclick="setLang('en')">English</button>
-        <button id="lang-te" class="btn-line" onclick="setLang('te')">తెలుగు</button>
+    <!-- ================= PANEL 1 — APP LANGUAGE ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-lang','setup-arrow-lang')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="app_lang">🌐 App Language</span>
+        <span id="setup-arrow-lang" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-lang" class="acc-body px-4 pb-4">
+        <div class="card p-4 bg-maroon-950/40">
+          <div class="grid grid-cols-2 gap-2">
+            <button id="lang-en" class="btn-line" onclick="setLang('en')">English</button>
+            <button id="lang-te" class="btn-line" onclick="setLang('te')">తెలుగు</button>
+          </div>
+          <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="lang_note">This choice is saved only on this phone. All phones read the same live data.</p>
+        </div>
       </div>
-      <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="lang_note">This choice is saved only on this phone. All phones read the same live data.</p>
     </div>
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="staff_registry">Staff Registry</h2>
-    <div class="card p-4 mb-3">
-      <div class="flex gap-2 mb-2">
-        <input id="st-name" class="inp flex-1" data-ph="name_ph" placeholder="Name" />
-        <button class="btn-line shrink-0" onclick="pickStaffContact()" title="Pick from Contacts">📇</button>
+    <!-- ================= PANEL 2 — STAFF REGISTRY (open by default) ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-staff','setup-arrow-staff')" aria-expanded="true">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="staff_registry_panel">👥 Staff Registry</span>
+        <span id="setup-arrow-staff" class="acc-arrow text-gold-400 text-lg" style="transform:rotate(90deg)">▸</span>
+      </button>
+      <div id="setup-body-staff" class="acc-body px-4 pb-4" style="max-height:none" data-open="1">
+        <div class="card p-4 mb-3 bg-maroon-950/40">
+          <div class="flex gap-2 mb-2">
+            <input id="st-name" class="inp flex-1" data-ph="name_ph" placeholder="Name" />
+            <button class="btn-line shrink-0" onclick="pickStaffContact()" title="Pick from Contacts">📇</button>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <select id="st-role" class="inp">
+              <option value="Purohit" data-i18n="role_purohit">Purohit</option>
+              <option value="Chef" data-i18n="role_chef">Chef</option>
+              <option value="Helper" data-i18n="role_helper">Helper</option>
+              <option value="Brahmin" data-i18n="role_brahmin">Brahmin</option>
+            </select>
+            <input id="st-wage" class="inp" type="number" min="0" data-ph="wage_ph" placeholder="Wage ₹/day" />
+          </div>
+          <input id="st-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
+          <button id="st-save-btn" class="btn-gold w-full" onclick="saveStaffForm()" data-i18n="add_registry">Add to registry</button>
+          <button id="st-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetStaffForm()" data-i18n="cancel_edit">Cancel edit</button>
+        </div>
+        <div id="staff-list"></div>
       </div>
-      <div class="grid grid-cols-2 gap-2 mb-2">
-        <select id="st-role" class="inp">
-          <option value="Purohit" data-i18n="role_purohit">Purohit</option>
-          <option value="Chef" data-i18n="role_chef">Chef</option>
-          <option value="Helper" data-i18n="role_helper">Helper</option>
-          <option value="Brahmin" data-i18n="role_brahmin">Brahmin</option>
-        </select>
-        <input id="st-wage" class="inp" type="number" min="0" data-ph="wage_ph" placeholder="Wage ₹/day" />
+    </div>
+
+    <!-- ================= PANEL 3 — CONTACTS DIRECTORY ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-contacts','setup-arrow-contacts')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="contacts_hdr">📇 Contacts Directory</span>
+        <span id="setup-arrow-contacts" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-contacts" class="acc-body px-4 pb-4">
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <label id="lbl-contacts-staff" class="chip on w-full text-center cursor-pointer !m-0 py-2.5">
+            <input type="radio" name="contacts-tab" id="contacts-tab-staff" value="staff" class="hidden" onchange="onContactsTabChange()" checked />
+            <span data-i18n="contacts_staff_tab">👥 Staff</span>
+          </label>
+          <label id="lbl-contacts-customers" class="chip w-full text-center cursor-pointer !m-0 py-2.5">
+            <input type="radio" name="contacts-tab" id="contacts-tab-customers" value="customers" class="hidden" onchange="onContactsTabChange()" />
+            <span data-i18n="contacts_customers_tab">🧑‍🤝‍🧑 Customers</span>
+          </label>
+        </div>
+        <div id="contacts-list"></div>
       </div>
-      <input id="st-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
-      <button id="st-save-btn" class="btn-gold w-full" onclick="saveStaffForm()" data-i18n="add_registry">Add to registry</button>
-      <button id="st-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetStaffForm()" data-i18n="cancel_edit">Cancel edit</button>
-    </div>
-    <div id="staff-list" class="mb-6"></div>
-
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="rate_book">Live Market Rate Book</h2>
-    <p class="text-creamdim text-[13px] mb-2" data-i18n="rate_note">Update today's prices — the grocery calculator and costings use these live rates.</p>
-    <div id="rate-list" class="mb-6"></div>
-
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="db_backup">Database Backup</h2>
-    <div class="card p-4 mb-3">
-      <button class="btn-gold w-full mb-2" onclick="exportJSON()" data-i18n="export_btn">⬇ Export full backup (JSON)</button>
-      <p class="text-creamdim text-[12px] mt-1 leading-snug" data-i18n="backup_note">Export saves everything as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.</p>
     </div>
 
-    <!-- ===== SECURE CLOUD-JSON EXPORT BACKUP (copyable text engine) ===== -->
-    <div class="card p-4 mb-3">
-      <p class="text-gold-300 font-semibold mb-1" data-i18n="cloud_backup_title">☁️ Secure Cloud-JSON Export Backup</p>
-      <p class="text-creamdim text-[12px] mb-3 leading-snug" data-i18n="cloud_backup_note">Generates a full text copy of your database you can paste into Notes, Google Keep, WhatsApp-to-self, or email — a second layer of insurance beyond the file above.</p>
-      <button class="btn-gold w-full" onclick="generateCloudBackupText()" data-i18n="cloud_backup_btn">Generate copyable backup text</button>
-      <textarea id="cloud-backup-text" class="inp hidden mt-3" rows="7" readonly style="font-family:monospace; font-size:11.5px; line-height:1.4;"></textarea>
-      <button id="cloud-backup-copy" class="btn-line w-full mt-2 hidden" onclick="copyCloudBackupText()" data-i18n="copy_btn">📋 Copy to clipboard</button>
+    <!-- ================= PANEL 4 — LIVE MARKET RATE BOOK ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-rates','setup-arrow-rates')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="rate_book">🌾 Live Market Rate Book</span>
+        <span id="setup-arrow-rates" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-rates" class="acc-body px-4 pb-4">
+        <p class="text-creamdim text-[13px] mb-2" data-i18n="rate_note">Update today's prices — the grocery calculator and costings use these live rates.</p>
+        <div id="rate-list"></div>
+      </div>
     </div>
 
-    <!-- ===== IMPORT RESTORE FILE ===== -->
-    <div class="card p-4">
-      <p class="text-gold-300 font-semibold mb-2" data-i18n="import_restore_title">Import Restore File</p>
-      <button class="btn-line w-full" onclick="document.getElementById('imp-file').click()" data-i18n="import_btn">⬆ Import backup (JSON)</button>
-      <input id="imp-file" type="file" accept=".json,application/json" class="hidden" onchange="importJSON(this)" />
-      <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="import_restore_note">Restores from a file exported above, or a Cloud-JSON text block pasted into a .json file. Uses update() — matching IDs are overwritten, nothing else is wiped.</p>
+    <!-- ================= PANEL 5 — DATA BACKUP & RESTORE ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-backup','setup-arrow-backup')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="db_backup">💾 Data Backup & Restore</span>
+        <span id="setup-arrow-backup" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-backup" class="acc-body px-4 pb-4">
+        <div class="card p-4 mb-3 bg-maroon-950/40">
+          <button class="btn-gold w-full mb-2" onclick="exportJSON()" data-i18n="export_btn">⬇ Export full backup (JSON)</button>
+          <p class="text-creamdim text-[12px] mt-1 leading-snug" data-i18n="backup_note">Export saves everything as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.</p>
+        </div>
+
+        <!-- ===== SECURE CLOUD-JSON EXPORT BACKUP (copyable text engine) ===== -->
+        <div class="card p-4 mb-3 bg-maroon-950/40">
+          <p class="text-gold-300 font-semibold mb-1" data-i18n="cloud_backup_title">☁️ Secure Cloud-JSON Export Backup</p>
+          <p class="text-creamdim text-[12px] mb-3 leading-snug" data-i18n="cloud_backup_note">Generates a full text copy of your database you can paste into Notes, Google Keep, WhatsApp-to-self, or email — a second layer of insurance beyond the file above.</p>
+          <button class="btn-gold w-full" onclick="generateCloudBackupText()" data-i18n="cloud_backup_btn">Generate copyable backup text</button>
+          <textarea id="cloud-backup-text" class="inp hidden mt-3" rows="7" readonly style="font-family:monospace; font-size:11.5px; line-height:1.4;"></textarea>
+          <button id="cloud-backup-copy" class="btn-line w-full mt-2 hidden" onclick="copyCloudBackupText()" data-i18n="copy_btn">📋 Copy to clipboard</button>
+        </div>
+
+        <!-- ===== IMPORT RESTORE FILE ===== -->
+        <div class="card p-4 bg-maroon-950/40">
+          <p class="text-gold-300 font-semibold mb-2" data-i18n="import_restore_title">Import Restore File</p>
+          <button class="btn-line w-full" onclick="document.getElementById('imp-file').click()" data-i18n="import_btn">⬆ Import backup (JSON)</button>
+          <input id="imp-file" type="file" accept=".json,application/json" class="hidden" onchange="importJSON(this)" />
+          <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="import_restore_note">Restores from a file exported above, or a Cloud-JSON text block pasted into a .json file. Uses update() — matching IDs are overwritten, nothing else is wiped.</p>
+        </div>
+      </div>
     </div>
+
   </section>
 
 </main>
@@ -1059,16 +1112,20 @@ const I18N = {
     rc_none:'No meals marked "Given" this month yet.',
     rc_total:'Total due', rc_thanks:'🙏 Dhanyavaadamulu — Anantha Shree',
     /* setup */
-    app_lang:'App Language',
+    app_lang:'🌐 App Language',
     lang_note:'This choice is saved only on this phone. All phones read the same live data.',
-    staff_registry:'Staff Registry', add_registry:'Add to registry',
+    staff_registry:'Staff Registry', staff_registry_panel:'👥 Staff Registry', add_registry:'Add to registry',
     name_ph:'Name', wage_ph:'Wage ₹/day', phone_ph:'Phone (WhatsApp)',
     no_staff:'No staff registered yet. Add your Purohits and Chefs above.',
     per_day:'/day',
     role_purohit:'Purohit', role_chef:'Chef', role_helper:'Helper', role_brahmin:'Brahmin',
     role_server:'Server', role_cleaner:'Cleaner', role_driver:'Driver',
     edit_word:'Edit', save_changes:'Save changes', cancel_edit:'Cancel edit',
-    rate_book:'Live Market Rate Book',
+    contacts_hdr:'📇 Contacts Directory',
+    contacts_staff_tab:'👥 Staff', contacts_customers_tab:'🧑‍🤝‍🧑 Customers',
+    contact_src_customer:'Customer', contact_src_booking:'Booking', contact_src_tiffin:'Tiffin',
+    no_customer_contacts:'No customer contacts yet. They will appear here from bookings, tiffin clients, or the Customer registry.',
+    rate_book:'🌾 Live Market Rate Book',
     rate_note:"Update today's prices — the grocery calculator and costings use these live rates.",
     cat_groceries:'Groceries', cat_veg:'Vegetables & Fruits', cat_pooja:'Pooja Samagri', cat_other:'Services & Other',
     rate_cat_empty:'No items in this category yet. Add one below.',
@@ -1076,7 +1133,7 @@ const I18N = {
     rt_name_ph:'Item (e.g. Jaggery)', rt_unit_ph:'Unit (per kg)', rt_price_ph:'Price ₹',
     never_updated:'never updated', updated_today:'updated today',
     updated_pre:'updated', days_ago:'days ago', day_ago:'day ago',
-    db_backup:'Database Backup',
+    db_backup:'💾 Data Backup & Restore',
     export_btn:'⬇ Export full backup (JSON)', import_btn:'⬆ Import backup (JSON)',
     backup_note:'Export saves everything — bookings, expenses, tiffins, staff, rates and Pitru register — as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.',
     cloud_backup_title:'☁️ Secure Cloud-JSON Export Backup',
@@ -1326,16 +1383,20 @@ const I18N = {
     rc_none:'ఈ నెలలో ఇంకా "ఇచ్చాం" అని గుర్తించిన భోజనాలు లేవు.',
     rc_total:'చెల్లించాల్సిన మొత్తం', rc_thanks:'🙏 ధన్యవాదములు — అనంత శ్రీ',
     /* setup */
-    app_lang:'యాప్ భాష',
+    app_lang:'🌐 యాప్ భాష',
     lang_note:'ఈ ఎంపిక ఈ ఫోన్‌లో మాత్రమే ఉంటుంది. అన్ని ఫోన్లు ఒకే డేటానే చూపిస్తాయి.',
-    staff_registry:'సిబ్బంది పట్టిక', add_registry:'పట్టికలో చేర్చండి',
+    staff_registry:'సిబ్బంది పట్టిక', staff_registry_panel:'👥 సిబ్బంది పట్టిక', add_registry:'పట్టికలో చేర్చండి',
     name_ph:'పేరు', wage_ph:'కూలి ₹/రోజు', phone_ph:'ఫోన్ (వాట్సాప్)',
     no_staff:'ఇంకా సిబ్బంది లేరు. పురోహితులు, వంటవారిని పైన చేర్చండి.',
     per_day:'/రోజు',
     role_purohit:'పురోహితుడు', role_chef:'వంటవారు', role_helper:'సహాయకుడు', role_brahmin:'బ్రాహ్మణుడు',
     role_server:'వడ్డించేవారు', role_cleaner:'శుభ్రం చేసేవారు', role_driver:'డ్రైవర్',
     edit_word:'మార్చు', save_changes:'మార్పులు సేవ్ చేయండి', cancel_edit:'సవరణ రద్దు',
-    rate_book:'మార్కెట్ ధరల పుస్తకం',
+    contacts_hdr:'📇 కాంటాక్ట్ డైరెక్టరీ',
+    contacts_staff_tab:'👥 సిబ్బంది', contacts_customers_tab:'🧑‍🤝‍🧑 కస్టమర్లు',
+    contact_src_customer:'కస్టమర్', contact_src_booking:'బుకింగ్', contact_src_tiffin:'టిఫిన్',
+    no_customer_contacts:'ఇంకా కస్టమర్ కాంటాక్ట్‌లు లేవు. బుకింగ్‌లు, టిఫిన్ క్లయింట్లు, లేదా కస్టమర్ పట్టిక నుండి ఇక్కడ కనిపిస్తాయి.',
+    rate_book:'🌾 మార్కెట్ ధరల పుస్తకం',
     rate_note:'నేటి ధరలు నమోదు చేయండి — సరుకుల లెక్కలు ఈ ధరలనే వాడతాయి.',
     cat_groceries:'కిరాణా సరుకులు', cat_veg:'కూరగాయలు & పండ్లు', cat_pooja:'పూజా సామాగ్రి', cat_other:'సేవలు & ఇతరం',
     rate_cat_empty:'ఈ విభాగంలో ఇంకా వస్తువులు లేవు. కింద ఒకటి చేర్చండి.',
@@ -1343,7 +1404,7 @@ const I18N = {
     rt_name_ph:'వస్తువు (ఉదా: బెల్లం)', rt_unit_ph:'కొలత (కిలోకి)', rt_price_ph:'ధర ₹',
     never_updated:'ఇంకా నమోదు కాలేదు', updated_today:'ఈరోజు నమోదైంది',
     updated_pre:'నమోదైంది', days_ago:'రోజుల క్రితం', day_ago:'రోజు క్రితం',
-    db_backup:'డేటా బ్యాకప్',
+    db_backup:'💾 డేటా బ్యాకప్',
     export_btn:'⬇ పూర్తి బ్యాకప్ డౌన్‌లోడ్ (JSON)', import_btn:'⬆ బ్యాకప్ ఇంపోర్ట్ (JSON)',
     backup_note:'బ్యాకప్‌లో అన్నీ ఉంటాయి — బుకింగ్‌లు, ఖర్చులు, టిఫిన్లు, సిబ్బంది, ధరలు, పితృ పట్టిక. ఇంపోర్ట్ update() ద్వారా కలుపుతుంది; ఒకే ID ఉన్నవి మారతాయి, మిగతావి చెరిగిపోవు.',
     cloud_backup_title:'☁️ సురక్షిత క్లౌడ్-JSON బ్యాకప్',
@@ -1493,6 +1554,7 @@ const S = {
   bkSelectedRelative: null,
   editingEventId: null,
   bookingEditConfirmTarget: null,
+  logCardOpen: {},
   cache: {
     events:    {},
     expenses:  {},
@@ -1566,7 +1628,7 @@ function applyLang() {
   headerDateLine();
   renderHome(); renderLog(); renderPitruList(); renderExpRecent();
   renderTiffin(); renderStaff(); renderRates(); renderPnl(); renderRadar();
-  renderAnniversaryRadar(); renderCustomerRegistry();
+  renderAnniversaryRadar(); renderCustomerRegistry(); renderContactsCurrentTab();
   updateBkTotal();
   if (!document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
 }
@@ -2341,6 +2403,13 @@ function staffManagePanel(e, staffArr, dim) {
     ).join('')
   ).join('');
 }
+function toggleLogCard(id) {
+  S.logCardOpen[id] = !S.logCardOpen[id];
+  const body = document.getElementById('log-body-' + id);
+  const arrow = document.getElementById('log-arrow-' + id);
+  if (body) body.classList.toggle('hidden', !S.logCardOpen[id]);
+  if (arrow) arrow.style.transform = S.logCardOpen[id] ? 'rotate(90deg)' : 'rotate(0deg)';
+}
 function renderLog() {
   const box = document.getElementById('log-list');
   const todayISO = isoOf(new Date());
@@ -2362,6 +2431,9 @@ function renderLog() {
     const doneCount = [0,1,2,3,4].filter(i => e.check && e.check[i]).length;
     const isLocked = e.locked !== false;
     const dim = isLocked ? ' opacity-50 cursor-not-allowed' : '';
+    /* Persisted per-card, so ticking a checklist item, assigning staff, or toggling the
+       lock (all of which re-render this whole list) never snaps an open card shut. */
+    const isOpen = !!S.logCardOpen[e.id];
 
     const checkChips = [0,1,2,3,4].map(i =>
       '<button class="chip ' + (e.check && e.check[i] ? 'on' : '') + dim + '" ' +
@@ -2370,52 +2442,62 @@ function renderLog() {
 
     const staffChips = staffManagePanel(e, staffArr, dim);
 
-    return '<div class="card p-4 mb-4' + (isLocked ? ' card-alert' : '') + '">' +
-      '<div class="flex justify-between items-start">' +
-        '<div>' +
-          '<p class="text-cream font-semibold text-[16px]">' + esc(tType(e.type)) + ' — ' + esc(e.client) + '</p>' +
-          '<p class="text-creamdim text-[13px]">' + esc(e.date || t('date_tbd')) + ' · ' + int(e.guests) + ' ' + t('pax') + ' · ' +
-            (e.floor === 'first' ? t('floor_first') : t('floor_ground')) +
-            (e.service === 'catering' ? ' · ' + t('svc_catering') : '') + '</p>' +
-          (e.vedaShakha ? '<p class="text-creamdim text-[12px] mt-0.5">' + esc(tVeda(e.vedaShakha)) +
-            (e.relation ? ' · ' + esc(tRelation(e.relation)) : '') +
-            (e.ritualFrequency === 'monthly' && e.masikaIndex ? ' · ' + t('masika_word') + ' ' + e.masikaIndex + '/12' : '') +
-            (e.ritualFrequency === 'yearly' ? ' · ' + t('next_varshika_lbl') : '') + '</p>' : '') +
+    return '<div class="card mb-4 overflow-hidden' + (isLocked ? ' card-alert' : '') + '">' +
+      '<button class="w-full flex items-center justify-between gap-2 text-left p-4" onclick="toggleLogCard(\'' + e.id + '\')">' +
+        '<div class="flex-1 min-w-0">' +
+          '<p class="text-cream font-semibold text-[16px] truncate">' + esc(e.client) + '</p>' +
+          '<p class="text-creamdim text-[13px]">' + esc(e.date || t('date_tbd')) + ' · ' + (isLocked ? '🔒' : '🔓') + '</p>' +
         '</div>' +
-        '<button class="text-[12px] ' + (isLocked ? 'text-creamdim' : 'text-gold-300') + ' underline shrink-0 ml-2 whitespace-nowrap" onclick="toggleLock(\'' + e.id + '\')">' +
-          (isLocked ? t('lock_locked') : t('lock_unlocked')) +
-        '</button>' +
+        '<span id="log-arrow-' + e.id + '" class="text-gold-400 text-lg shrink-0" style="display:inline-block;transition:transform .2s ease;transform:' + (isOpen ? 'rotate(90deg)' : 'rotate(0deg)') + '">▸</span>' +
+      '</button>' +
+
+      '<div id="log-body-' + e.id + '" class="' + (isOpen ? '' : 'hidden') + ' px-4 pb-4">' +
+        '<div class="flex justify-between items-start">' +
+          '<div>' +
+            '<p class="text-cream font-semibold text-[15px]">' + esc(tType(e.type)) + '</p>' +
+            '<p class="text-creamdim text-[13px]">' + int(e.guests) + ' ' + t('pax') + ' · ' +
+              (e.floor === 'first' ? t('floor_first') : t('floor_ground')) +
+              (e.service === 'catering' ? ' · ' + t('svc_catering') : '') + '</p>' +
+            (e.vedaShakha ? '<p class="text-creamdim text-[12px] mt-0.5">' + esc(tVeda(e.vedaShakha)) +
+              (e.relation ? ' · ' + esc(tRelation(e.relation)) : '') +
+              (e.ritualFrequency === 'monthly' && e.masikaIndex ? ' · ' + t('masika_word') + ' ' + e.masikaIndex + '/12' : '') +
+              (e.ritualFrequency === 'yearly' ? ' · ' + t('next_varshika_lbl') : '') + '</p>' : '') +
+          '</div>' +
+          '<button class="text-[12px] ' + (isLocked ? 'text-creamdim' : 'text-gold-300') + ' underline shrink-0 ml-2 whitespace-nowrap" onclick="toggleLock(\'' + e.id + '\')">' +
+            (isLocked ? t('lock_locked') : t('lock_unlocked')) +
+          '</button>' +
+        '</div>' +
+
+        '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
+          '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('assigned_staff_hdr') + '</p>' +
+          assignedStaffSummary(e, staffArr) +
+        '</div>' +
+
+        '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
+          '<div class="flex justify-between"><span class="text-creamdim">' +
+            t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) + ' ' + t('package_word') + '</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
+          (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('extra_plates_x') + ' ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '') +
+          (num(e.prasadamCharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('prasadam_line') + '</span><span>' + inr(num(e.prasadamCharge)) + '</span></div>' : '') +
+          (num(e.surcharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('surcharge_line') + (e.surchargeNote ? ' — ' + esc(e.surchargeNote) : '') + '</span><span>' + inr(num(e.surcharge)) + '</span></div>' : '') +
+          '<div class="flex justify-between text-gold-300 font-bold mt-1"><span>' + t('total') + '</span><span>' + inr(total) + '</span></div>' +
+          '<div class="flex justify-between text-[13px]"><span class="text-creamdim">' + t('advance_word') + ' ' + inr(num(e.advance)) + '</span>' +
+            '<span class="' + (balance > 0 ? 'text-saffron' : 'text-creamdim') + '">' + t('balance_word') + ' ' + inr(balance) + '</span></div>' +
+        '</div>' +
+
+        '<div class="grid grid-cols-3 gap-2 mt-3">' +
+          '<button class="btn-line text-[13px]" onclick="togglePanel(\'evck-' + e.id + '\')">☑ ' + doneCount + '/5</button>' +
+          '<button class="btn-line text-[13px]" onclick="togglePanel(\'evst-' + e.id + '\')">' + t('staff_chip') + '</button>' +
+          '<button class="btn-line text-[13px]" onclick="planGrocery(\'' + e.id + '\')">' + t('grocery_chip') + '</button>' +
+        '</div>' +
+        '<button class="btn-gold w-full mt-2" onclick="waEvent(\'' + e.id + '\')">' + t('wa_confirm') + '</button>' +
+
+        '<div id="evck-' + e.id + '" class="hidden mt-3">' + checkChips + '</div>' +
+        '<div id="evst-' + e.id + '" class="hidden mt-3">' + staffChips + '</div>' +
+
+        '<button class="btn-line w-full mt-3 !text-[13px]" onclick="editBookingEvent(\'' + e.id + '\')">✏️ ' + t('edit_booking_btn') + '</button>' +
+        '<button class="btn-line w-full mt-2 !text-[13px]" style="border-color:rgba(194,84,80,.5);color:#E8A9A6" ' +
+          'onclick="openRemoveConfirm(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove_record') + '</button>' +
       '</div>' +
-
-      '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
-        '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('assigned_staff_hdr') + '</p>' +
-        assignedStaffSummary(e, staffArr) +
-      '</div>' +
-
-      '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
-        '<div class="flex justify-between"><span class="text-creamdim">' +
-          t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) + ' ' + t('package_word') + '</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
-        (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('extra_plates_x') + ' ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '') +
-        (num(e.prasadamCharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('prasadam_line') + '</span><span>' + inr(num(e.prasadamCharge)) + '</span></div>' : '') +
-        (num(e.surcharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('surcharge_line') + (e.surchargeNote ? ' — ' + esc(e.surchargeNote) : '') + '</span><span>' + inr(num(e.surcharge)) + '</span></div>' : '') +
-        '<div class="flex justify-between text-gold-300 font-bold mt-1"><span>' + t('total') + '</span><span>' + inr(total) + '</span></div>' +
-        '<div class="flex justify-between text-[13px]"><span class="text-creamdim">' + t('advance_word') + ' ' + inr(num(e.advance)) + '</span>' +
-          '<span class="' + (balance > 0 ? 'text-saffron' : 'text-creamdim') + '">' + t('balance_word') + ' ' + inr(balance) + '</span></div>' +
-      '</div>' +
-
-      '<div class="grid grid-cols-3 gap-2 mt-3">' +
-        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evck-' + e.id + '\')">☑ ' + doneCount + '/5</button>' +
-        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evst-' + e.id + '\')">' + t('staff_chip') + '</button>' +
-        '<button class="btn-line text-[13px]" onclick="planGrocery(\'' + e.id + '\')">' + t('grocery_chip') + '</button>' +
-      '</div>' +
-      '<button class="btn-gold w-full mt-2" onclick="waEvent(\'' + e.id + '\')">' + t('wa_confirm') + '</button>' +
-
-      '<div id="evck-' + e.id + '" class="hidden mt-3">' + checkChips + '</div>' +
-      '<div id="evst-' + e.id + '" class="hidden mt-3">' + staffChips + '</div>' +
-
-      '<button class="btn-line w-full mt-3 !text-[13px]" onclick="editBookingEvent(\'' + e.id + '\')">✏️ ' + t('edit_booking_btn') + '</button>' +
-      '<button class="btn-line w-full mt-2 !text-[13px]" style="border-color:rgba(194,84,80,.5);color:#E8A9A6" ' +
-        'onclick="openRemoveConfirm(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove_record') + '</button>' +
     '</div>';
   }).join('');
 }
@@ -3629,6 +3711,78 @@ function renderStaff() {
   : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_staff') + '</div>';
 }
 
+/* =====================================================
+   CONTACTS DIRECTORY — separate Staff / Customer lists
+   Read-only quick-lookup view. Staff comes straight from
+   the Staff Registry. Customers are aggregated from three
+   sources (formal Customer registry, booking clients, and
+   Tiffin subscribers) and de-duplicated by phone number so
+   the same family doesn't appear three times.
+   ===================================================== */
+function onContactsTabChange() {
+  const tab = document.querySelector('input[name="contacts-tab"]:checked').value;
+  document.getElementById('lbl-contacts-staff').classList.toggle('on', tab === 'staff');
+  document.getElementById('lbl-contacts-customers').classList.toggle('on', tab === 'customers');
+  renderContactsList(tab);
+}
+function renderContactsCurrentTab() {
+  const checked = document.querySelector('input[name="contacts-tab"]:checked');
+  renderContactsList(checked ? checked.value : 'staff');
+}
+function buildCustomerContactList() {
+  const map = {};
+  const addContact = (name, phone, source) => {
+    name = txt(name); phone = txt(phone);
+    if (!name) return;
+    const digits = phone.replace(/\D/g, '');
+    const key = digits || ('name:' + name.toLowerCase());
+    if (!map[key]) map[key] = { name, phone, sources: {} };
+    if (!map[key].phone && phone) map[key].phone = phone;
+    map[key].sources[source] = true;
+  };
+  Object.values(S.cache.customers || {}).filter(Boolean).forEach(c => addContact(c.name, c.phone, 'customer'));
+  Object.values(S.cache.events || {}).filter(Boolean).forEach(e => addContact(e.client, e.phone, 'booking'));
+  Object.values(S.cache.tiffin || {}).filter(Boolean).forEach(c => addContact(c.name, c.phone, 'tiffin'));
+  return Object.values(map).sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
+}
+function renderContactsList(tab) {
+  const box = document.getElementById('contacts-list');
+  if (!box) return;
+  if (tab === 'customers') {
+    const items = buildCustomerContactList();
+    box.innerHTML = items.length ? items.map(c => {
+      const ph = txt(c.phone).replace(/\D/g, '');
+      const wa = ph ? (ph.length === 10 ? '91' + ph : ph) : '';
+      const tags = Object.keys(c.sources).map(s => t('contact_src_' + s)).join(' · ');
+      return '<div class="card p-3 mb-2 flex items-center justify-between gap-2">' +
+        '<div class="flex-1 min-w-0">' +
+          '<p class="text-cream font-semibold truncate">' + esc(c.name) + '</p>' +
+          '<p class="text-creamdim text-[12px] truncate">' + (c.phone ? esc(c.phone) + ' · ' : '') + tags + '</p>' +
+        '</div>' +
+        (wa ? '<a class="btn-line text-[13px] shrink-0" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬</a>' : '') +
+        (ph ? '<a class="btn-line text-[13px] shrink-0" href="tel:' + ph + '">📞</a>' : '') +
+      '</div>';
+    }).join('')
+    : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_customer_contacts') + '</div>';
+  } else {
+    const items = Object.values(S.cache.staff || {}).filter(Boolean)
+      .sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
+    box.innerHTML = items.length ? items.map(s => {
+      const ph = txt(s.phone).replace(/\D/g, '');
+      const wa = ph ? (ph.length === 10 ? '91' + ph : ph) : '';
+      return '<div class="card p-3 mb-2 flex items-center justify-between gap-2">' +
+        '<div class="flex-1 min-w-0">' +
+          '<p class="text-cream font-semibold truncate">' + esc(s.name) + '</p>' +
+          '<p class="text-creamdim text-[12px] truncate">' + esc(tRole(s.role)) + (s.phone ? ' · ' + esc(s.phone) : '') + '</p>' +
+        '</div>' +
+        (wa ? '<a class="btn-line text-[13px] shrink-0" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬</a>' : '') +
+        (ph ? '<a class="btn-line text-[13px] shrink-0" href="tel:' + ph + '">📞</a>' : '') +
+      '</div>';
+    }).join('')
+    : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_staff') + '</div>';
+  }
+}
+
 
 const RATE_CATEGORIES = [
   { id:'groceries', icon:'🌾', labelKey:'cat_groceries' },
@@ -3682,7 +3836,21 @@ const DEFAULT_RATES = [
   { id:'rate_drumstick',    name:'Drumstick (మునగకాయ)',         unit:'per kg',    cat:'veg' },
   { id:'rate_okra',         name:'Okra (బెండకాయ)',              unit:'per kg',    cat:'veg' },
   { id:'rate_bananafruit',  name:'Banana Fruit (అరటిపండు)',     unit:'per dozen', cat:'veg' },
-  { id:'rate_bananaleaves', name:'Banana Leaves (అరటి ఆకులు)',  unit:'per 25 leaves', cat:'veg' }
+  { id:'rate_bananaleaves', name:'Banana Leaves (అరటి ఆకులు)',  unit:'per 25 leaves', cat:'veg' },
+
+  /* ---- 📿 Pooja Samagri — items used in Pitru Karya and Vaikuntha Samaradhana rituals ---- */
+  { id:'rate_darbha',       name:'Darbha / Kusha Grass (దర్భ)',        unit:'per bundle',     cat:'pooja' },
+  { id:'rate_kumkum',       name:'Kumkum (కుంకుమ)',                    unit:'per 100g',       cat:'pooja' },
+  { id:'rate_camphor',      name:'Camphor / Karpuram (కర్పూరం)',       unit:'per 100g',       cat:'pooja' },
+  { id:'rate_agarbatti',    name:'Agarbatti / Incense (అగరబత్తులు)',   unit:'per packet',     cat:'pooja' },
+  { id:'rate_cottonwicks',  name:'Cotton Wicks / Vattulu (వత్తులు)',    unit:'per packet',     cat:'pooja' },
+  { id:'rate_sandalwood',   name:'Sandalwood Paste (గంధం)',            unit:'per 100g',       cat:'pooja' },
+  { id:'rate_betelleaves',  name:'Betel Leaves (తమలపాకులు)',           unit:'per 25 leaves',  cat:'pooja' },
+  { id:'rate_arecanuts',    name:'Areca Nuts / Vakkalu (వక్కలు)',       unit:'per 100g',       cat:'pooja' },
+  { id:'rate_poojaflowers', name:'Flowers (పూలు)',                     unit:'per kg',         cat:'pooja' },
+  { id:'rate_sacredthread', name:'Sacred Thread / Yagnopavitam (జందెం)', unit:'per set',      cat:'pooja' },
+  { id:'rate_akshintalu',   name:'Akshintalu / Turmeric Rice (అక్షింతలు)', unit:'per kg',      cat:'pooja' },
+  { id:'rate_newcloth',     name:'New Cotton Cloth / Vastram (వస్త్రం)', unit:'per piece',     cat:'pooja' }
 ];
 function daysAgoLabel(ts) {
   if (!ts) return t('never_updated');
@@ -4015,17 +4183,17 @@ function attachListeners() {
     });
     S.listeners.push({ ref, fn });
   };
-  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); });
+  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); renderContactsCurrentTab(); });
   bind('expenses',  'expenses',  () => { renderExpRecent(); renderPnl(); });
   bind('pitru',     'pitru',     () => { renderPitruList(); });
-  bind('customers', 'customers', () => { renderCustomerRegistry(); });
+  bind('customers', 'customers', () => { renderCustomerRegistry(); renderContactsCurrentTab(); });
   bind('relatives', 'relatives', () => { renderCustomerRegistry(); });
-  bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); });
+  bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); renderContactsCurrentTab(); });
   bind('tiffinlog', 'tiffinlog', () => {
     renderTiffin(); renderPnl();
     if (S.billClient && !document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
   });
-  bind('staff',     'staff',     () => { renderStaff(); renderLog(); renderRadar(); });
+  bind('staff',     'staff',     () => { renderStaff(); renderLog(); renderRadar(); renderContactsCurrentTab(); });
   bind('rates',     'rates',     () => { renderRates(); });
   bind('pnl',       'pnl',       () => { renderPnl(); });
   bind('settings',  'settings',  () => { renderRadar(); });
