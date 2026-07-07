@@ -396,29 +396,42 @@
 
     <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="rate_book">Live Market Rate Book</h2>
     <p class="text-creamdim text-[13px] mb-2" data-i18n="rate_note">Update today's prices — the grocery calculator and costings use these live rates.</p>
-    <div id="rate-list" class="mb-3"></div>
-    <div class="card p-4 mb-6">
-      <p class="text-gold-300 font-semibold mb-2 text-[15px]" data-i18n="add_custom">Add a custom item</p>
-      <div class="grid grid-cols-2 gap-2 mb-2">
-        <input id="rt-name" class="inp" data-ph="rt_name_ph" placeholder="Item (e.g. Jaggery)" />
-        <input id="rt-unit" class="inp" data-ph="rt_unit_ph" placeholder="Unit (per kg)" />
-      </div>
-      <div class="flex gap-2">
-        <input id="rt-price" class="inp flex-1" type="number" min="0" step="0.5" data-ph="rt_price_ph" placeholder="Price ₹" />
-        <button class="btn-gold shrink-0" onclick="addRate()" data-i18n="add_btn">Add</button>
-      </div>
-    </div>
+    <div id="rate-list" class="mb-6"></div>
 
     <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="db_backup">Database Backup</h2>
-    <div class="card p-4">
+    <div class="card p-4 mb-3">
       <button class="btn-gold w-full mb-2" onclick="exportJSON()" data-i18n="export_btn">⬇ Export full backup (JSON)</button>
+      <p class="text-creamdim text-[12px] mt-1 leading-snug" data-i18n="backup_note">Export saves everything as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.</p>
+    </div>
+
+    <!-- ===== SECURE CLOUD-JSON EXPORT BACKUP (copyable text engine) ===== -->
+    <div class="card p-4 mb-3">
+      <p class="text-gold-300 font-semibold mb-1" data-i18n="cloud_backup_title">☁️ Secure Cloud-JSON Export Backup</p>
+      <p class="text-creamdim text-[12px] mb-3 leading-snug" data-i18n="cloud_backup_note">Generates a full text copy of your database you can paste into Notes, Google Keep, WhatsApp-to-self, or email — a second layer of insurance beyond the file above.</p>
+      <button class="btn-gold w-full" onclick="generateCloudBackupText()" data-i18n="cloud_backup_btn">Generate copyable backup text</button>
+      <textarea id="cloud-backup-text" class="inp hidden mt-3" rows="7" readonly style="font-family:monospace; font-size:11.5px; line-height:1.4;"></textarea>
+      <button id="cloud-backup-copy" class="btn-line w-full mt-2 hidden" onclick="copyCloudBackupText()" data-i18n="copy_btn">📋 Copy to clipboard</button>
+    </div>
+
+    <!-- ===== IMPORT RESTORE FILE ===== -->
+    <div class="card p-4">
+      <p class="text-gold-300 font-semibold mb-2" data-i18n="import_restore_title">Import Restore File</p>
       <button class="btn-line w-full" onclick="document.getElementById('imp-file').click()" data-i18n="import_btn">⬆ Import backup (JSON)</button>
       <input id="imp-file" type="file" accept=".json,application/json" class="hidden" onchange="importJSON(this)" />
-      <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="backup_note">Export saves everything as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.</p>
+      <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="import_restore_note">Restores from a file exported above, or a Cloud-JSON text block pasted into a .json file. Uses update() — matching IDs are overwritten, nothing else is wiped.</p>
     </div>
   </section>
 
 </main>
+
+<!-- ==================================================== -->
+<!-- ADD-CUSTOM-RATE — DOUBLE-CONFIRMATION MODAL          -->
+<!-- ==================================================== -->
+<div id="modal-addrateconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="rar-body"></div>
+  </div>
+</div>
 
 <!-- ==================================================== -->
 <!-- BOOKING MODAL                                        -->
@@ -521,6 +534,30 @@
     </div>
     <input id="tc-name" class="inp mb-2" data-ph="tc_name_ph" placeholder="Client / family name" />
     <input id="tc-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
+
+    <p class="text-creamdim text-[13px] mb-1" data-i18n="sub_start_lbl">Subscription starting date <span class="text-saffron">*</span></p>
+    <input id="tc-start" class="inp mb-3" type="date" required />
+
+    <p class="text-creamdim text-[13px] mb-1" data-i18n="meal_plan_lbl">Meal preference</p>
+    <div class="grid grid-cols-2 gap-2 mb-3">
+      <label id="lbl-plan-breakfast" class="chip w-full text-center cursor-pointer !m-0 py-2">
+        <input type="radio" name="tc-plan" id="tc-plan-breakfast" value="breakfast" class="hidden" onchange="onMealPlanToggle()" />
+        <span data-i18n="plan_breakfast">Breakfast Only</span>
+      </label>
+      <label id="lbl-plan-lunch" class="chip w-full text-center cursor-pointer !m-0 py-2">
+        <input type="radio" name="tc-plan" id="tc-plan-lunch" value="lunch" class="hidden" onchange="onMealPlanToggle()" />
+        <span data-i18n="plan_lunch">Lunch Only</span>
+      </label>
+      <label id="lbl-plan-dinner" class="chip w-full text-center cursor-pointer !m-0 py-2">
+        <input type="radio" name="tc-plan" id="tc-plan-dinner" value="dinner" class="hidden" onchange="onMealPlanToggle()" />
+        <span data-i18n="plan_dinner">Dinner Only</span>
+      </label>
+      <label id="lbl-plan-all" class="chip on w-full text-center cursor-pointer !m-0 py-2">
+        <input type="radio" name="tc-plan" id="tc-plan-all" value="all" class="hidden" onchange="onMealPlanToggle()" checked />
+        <span data-i18n="plan_all">All Three Times</span>
+      </label>
+    </div>
+
     <p class="text-creamdim text-[13px] mb-1" data-i18n="rate_per_meal">Rate per meal (₹)</p>
     <div class="grid grid-cols-3 gap-2 mb-3">
       <input id="tc-rb" class="inp" type="number" min="0" data-ph="ph_bfast" placeholder="B'fast" />
@@ -750,6 +787,8 @@ const I18N = {
     role_server:'Server', role_cleaner:'Cleaner', role_driver:'Driver',
     rate_book:'Live Market Rate Book',
     rate_note:"Update today's prices — the grocery calculator and costings use these live rates.",
+    cat_groceries:'Groceries', cat_veg:'Vegetables & Fruits', cat_pooja:'Pooja Samagri', cat_other:'Services & Other',
+    rate_cat_empty:'No items in this category yet. Add one below.',
     add_custom:'Add a custom item', add_btn:'Add',
     rt_name_ph:'Item (e.g. Jaggery)', rt_unit_ph:'Unit (per kg)', rt_price_ph:'Price ₹',
     never_updated:'never updated', updated_today:'updated today',
@@ -757,6 +796,13 @@ const I18N = {
     db_backup:'Database Backup',
     export_btn:'⬇ Export full backup (JSON)', import_btn:'⬆ Import backup (JSON)',
     backup_note:'Export saves everything — bookings, expenses, tiffins, staff, rates and Pitru register — as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.',
+    cloud_backup_title:'☁️ Secure Cloud-JSON Export Backup',
+    cloud_backup_note:'Generates a full text copy of your database you can paste into Notes, Google Keep, WhatsApp-to-self, or email — a second layer of insurance beyond the file above.',
+    cloud_backup_btn:'Generate copyable backup text', copy_btn:'📋 Copy to clipboard',
+    cloud_backup_ready:'Backup text ready below. Copy it somewhere safe.',
+    cloud_backup_copied:'Copied to clipboard.', cloud_backup_copy_fail:'Could not copy. Select and copy manually.',
+    import_restore_title:'Import Restore File',
+    import_restore_note:'Restores from a file exported above, or a Cloud-JSON text block pasted into a .json file. Uses update() — matching IDs are overwritten, nothing else is wiped.',
     /* booking modal */
     bm_title:'New Booking', client_name_ph:'Client name',
     ty_upanayana:'Upanayana', ty_wedding:'Wedding', ty_gruha:'Gruhapravesham',
@@ -779,8 +825,15 @@ const I18N = {
     rmv_title2:'Are you absolutely sure?',
     rmv_body2:'This action cannot be undone. All checklist, staff assignment, and payment records for this booking will be permanently erased.',
     rmv_confirm_final:'Yes, delete permanently', booking_removed:'Booking removed.',
+    rar_title1:'Add this item to the rate book?',
+    rar_body2:'Please confirm the details are correct before adding this to your live rate book.',
+    rar_title2:'Confirm addition',
+    rar_confirm_final:'Yes, add item',
     /* tiffin client modal */
     tc_title:'New Tiffin Client', tc_name_ph:'Client / family name',
+    sub_start_lbl:'Subscription starting date', err_sub_start:'Pick a subscription starting date first.',
+    sub_since:'Since', meal_plan_lbl:'Meal preference',
+    plan_breakfast:'Breakfast Only', plan_lunch:'Lunch Only', plan_dinner:'Dinner Only', plan_all:'All Three Times',
     rate_per_meal:'Rate per meal (₹)',
     ph_bfast:"B'fast", ph_lunch:'Lunch', ph_dinner:'Dinner',
     save_client:'Save client',
@@ -923,6 +976,8 @@ const I18N = {
     role_server:'వడ్డించేవారు', role_cleaner:'శుభ్రం చేసేవారు', role_driver:'డ్రైవర్',
     rate_book:'మార్కెట్ ధరల పుస్తకం',
     rate_note:'నేటి ధరలు నమోదు చేయండి — సరుకుల లెక్కలు ఈ ధరలనే వాడతాయి.',
+    cat_groceries:'కిరాణా సరుకులు', cat_veg:'కూరగాయలు & పండ్లు', cat_pooja:'పూజా సామాగ్రి', cat_other:'సేవలు & ఇతరం',
+    rate_cat_empty:'ఈ విభాగంలో ఇంకా వస్తువులు లేవు. కింద ఒకటి చేర్చండి.',
     add_custom:'కొత్త వస్తువు చేర్చండి', add_btn:'చేర్చండి',
     rt_name_ph:'వస్తువు (ఉదా: బెల్లం)', rt_unit_ph:'కొలత (కిలోకి)', rt_price_ph:'ధర ₹',
     never_updated:'ఇంకా నమోదు కాలేదు', updated_today:'ఈరోజు నమోదైంది',
@@ -930,6 +985,13 @@ const I18N = {
     db_backup:'డేటా బ్యాకప్',
     export_btn:'⬇ పూర్తి బ్యాకప్ డౌన్‌లోడ్ (JSON)', import_btn:'⬆ బ్యాకప్ ఇంపోర్ట్ (JSON)',
     backup_note:'బ్యాకప్‌లో అన్నీ ఉంటాయి — బుకింగ్‌లు, ఖర్చులు, టిఫిన్లు, సిబ్బంది, ధరలు, పితృ పట్టిక. ఇంపోర్ట్ update() ద్వారా కలుపుతుంది; ఒకే ID ఉన్నవి మారతాయి, మిగతావి చెరిగిపోవు.',
+    cloud_backup_title:'☁️ సురక్షిత క్లౌడ్-JSON బ్యాకప్',
+    cloud_backup_note:'మీ డేటాబేస్ పూర్తి టెక్స్ట్ కాపీని తయారుచేస్తుంది — దీన్ని Notes, Google Keep, వాట్సాప్-టు-సెల్ఫ్, లేదా ఇమెయిల్‌లో అతికించవచ్చు — పైన ఉన్న ఫైల్‌కి అదనపు రక్షణగా.',
+    cloud_backup_btn:'కాపీ చేయగల బ్యాకప్ టెక్స్ట్ తయారుచేయండి', copy_btn:'📋 క్లిప్‌బోర్డ్‌కి కాపీ చేయండి',
+    cloud_backup_ready:'బ్యాకప్ టెక్స్ట్ కింద సిద్ధంగా ఉంది. సురక్షితంగా ఎక్కడైనా కాపీ చేయండి.',
+    cloud_backup_copied:'క్లిప్‌బోర్డ్‌కి కాపీ అయింది.', cloud_backup_copy_fail:'కాపీ కాలేదు. మాన్యువల్‌గా సెలెక్ట్ చేసి కాపీ చేయండి.',
+    import_restore_title:'రీస్టోర్ ఫైల్ ఇంపోర్ట్',
+    import_restore_note:'పైన ఎక్స్‌పోర్ట్ చేసిన ఫైల్ నుండి, లేదా క్లౌడ్-JSON టెక్స్ట్‌ను .json ఫైల్‌లో అతికించి రీస్టోర్ చేయవచ్చు. update() వాడుతుంది — ఒకే ID ఉన్నవి మారతాయి, మిగతావి చెరిగిపోవు.',
     /* booking modal */
     bm_title:'కొత్త బుకింగ్', client_name_ph:'క్లయింట్ పేరు',
     ty_upanayana:'ఉపనయనం', ty_wedding:'పెళ్లి', ty_gruha:'గృహప్రవేశం',
@@ -953,8 +1015,15 @@ const I18N = {
     rmv_title2:'మీరు ఖచ్చితంగా ఉన్నారా?',
     rmv_body2:'ఈ చర్య వెనక్కి తీసుకోలేము. ఈ బుకింగ్ యొక్క చెక్‌లిస్ట్, సిబ్బంది కేటాయింపు, చెల్లింపుల రికార్డులు అన్నీ శాశ్వతంగా తొలగించబడతాయి.',
     rmv_confirm_final:'అవును, శాశ్వతంగా తొలగించండి', booking_removed:'బుకింగ్ తొలగించబడింది.',
+    rar_title1:'ఈ వస్తువుని ధరల పుస్తకంలో చేర్చాలా?',
+    rar_body2:'ఈ వస్తువుని మీ లైవ్ ధరల పుస్తకంలో చేర్చే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి.',
+    rar_title2:'చేర్చడాన్ని నిర్ధారించండి',
+    rar_confirm_final:'అవును, వస్తువుని చేర్చండి',
     /* tiffin client modal */
     tc_title:'కొత్త టిఫిన్ క్లయింట్', tc_name_ph:'క్లయింట్ / కుటుంబం పేరు',
+    sub_start_lbl:'సబ్‌స్క్రిప్షన్ ప్రారంభ తేదీ', err_sub_start:'ముందుగా సబ్‌స్క్రిప్షన్ ప్రారంభ తేదీ ఎంచుకోండి.',
+    sub_since:'నుండి', meal_plan_lbl:'భోజన ప్రాధాన్యత',
+    plan_breakfast:'ఉదయం టిఫిన్ మాత్రమే', plan_lunch:'మధ్యాహ్న భోజనం మాత్రమే', plan_dinner:'రాత్రి భోజనం మాత్రమే', plan_all:'మూడు పూటలా',
     rate_per_meal:'ఒక్కో భోజనం ధర (₹)',
     ph_bfast:'టిఫిన్', ph_lunch:'మధ్యాహ్నం', ph_dinner:'రాత్రి',
     save_client:'క్లయింట్ సేవ్ చేయండి',
@@ -1023,6 +1092,8 @@ const S = {
   tiffinDate: null,
   billClient: null,
   removeTarget: null,
+  addRateTarget: null,
+  rateCatOpen: {},
   cache: {
     events:    {},
     expenses:  {},
@@ -1872,6 +1943,12 @@ function renderExpRecent() {
    ===================================================== */
 const MEALS = [ ['b','breakfast','rateB','gb'], ['l','lunch','rateL','gl'], ['d','dinner','rateD','gd'] ];
 const STATUSES = ['given','pending','skip'];
+const MEAL_PLAN_I18N = { breakfast:'plan_breakfast', lunch:'plan_lunch', dinner:'plan_dinner', all:'plan_all' };
+function mealsForClient(c) {
+  const plan = txt(c.mealPlan) || 'all';
+  if (plan === 'all') return MEALS;
+  return MEALS.filter(m => m[0] === plan[0]); /* 'breakfast'→'b', 'lunch'→'l', 'dinner'→'d' */
+}
 
 function inVacation(c, iso) {
   const f = txt(c.vacFrom), tt = txt(c.vacTo);
@@ -1886,15 +1963,31 @@ function shiftTiffinDate(delta) {
   S.tiffinDate = isoOf(new Date(parts[0], parts[1] - 1, parts[2] + delta));
   renderTiffin();
 }
-function openTClient()  { document.getElementById('modal-tclient').classList.remove('hidden'); }
+function onMealPlanToggle() {
+  const plans = ['breakfast','lunch','dinner','all'];
+  const checked = plans.find(p => document.getElementById('tc-plan-' + p).checked) || 'all';
+  plans.forEach(p => document.getElementById('lbl-plan-' + p).classList.toggle('on', p === checked));
+}
+function openTClient()  {
+  document.getElementById('modal-tclient').classList.remove('hidden');
+  document.getElementById('tc-start').value = isoOf(new Date());
+  document.getElementById('tc-plan-all').checked = true;
+  onMealPlanToggle();
+}
 function closeTClient() { document.getElementById('modal-tclient').classList.add('hidden'); }
 function saveTClient() {
   const name = txt(document.getElementById('tc-name').value);
   if (!name) { toast(t('err_client'), true); return; }
+  const startDate = txt(document.getElementById('tc-start').value);
+  if (!startDate) { toast(t('err_sub_start'), true); return; }
+  const plans = ['breakfast','lunch','dinner','all'];
+  const mealPlan = plans.find(p => document.getElementById('tc-plan-' + p).checked) || 'all';
   const id = uid('tf');
   save('tiffin/' + id, {
     id, name,
     phone: txt(document.getElementById('tc-phone').value),
+    startDate,
+    mealPlan,
     rateB: num(document.getElementById('tc-rb').value),
     rateL: num(document.getElementById('tc-rl').value),
     rateD: num(document.getElementById('tc-rd').value),
@@ -1903,6 +1996,9 @@ function saveTClient() {
   }).then(() => {
     closeTClient(); toast(name + ' — ' + t('client_added'));
     ['tc-name','tc-phone','tc-rb','tc-rl','tc-rd'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('tc-start').value = '';
+    document.getElementById('tc-plan-all').checked = true;
+    onMealPlanToggle();
   });
 }
 function delTClient(id, name) {
@@ -1955,7 +2051,7 @@ function renderTiffin() {
 
     const mealRows = vac
       ? '<div class="bg-maroon-950/60 rounded-lg p-3 text-center text-saffron text-[15px]">' + t('vac_day') + '</div>'
-      : MEALS.map(mealDef => {
+      : mealsForClient(c).map(mealDef => {
           const k = mealDef[0], labelKey = mealDef[1], rk = mealDef[2], gk = mealDef[3];
           const st = txt(log[k]) || 'pending';
           const g  = int(log[gk]);
@@ -1982,6 +2078,10 @@ function renderTiffin() {
           '<p class="text-cream font-semibold text-[17px]">' + esc(c.name) +
             (c.vacFrom && c.vacTo ? ' <span class="text-saffron text-[12px]">🌴 ' + esc(c.vacFrom) + ' → ' + esc(c.vacTo) + '</span>' : '') + '</p>' +
           (c.phone ? '<p class="text-creamdim text-[13px]">' + esc(c.phone) + '</p>' : '') +
+          '<p class="text-creamdim text-[12px] mt-0.5">' +
+            (c.startDate ? t('sub_since') + ' ' + esc(c.startDate) + ' · ' : '') +
+            t(MEAL_PLAN_I18N[txt(c.mealPlan) || 'all']) +
+          '</p>' +
         '</div>' +
         '<button class="text-creamdim text-[13px] underline" onclick="delTClient(\'' + c.id + '\',\'' + esc(c.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
       '</div>' +
@@ -2127,11 +2227,17 @@ function renderStaff() {
   : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_staff') + '</div>';
 }
 
+const RATE_CATEGORIES = [
+  { id:'groceries', icon:'🌾', labelKey:'cat_groceries' },
+  { id:'veg',       icon:'🥬', labelKey:'cat_veg' },
+  { id:'pooja',     icon:'📿', labelKey:'cat_pooja' },
+  { id:'other',     icon:'🧰', labelKey:'cat_other' }
+];
 const DEFAULT_RATES = [
-  { id:'rate_coconut', name:'Coconut',     unit:'per piece' },
-  { id:'rate_rice',    name:'Rice (Sona)', unit:'per kg' },
-  { id:'rate_dal',     name:'Toor Dal',    unit:'per kg' },
-  { id:'rate_labour',  name:'Labour wage', unit:'per day' }
+  { id:'rate_coconut', name:'Coconut',     unit:'per piece', cat:'groceries' },
+  { id:'rate_rice',    name:'Rice (Sona)', unit:'per kg',    cat:'groceries' },
+  { id:'rate_dal',     name:'Toor Dal',    unit:'per kg',    cat:'groceries' },
+  { id:'rate_labour',  name:'Labour wage', unit:'per day',   cat:'other' }
 ];
 function daysAgoLabel(ts) {
   if (!ts) return t('never_updated');
@@ -2143,41 +2249,115 @@ function setRate(id, name, unit, val) {
   save('rates/' + id, { id, name, unit, price: num(val), updated: Date.now() })
     .then(() => toast(name + ': ₹' + num(val) + ' ' + unit));
 }
-function addRate() {
-  const name = txt(document.getElementById('rt-name').value);
-  const unit = txt(document.getElementById('rt-unit').value) || 'per unit';
-  const price = num(document.getElementById('rt-price').value);
-  if (!name) { toast(t('err_item'), true); return; }
-  const id = uid('rate');
-  save('rates/' + id, { id, name, unit, price, updated: Date.now() })
-    .then(() => {
-      ['rt-name','rt-unit','rt-price'].forEach(i => document.getElementById(i).value = '');
-      toast(name + ' — ' + t('rate_added'));
-    });
-}
 function delRate(id, name) {
   if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_rate'))) removeKey('rates', id);
+}
+function toggleRateCategory(catId) {
+  S.rateCatOpen = S.rateCatOpen || {};
+  S.rateCatOpen[catId] = !S.rateCatOpen[catId];
+  const body  = document.getElementById('rate-body-' + catId);
+  const arrow = document.getElementById('rate-arrow-' + catId);
+  if (body)  body.classList.toggle('hidden', !S.rateCatOpen[catId]);
+  if (arrow) arrow.style.transform = S.rateCatOpen[catId] ? 'rotate(90deg)' : 'rotate(0deg)';
+}
+/* ---------- Add-custom-item: double-confirmation before writing ---------- */
+function openAddRateConfirm(catId) {
+  const name  = txt(document.getElementById('rt-name-' + catId).value);
+  const unit  = txt(document.getElementById('rt-unit-' + catId).value) || 'per unit';
+  const price = num(document.getElementById('rt-price-' + catId).value);
+  if (!name) { toast(t('err_item'), true); return; }
+  S.addRateTarget = { catId, name, unit, price };
+  renderAddRateStep(1);
+  document.getElementById('modal-addrateconfirm').classList.remove('hidden');
+}
+function renderAddRateStep(step) {
+  const body = document.getElementById('rar-body');
+  const tgt = S.addRateTarget;
+  if (!tgt) return;
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + t('rar_title1') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4"><b>' + esc(tgt.name) + '</b> — ' + esc(tgt.unit) + ' — ₹' + tgt.price + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelAddRate()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderAddRateStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + t('rar_title2') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('rar_body2') + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelAddRate()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmAddRate()">' + t('rar_confirm_final') + '</button>' +
+      '</div>';
+  }
+}
+function cancelAddRate() {
+  document.getElementById('modal-addrateconfirm').classList.add('hidden');
+  S.addRateTarget = null;
+}
+function confirmAddRate() {
+  const tgt = S.addRateTarget;
+  if (!tgt) return;
+  const id = uid('rate');
+  save('rates/' + id, { id, name: tgt.name, unit: tgt.unit, price: tgt.price, cat: tgt.catId, updated: Date.now() })
+    .then(() => {
+      toast(tgt.name + ' — ' + t('rate_added'));
+      ['rt-name-', 'rt-unit-', 'rt-price-'].forEach(prefix => {
+        const el = document.getElementById(prefix + tgt.catId);
+        if (el) el.value = '';
+      });
+    });
+  cancelAddRate();
 }
 function renderRates() {
   const box = document.getElementById('rate-list');
   const stored = S.cache.rates || {};
   const rows = DEFAULT_RATES.map(d => Object.assign({}, d, stored[d.id] || {}));
   Object.values(stored).forEach(r => {
-    if (r && !DEFAULT_RATES.some(d => d.id === r.id)) rows.push(r);
+    if (r && !DEFAULT_RATES.some(d => d.id === r.id)) rows.push(Object.assign({ cat: 'other' }, r));
   });
-  box.innerHTML = rows.map(r => {
-    const isDefault = DEFAULT_RATES.some(d => d.id === r.id);
-    return '<div class="card p-3 mb-2 flex items-center gap-3">' +
-      '<div class="flex-1">' +
-        '<p class="text-cream font-semibold text-[15px]">' + esc(r.name) + '</p>' +
-        '<p class="text-creamdim text-[12px]">' + esc(r.unit) + ' · ' + daysAgoLabel(r.updated) + '</p>' +
+
+  box.innerHTML = RATE_CATEGORIES.map(catDef => {
+    const items = rows.filter(r => (r.cat || 'other') === catDef.id);
+    const isOpen = !!(S.rateCatOpen && S.rateCatOpen[catDef.id]);
+
+    const itemRows = items.map(r => {
+      const isDefault = DEFAULT_RATES.some(d => d.id === r.id);
+      return '<div class="card p-3 mb-2 flex items-center gap-3">' +
+        '<div class="flex-1">' +
+          '<p class="text-cream font-semibold text-[15px]">' + esc(r.name) + '</p>' +
+          '<p class="text-creamdim text-[12px]">' + esc(r.unit) + ' · ' + daysAgoLabel(r.updated) + '</p>' +
+        '</div>' +
+        '<div class="flex items-center gap-1">' +
+          '<span class="text-gold-300">₹</span>' +
+          '<input class="inp !w-24 text-right" type="number" min="0" step="0.5" value="' + (r.price !== undefined ? num(r.price) : '') + '" ' +
+            'onchange="setRate(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\',\'' + esc(r.unit).replace(/'/g,'') + '\', this.value)" />' +
+        '</div>' +
+        (!isDefault ? '<button class="text-creamdim text-[13px] underline" onclick="delRate(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\')">✕</button>' : '') +
+      '</div>';
+    }).join('');
+
+    return '<div class="card mb-3 overflow-hidden">' +
+      '<button class="w-full flex items-center justify-between text-left p-4" onclick="toggleRateCategory(\'' + catDef.id + '\')" aria-expanded="' + isOpen + '">' +
+        '<span class="text-gold-300 font-semibold">' + catDef.icon + ' ' + t(catDef.labelKey) +
+          ' <span class="text-creamdim text-[12px] font-normal">(' + items.length + ')</span></span>' +
+        '<span id="rate-arrow-' + catDef.id + '" class="text-gold-400 text-lg transition-transform" style="transform:' + (isOpen ? 'rotate(90deg)' : 'rotate(0deg)') + '">▸</span>' +
+      '</button>' +
+      '<div id="rate-body-' + catDef.id + '" class="' + (isOpen ? '' : 'hidden') + ' px-4 pb-4">' +
+        (items.length ? itemRows : '<p class="text-creamdim text-[13px] mb-2">' + t('rate_cat_empty') + '</p>') +
+        '<div class="bg-maroon-950/50 rounded-lg p-3 mt-2">' +
+          '<p class="text-gold-300 font-semibold mb-2 text-[14px]">' + t('add_custom') + '</p>' +
+          '<div class="grid grid-cols-2 gap-2 mb-2">' +
+            '<input id="rt-name-' + catDef.id + '" class="inp" placeholder="' + t('rt_name_ph') + '" />' +
+            '<input id="rt-unit-' + catDef.id + '" class="inp" placeholder="' + t('rt_unit_ph') + '" />' +
+          '</div>' +
+          '<div class="flex gap-2">' +
+            '<input id="rt-price-' + catDef.id + '" class="inp flex-1" type="number" min="0" step="0.5" placeholder="' + t('rt_price_ph') + '" />' +
+            '<button class="btn-gold shrink-0" onclick="openAddRateConfirm(\'' + catDef.id + '\')">' + t('add_btn') + '</button>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
-      '<div class="flex items-center gap-1">' +
-        '<span class="text-gold-300">₹</span>' +
-        '<input class="inp !w-24 text-right" type="number" min="0" step="0.5" value="' + (r.price !== undefined ? num(r.price) : '') + '" ' +
-          'onchange="setRate(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\',\'' + esc(r.unit).replace(/'/g,'') + '\', this.value)" />' +
-      '</div>' +
-      (!isDefault ? '<button class="text-creamdim text-[13px] underline" onclick="delRate(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\')">✕</button>' : '') +
     '</div>';
   }).join('');
 }
@@ -2195,6 +2375,36 @@ function exportJSON() {
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     toast(t('backup_done'));
   }).catch(err => { toast(t('backup_fail'), true); console.error(err); });
+}
+/* ---------- Secure Cloud-JSON Export Backup: copyable text block ---------- */
+function generateCloudBackupText() {
+  toast(t('backup_prep'));
+  S.db.ref('/').once('value').then(snap => {
+    const data = snap.val() || {};
+    const meta = { app: 'Anantha Shree Pro Enterprise', exported: new Date().toISOString(), version: 5 };
+    const text = JSON.stringify({ meta, data }, null, 2);
+    const box = document.getElementById('cloud-backup-text');
+    const copyBtn = document.getElementById('cloud-backup-copy');
+    box.value = text;
+    box.classList.remove('hidden');
+    copyBtn.classList.remove('hidden');
+    toast(t('cloud_backup_ready'));
+  }).catch(err => { toast(t('backup_fail'), true); console.error(err); });
+}
+function copyCloudBackupText() {
+  const box = document.getElementById('cloud-backup-text');
+  if (!box || !box.value) return;
+  box.select();
+  box.setSelectionRange(0, box.value.length);
+  const done = () => toast(t('cloud_backup_copied'));
+  const fail = () => toast(t('cloud_backup_copy_fail'), true);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(box.value).then(done).catch(() => {
+      try { document.execCommand('copy'); done(); } catch (e) { fail(); }
+    });
+  } else {
+    try { document.execCommand('copy'); done(); } catch (e) { fail(); }
+  }
 }
 function importJSON(input) {
   const file = input.files && input.files[0];
