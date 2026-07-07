@@ -198,6 +198,40 @@
 
   button:focus-visible { outline: 2px solid #E2BE6C; outline-offset: 2px; }
   .pad-safe-b { padding-bottom: calc(env(safe-area-inset-bottom, 0px)); }
+
+  /* ==========================================================
+     TELUGU READABILITY MODE — larger, bolder text for elderly /
+     low-vision users. Scoped to body.lang-te only; English is
+     untouched. Uses attribute-substring selectors so it reaches
+     Tailwind's arbitrary-value utility classes (e.g. text-[13px])
+     regardless of any !-important modifier prefix.
+     ========================================================== */
+  body.lang-te { font-size: 20px; line-height: 1.45; }
+  body.lang-te .inp { font-size: 19px; font-weight: 600; }
+  body.lang-te .btn-gold { font-size: 19px; font-weight: 800; }
+  body.lang-te .btn-line { font-size: 18px; font-weight: 700; }
+  body.lang-te .btn-mega { font-size: 24px; }
+  body.lang-te .chip { font-size: 16.5px; font-weight: 700; }
+  body.lang-te .seg button { font-size: 17px; font-weight: 700; }
+  body.lang-te .stepbtn { font-size: 23px; }
+  body.lang-te .engrave { font-weight: 700; }
+
+  body.lang-te [class*="text-[11px]"]  { font-size: 14px !important; font-weight: 600; }
+  body.lang-te [class*="text-[12px]"]  { font-size: 15px !important; font-weight: 600; }
+  body.lang-te [class*="text-[13px]"]  { font-size: 16px !important; font-weight: 600; }
+  body.lang-te [class*="text-[14px]"]  { font-size: 17px !important; font-weight: 600; }
+  body.lang-te [class*="text-[15px]"]  { font-size: 18px !important; font-weight: 600; }
+  body.lang-te [class*="text-[16px]"]  { font-size: 19px !important; font-weight: 700; }
+  body.lang-te [class*="text-[17px]"]  { font-size: 20px !important; font-weight: 700; }
+  body.lang-te [class*="text-[19px]"]  { font-size: 22px !important; font-weight: 700; }
+  body.lang-te [class*="text-[22px]"]  { font-size: 25px !important; font-weight: 700; }
+  body.lang-te [class*="text-[26px]"]  { font-size: 29px !important; font-weight: 700; }
+  body.lang-te [class*="text-[30px]"]  { font-size: 33px !important; font-weight: 700; }
+  body.lang-te [class*="text-xs"]      { font-size: 15px !important; font-weight: 600; }
+  body.lang-te [class*="text-sm"]      { font-size: 17px !important; font-weight: 600; }
+  body.lang-te [class*="text-base"]    { font-size: 19px !important; font-weight: 600; }
+  body.lang-te [class*="text-lg"]      { font-size: 21px !important; font-weight: 700; }
+  body.lang-te [class*="text-2xl"]     { font-size: 27px !important; font-weight: 700; }
 </style>
 </head>
 
@@ -433,20 +467,22 @@
 
     <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="staff_registry">Staff Registry</h2>
     <div class="card p-4 mb-3">
-      <input id="st-name" class="inp mb-2" data-ph="name_ph" placeholder="Name" />
+      <div class="flex gap-2 mb-2">
+        <input id="st-name" class="inp flex-1" data-ph="name_ph" placeholder="Name" />
+        <button class="btn-line shrink-0" onclick="pickStaffContact()" title="Pick from Contacts">📇</button>
+      </div>
       <div class="grid grid-cols-2 gap-2 mb-2">
         <select id="st-role" class="inp">
           <option value="Purohit" data-i18n="role_purohit">Purohit</option>
           <option value="Chef" data-i18n="role_chef">Chef</option>
           <option value="Helper" data-i18n="role_helper">Helper</option>
-          <option value="Server" data-i18n="role_server">Server</option>
-          <option value="Cleaner" data-i18n="role_cleaner">Cleaner</option>
-          <option value="Driver" data-i18n="role_driver">Driver</option>
+          <option value="Brahmin" data-i18n="role_brahmin">Brahmin</option>
         </select>
         <input id="st-wage" class="inp" type="number" min="0" data-ph="wage_ph" placeholder="Wage ₹/day" />
       </div>
       <input id="st-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
-      <button class="btn-gold w-full" onclick="addStaff()" data-i18n="add_registry">Add to registry</button>
+      <button id="st-save-btn" class="btn-gold w-full" onclick="saveStaffForm()" data-i18n="add_registry">Add to registry</button>
+      <button id="st-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetStaffForm()" data-i18n="cancel_edit">Cancel edit</button>
     </div>
     <div id="staff-list" class="mb-6"></div>
 
@@ -486,6 +522,15 @@
 <div id="modal-addrateconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="rar-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- STAFF EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL        -->
+<!-- ==================================================== -->
+<div id="modal-staffconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="staffconfirm-body"></div>
   </div>
 </div>
 
@@ -852,8 +897,9 @@ const I18N = {
     name_ph:'Name', wage_ph:'Wage ₹/day', phone_ph:'Phone (WhatsApp)',
     no_staff:'No staff registered yet. Add your Purohits and Chefs above.',
     per_day:'/day',
-    role_purohit:'Purohit', role_chef:'Chef', role_helper:'Helper',
+    role_purohit:'Purohit', role_chef:'Chef', role_helper:'Helper', role_brahmin:'Brahmin',
     role_server:'Server', role_cleaner:'Cleaner', role_driver:'Driver',
+    edit_word:'Edit', save_changes:'Save changes', cancel_edit:'Cancel edit',
     rate_book:'Live Market Rate Book',
     rate_note:"Update today's prices — the grocery calculator and costings use these live rates.",
     cat_groceries:'Groceries', cat_veg:'Vegetables & Fruits', cat_pooja:'Pooja Samagri', cat_other:'Services & Other',
@@ -898,6 +944,11 @@ const I18N = {
     rar_body2:'Please confirm the details are correct before adding this to your live rate book.',
     rar_title2:'Confirm addition',
     rar_confirm_final:'Yes, add item',
+    stf_edit_title1:'Save these changes?', stf_edit_body1:'This will update the registry entry for',
+    stf_edit_title2:'Confirm update', stf_edit_body2:'Please confirm the details are correct before saving.',
+    stf_save_confirm_final:'Yes, save changes',
+    stf_rmv_title1:'Remove this staff member?', stf_rmv_body1:'This will permanently remove',
+    stf_rmv_body2:'This action cannot be undone. Their history on past ceremonies stays on record, but they will no longer be selectable for new bookings.',
     /* tiffin client modal */
     tc_title:'New Tiffin Client', tc_name_ph:'Client / family name',
     sub_start_lbl:'Subscription starting date', err_sub_start:'Pick a subscription starting date first.',
@@ -932,6 +983,7 @@ const I18N = {
     booking_saved:'Booking saved for', saved_ok:'Saved.',
     client_added:'added to the tiffin hub.',
     staff_added:'added to the staff registry.',
+    staff_updated:'Staff details updated.', staff_removed:'Staff removed from the registry.',
     rate_added:'added to the rate book.',
     pitru_added:'added to the Pitru register.',
     vac_saved:'Vacation saved. Those days are excluded from billing.',
@@ -1054,8 +1106,9 @@ const I18N = {
     name_ph:'పేరు', wage_ph:'కూలి ₹/రోజు', phone_ph:'ఫోన్ (వాట్సాప్)',
     no_staff:'ఇంకా సిబ్బంది లేరు. పురోహితులు, వంటవారిని పైన చేర్చండి.',
     per_day:'/రోజు',
-    role_purohit:'పురోహితుడు', role_chef:'వంటవారు', role_helper:'సహాయకుడు',
+    role_purohit:'పురోహితుడు', role_chef:'వంటవారు', role_helper:'సహాయకుడు', role_brahmin:'బ్రాహ్మణుడు',
     role_server:'వడ్డించేవారు', role_cleaner:'శుభ్రం చేసేవారు', role_driver:'డ్రైవర్',
+    edit_word:'మార్చు', save_changes:'మార్పులు సేవ్ చేయండి', cancel_edit:'సవరణ రద్దు',
     rate_book:'మార్కెట్ ధరల పుస్తకం',
     rate_note:'నేటి ధరలు నమోదు చేయండి — సరుకుల లెక్కలు ఈ ధరలనే వాడతాయి.',
     cat_groceries:'కిరాణా సరుకులు', cat_veg:'కూరగాయలు & పండ్లు', cat_pooja:'పూజా సామాగ్రి', cat_other:'సేవలు & ఇతరం',
@@ -1101,6 +1154,11 @@ const I18N = {
     rar_body2:'ఈ వస్తువుని మీ లైవ్ ధరల పుస్తకంలో చేర్చే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి.',
     rar_title2:'చేర్చడాన్ని నిర్ధారించండి',
     rar_confirm_final:'అవును, వస్తువుని చేర్చండి',
+    stf_edit_title1:'ఈ మార్పులను సేవ్ చేయాలా?', stf_edit_body1:'ఇది సిబ్బంది పట్టికలో ఎంట్రీని నవీకరిస్తుంది —',
+    stf_edit_title2:'నవీకరణను నిర్ధారించండి', stf_edit_body2:'సేవ్ చేసే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి.',
+    stf_save_confirm_final:'అవును, మార్పులు సేవ్ చేయండి',
+    stf_rmv_title1:'ఈ సిబ్బందిని తొలగించాలా?', stf_rmv_body1:'ఇది శాశ్వతంగా తొలగిస్తుంది —',
+    stf_rmv_body2:'ఈ చర్య వెనక్కి తీసుకోలేము. వారి పాత కార్యక్రమాల చరిత్ర రికార్డులో ఉంటుంది, కానీ కొత్త బుకింగ్‌లకు ఇకపై ఎంచుకోలేరు.',
     /* tiffin client modal */
     tc_title:'కొత్త టిఫిన్ క్లయింట్', tc_name_ph:'క్లయింట్ / కుటుంబం పేరు',
     sub_start_lbl:'సబ్‌స్క్రిప్షన్ ప్రారంభ తేదీ', err_sub_start:'ముందుగా సబ్‌స్క్రిప్షన్ ప్రారంభ తేదీ ఎంచుకోండి.',
@@ -1135,6 +1193,7 @@ const I18N = {
     booking_saved:'బుకింగ్ సేవ్ అయింది —', saved_ok:'సేవ్ అయింది.',
     client_added:'టిఫిన్ హబ్‌లో చేరారు.',
     staff_added:'సిబ్బంది పట్టికలో చేరారు.',
+    staff_updated:'సిబ్బంది వివరాలు నవీకరించబడ్డాయి.', staff_removed:'సిబ్బంది పట్టిక నుండి తొలగించారు.',
     rate_added:'ధరల పుస్తకంలో చేరింది.',
     pitru_added:'పితృ పట్టికలో చేరారు.',
     vac_saved:'సెలవులు సేవ్ అయ్యాయి. ఆ రోజులు బిల్లులో రావు.',
@@ -1176,6 +1235,8 @@ const S = {
   removeTarget: null,
   addRateTarget: null,
   rateCatOpen: {},
+  editingStaffId: null,
+  staffConfirmTarget: null,
   cache: {
     events:    {},
     expenses:  {},
@@ -1204,7 +1265,9 @@ const TYPE_I18N = {
 };
 function tType(v) { return TYPE_I18N[v] ? t(TYPE_I18N[v]) : txt(v); }
 const ROLE_I18N = {
-  'Purohit':'role_purohit', 'Chef':'role_chef', 'Helper':'role_helper',
+  'Purohit':'role_purohit', 'Chef':'role_chef', 'Helper':'role_helper', 'Brahmin':'role_brahmin',
+  /* legacy roles kept so any previously-saved staff records still display correctly,
+     even though they are no longer offered in the Add Staff dropdown */
   'Server':'role_server', 'Cleaner':'role_cleaner', 'Driver':'role_driver'
 };
 function tRole(v) { return ROLE_I18N[v] ? t(ROLE_I18N[v]) : txt(v); }
@@ -1227,6 +1290,7 @@ function updateLangButtons() {
   te.className = S.lang === 'te' ? 'btn-gold' : 'btn-line';
 }
 function applyLang() {
+  document.body.classList.toggle('lang-te', S.lang === 'te');
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
   document.getElementById('conn-txt').textContent = S.online ? t('conn_live') : t('conn_off');
@@ -1448,7 +1512,7 @@ function onServiceToggle() {
   document.getElementById('lbl-svc-ceremony').classList.toggle('on', ceremonyOn);
   document.getElementById('lbl-svc-catering').classList.toggle('on', !ceremonyOn);
 }
-async function pickContact() {
+async function pickContactInto(nameId, phoneId) {
   if (!('contacts' in navigator) || !('select' in navigator.contacts)) {
     toast(t('contact_unsupported'), true);
     return;
@@ -1457,12 +1521,14 @@ async function pickContact() {
     const picked = await navigator.contacts.select(['name', 'tel'], { multiple: false });
     if (picked && picked[0]) {
       const c = picked[0];
-      if (c.name && c.name[0]) document.getElementById('bk-client').value = txt(c.name[0]);
-      if (c.tel && c.tel[0])   document.getElementById('bk-phone').value  = txt(c.tel[0]);
+      if (c.name && c.name[0]) document.getElementById(nameId).value  = txt(c.name[0]);
+      if (c.tel && c.tel[0])   document.getElementById(phoneId).value = txt(c.tel[0]);
       toast(t('contact_filled'));
     }
   } catch (e) { /* user closed the picker; no action needed */ }
 }
+function pickContact()      { return pickContactInto('bk-client', 'bk-phone'); }
+function pickStaffContact() { return pickContactInto('st-name', 'st-phone'); }
 function openBooking() {
   document.getElementById('modal-booking').classList.remove('hidden');
   if (!document.getElementById('bk-service-ceremony').checked && !document.getElementById('bk-service-catering').checked) {
@@ -2389,23 +2455,97 @@ function refreshReceipt() {
 /* =====================================================
    SETUP — STAFF, RATES, BACKUP
    ===================================================== */
-function addStaff() {
+function saveStaffForm() {
   const name = txt(document.getElementById('st-name').value);
   if (!name) { toast(t('err_name'), true); return; }
-  const id = uid('st');
-  save('staff/' + id, {
-    id, name,
-    role:  txt(document.getElementById('st-role').value),
+  const data = {
+    name,
+    role:  txt(document.getElementById('st-role').value) || 'Purohit',
     wage:  num(document.getElementById('st-wage').value),
-    phone: txt(document.getElementById('st-phone').value),
-    created: Date.now()
-  }).then(() => {
-    ['st-name','st-wage','st-phone'].forEach(i => document.getElementById(i).value = '');
-    toast(name + ' — ' + t('staff_added'));
-  });
+    phone: txt(document.getElementById('st-phone').value)
+  };
+  if (S.editingStaffId) {
+    /* Editing an existing entry — requires double-confirmation. */
+    openStaffConfirm('edit', S.editingStaffId, data);
+  } else {
+    /* New entry — single tap, no confirmation needed. */
+    const id = uid('st');
+    save('staff/' + id, Object.assign({ id, created: Date.now() }, data)).then(() => {
+      resetStaffForm();
+      toast(name + ' — ' + t('staff_added'));
+    });
+  }
+}
+function editStaff(id) {
+  const s = S.cache.staff[id];
+  if (!s) return;
+  S.editingStaffId = id;
+  document.getElementById('st-name').value  = s.name || '';
+  document.getElementById('st-role').value  = s.role || 'Purohit';
+  document.getElementById('st-wage').value  = s.wage || '';
+  document.getElementById('st-phone').value = s.phone || '';
+  document.getElementById('st-save-btn').textContent = t('save_changes');
+  document.getElementById('st-cancel-edit').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function resetStaffForm() {
+  S.editingStaffId = null;
+  ['st-name','st-wage','st-phone'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('st-role').value = 'Purohit';
+  document.getElementById('st-save-btn').textContent = t('add_registry');
+  document.getElementById('st-cancel-edit').classList.add('hidden');
 }
 function delStaff(id, name) {
-  if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_staff'))) removeKey('staff', id);
+  openStaffConfirm('remove', id, { name });
+}
+/* ---------- Staff edit/remove: shared double-confirmation modal ---------- */
+function openStaffConfirm(action, id, data) {
+  S.staffConfirmTarget = { action, id, data };
+  renderStaffConfirmStep(1);
+  document.getElementById('modal-staffconfirm').classList.remove('hidden');
+}
+function renderStaffConfirmStep(step) {
+  const body = document.getElementById('staffconfirm-body');
+  const tgt = S.staffConfirmTarget;
+  if (!tgt) return;
+  const isRemove = tgt.action === 'remove';
+  const name = esc(tgt.data.name);
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + (isRemove ? t('stf_rmv_title1') : t('stf_edit_title1')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('stf_rmv_body1') : t('stf_edit_body1')) + ' <b>' + name + '</b>?</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelStaffConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderStaffConfirmStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + (isRemove ? t('rmv_title2') : t('stf_edit_title2')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('stf_rmv_body2') : t('stf_edit_body2')) + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelStaffConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmStaffAction()">' + (isRemove ? t('rmv_confirm_final') : t('stf_save_confirm_final')) + '</button>' +
+      '</div>';
+  }
+}
+function cancelStaffConfirm() {
+  document.getElementById('modal-staffconfirm').classList.add('hidden');
+  S.staffConfirmTarget = null;
+}
+function confirmStaffAction() {
+  const tgt = S.staffConfirmTarget;
+  if (!tgt) return;
+  if (tgt.action === 'remove') {
+    removeKey('staff', tgt.id);
+    toast(t('staff_removed'));
+    if (S.editingStaffId === tgt.id) resetStaffForm();
+  } else {
+    save('staff/' + tgt.id, tgt.data).then(() => {
+      toast(t('staff_updated'));
+      resetStaffForm();
+    });
+  }
+  cancelStaffConfirm();
 }
 function renderStaff() {
   const box = document.getElementById('staff-list');
@@ -2414,17 +2554,19 @@ function renderStaff() {
   box.innerHTML = items.length ? items.map(s => {
     const ph = txt(s.phone).replace(/\D/g, '');
     const wa = ph ? (ph.length === 10 ? '91' + ph : ph) : '';
-    return '<div class="card p-4 mb-2 flex items-center justify-between gap-3">' +
-      '<div class="flex-1">' +
+    return '<div class="card p-4 mb-2 flex items-center justify-between gap-2 flex-wrap">' +
+      '<div class="flex-1 min-w-[120px]">' +
         '<p class="text-cream font-semibold">' + esc(s.name) + '</p>' +
         '<p class="text-creamdim text-[14px]">' + esc(tRole(s.role)) + ' · ₹' + num(s.wage) + t('per_day') + '</p>' +
       '</div>' +
       (wa ? '<a class="btn-line text-[13px]" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
-      '<button class="text-creamdim text-[13px] underline" onclick="delStaff(\'' + s.id + '\',\'' + esc(s.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
+      '<button class="text-gold-300 text-[13px] underline shrink-0" onclick="editStaff(\'' + s.id + '\')">' + t('edit_word') + '</button>' +
+      '<button class="text-creamdim text-[13px] underline shrink-0" onclick="delStaff(\'' + s.id + '\',\'' + esc(s.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
     '</div>';
   }).join('')
   : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_staff') + '</div>';
 }
+
 
 const RATE_CATEGORIES = [
   { id:'groceries', icon:'🌾', labelKey:'cat_groceries' },
