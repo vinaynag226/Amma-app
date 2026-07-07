@@ -687,6 +687,31 @@
     </select>
     <p class="text-creamdim text-[13px] mb-1" data-i18n="pt_death_date_lbl">Death date (Gregorian calendar)</p>
     <input id="rel-death-date" class="inp mb-2" type="date" />
+    <p class="text-creamdim text-[11px] mb-2 leading-snug" data-i18n="death_date_note">Used to track how many months have passed — kept even if you enter the Tithi manually below.</p>
+
+    <p class="text-creamdim text-[13px] mb-1" data-i18n="tithi_source_lbl">Tithi source</p>
+    <div class="grid grid-cols-1 gap-2 mb-2">
+      <label id="lbl-tithi-auto" class="chip on w-full text-center cursor-pointer !m-0 py-2">
+        <input type="radio" name="rel-tithi-source" id="rel-tithi-source-auto" value="auto" class="hidden" onchange="onRelTithiSourceChange()" checked />
+        <span data-i18n="tithi_source_auto">🧮 Auto-calculate from date (estimate)</span>
+      </label>
+      <label id="lbl-tithi-manual" class="chip w-full text-center cursor-pointer !m-0 py-2">
+        <input type="radio" name="rel-tithi-source" id="rel-tithi-source-manual" value="manual" class="hidden" onchange="onRelTithiSourceChange()" />
+        <span data-i18n="tithi_source_manual">📿 Enter Panchanga details (Purohit-given)</span>
+      </label>
+    </div>
+    <div id="rel-panchanga-manual" class="hidden mb-2">
+      <p class="text-creamdim text-[11px] mb-1 leading-snug" data-i18n="panchanga_manual_note">Enter exactly what the purohit gave you — this overrides the app's own calculation.</p>
+      <div class="grid grid-cols-3 gap-2">
+        <select id="rel-masa" class="inp"></select>
+        <select id="rel-paksha-manual" class="inp">
+          <option value="0" data-i18n="shukla_paksha">Shukla</option>
+          <option value="1" data-i18n="krishna_paksha">Krishna</option>
+        </select>
+        <select id="rel-tithi-manual-select" class="inp"></select>
+      </div>
+    </div>
+
     <p class="text-creamdim text-[13px] mb-1" data-i18n="veda_lbl">Veda Shakha</p>
     <select id="rel-veda" class="inp mb-3">
       <option value="Rigveda" data-i18n="veda_rigveda">Rigveda</option>
@@ -1116,6 +1141,13 @@ const I18N = {
     pitru_register:'Pitru Tithi Register',
     pt_name_ph:'Name (e.g. Father — Ramaiah garu)',
     pt_death_date_lbl:'Death date (Gregorian calendar)',
+    death_date_note:'Used to track how many months have passed — kept even if you enter the Tithi manually below.',
+    tithi_source_lbl:'Tithi source',
+    tithi_source_auto:'🧮 Auto-calculate from date (estimate)',
+    tithi_source_manual:'📿 Enter Panchanga details (Purohit-given)',
+    panchanga_manual_note:"Enter exactly what the purohit gave you — this overrides the app's own calculation.",
+    shukla_paksha:'Shukla', krishna_paksha:'Krishna',
+    tithi_src_manual_tag:'📿 Purohit-given', tithi_src_auto_tag:'🧮 Estimated',
     pt_death_date_note:"The Tithi is calculated automatically from this date, and next year's observance date is worked out for you every year.",
     err_death_date:'Pick the death date first.',
     pt_death_date_word:'Death date:', pt_next_occurrence:'Next observance',
@@ -1416,6 +1448,13 @@ const I18N = {
     pitru_register:'పితృ తిథి పట్టిక',
     pt_name_ph:'పేరు (ఉదా: నాన్న — రామయ్య గారు)',
     pt_death_date_lbl:'మరణించిన తేదీ (ఆంగ్ల క్యాలెండర్)',
+    death_date_note:'ఎన్ని నెలలు గడిచాయో లెక్కించడానికి వాడతారు — కింద తిథి మాన్యువల్‌గా ఎంటర్ చేసినా ఇది అలాగే ఉంచబడుతుంది.',
+    tithi_source_lbl:'తిథి మూలం',
+    tithi_source_auto:'🧮 తేదీ నుండి స్వయంచాలకంగా లెక్కించండి (అంచనా)',
+    tithi_source_manual:'📿 పంచాంగ వివరాలు నమోదు చేయండి (పురోహితుడు ఇచ్చినది)',
+    panchanga_manual_note:'పురోహితుడు ఇచ్చినది సరిగ్గా నమోదు చేయండి — ఇది యాప్ లెక్కను భర్తీ చేస్తుంది.',
+    shukla_paksha:'శుక్ల', krishna_paksha:'కృష్ణ',
+    tithi_src_manual_tag:'📿 పురోహితుడు ఇచ్చినది', tithi_src_auto_tag:'🧮 అంచనా',
     pt_death_date_note:'ఈ తేదీ నుండి తిథి స్వయంచాలకంగా లెక్కించబడుతుంది, ప్రతి సంవత్సరం రాబోయే తిథి తేదీ కూడా మీ కోసం లెక్కించబడుతుంది.',
     err_death_date:'ముందుగా మరణించిన తేదీ ఎంచుకోండి.',
     pt_death_date_word:'మరణించిన తేదీ:', pt_next_occurrence:'రాబోయే వార్షిక తిథి',
@@ -3246,6 +3285,8 @@ function fillSelectors() {
   document.getElementById('v2g-tithi').innerHTML = tithiOpts;
   document.getElementById('v2g-year').value = new Date().getFullYear();
   document.getElementById('g2v-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('rel-masa').innerHTML = masaOpts;
+  document.getElementById('rel-tithi-manual-select').innerHTML = tithiOpts;
 }
 function doG2V() {
   const v = txt(document.getElementById('g2v-date').value);
@@ -3429,6 +3470,12 @@ function onVaikunthaToggle() {
   const on = document.getElementById('rel-vaikuntha').checked;
   document.getElementById('lbl-vaikuntha-toggle').classList.toggle('on', on);
 }
+function onRelTithiSourceChange() {
+  const manual = document.getElementById('rel-tithi-source-manual').checked;
+  document.getElementById('lbl-tithi-auto').classList.toggle('on', !manual);
+  document.getElementById('lbl-tithi-manual').classList.toggle('on', manual);
+  document.getElementById('rel-panchanga-manual').classList.toggle('hidden', !manual);
+}
 function openRelativeForm(customerId) {
   S.relativeFormCustomerId = customerId;
   S.editingRelativeId = null;
@@ -3437,6 +3484,11 @@ function openRelativeForm(customerId) {
   document.getElementById('rel-death-date').value = '';
   document.getElementById('rel-veda').value = 'Yajurveda';
   document.getElementById('rel-vaikuntha').checked = false;
+  document.getElementById('rel-tithi-source-auto').checked = true;
+  document.getElementById('rel-masa').value = '0';
+  document.getElementById('rel-paksha-manual').value = '0';
+  document.getElementById('rel-tithi-manual-select').value = '1';
+  onRelTithiSourceChange();
   onVaikunthaToggle();
   document.getElementById('relform-title').textContent = t('relform_title_add');
   document.getElementById('rel-save-btn').textContent = t('add_relative_btn');
@@ -3455,6 +3507,13 @@ function editRelative(id) {
   document.getElementById('rel-death-date').value = rel.deathDate || '';
   document.getElementById('rel-veda').value = rel.vedaShakha || 'Yajurveda';
   document.getElementById('rel-vaikuntha').checked = !!rel.wantsVaikuntha;
+  const isManual = rel.tithiSource === 'manual';
+  document.getElementById('rel-tithi-source-manual').checked = isManual;
+  document.getElementById('rel-tithi-source-auto').checked = !isManual;
+  document.getElementById('rel-masa').value = int(rel.masa) || 0;
+  document.getElementById('rel-paksha-manual').value = int(rel.paksha) || 0;
+  document.getElementById('rel-tithi-manual-select').value = int(rel.tithi) || 1;
+  onRelTithiSourceChange();
   onVaikunthaToggle();
   document.getElementById('relform-title').textContent = t('relform_title_edit');
   document.getElementById('rel-save-btn').textContent = t('save_changes');
@@ -3465,8 +3524,17 @@ function saveRelativeForm() {
   if (!name) { toast(t('err_name'), true); return; }
   const deathDate = txt(document.getElementById('rel-death-date').value);
   if (!deathDate) { toast(t('err_death_date'), true); return; }
-  const parts = deathDate.split('-').map(x => int(x));
-  const p = panchangaFor(parts[0], parts[1], parts[2]);
+  const isManual = document.getElementById('rel-tithi-source-manual').checked;
+  let masaIdx, pakshaIdx, tIdx;
+  if (isManual) {
+    masaIdx = int(document.getElementById('rel-masa').value);
+    pakshaIdx = int(document.getElementById('rel-paksha-manual').value);
+    tIdx = int(document.getElementById('rel-tithi-manual-select').value) || 1;
+  } else {
+    const parts = deathDate.split('-').map(x => int(x));
+    const p = panchangaFor(parts[0], parts[1], parts[2]);
+    masaIdx = p.masaIdx; pakshaIdx = p.pakshaIdx; tIdx = p.tIdx;
+  }
   const data = {
     customerId:    S.relativeFormCustomerId,
     name,
@@ -3474,7 +3542,8 @@ function saveRelativeForm() {
     deathDate,
     vedaShakha:    txt(document.getElementById('rel-veda').value) || 'Other',
     wantsVaikuntha: !!document.getElementById('rel-vaikuntha').checked,
-    masa: p.masaIdx, paksha: p.pakshaIdx, tithi: p.tIdx
+    tithiSource:   isManual ? 'manual' : 'auto',
+    masa: masaIdx, paksha: pakshaIdx, tithi: tIdx
   };
   if (S.editingRelativeId) {
     openRelativeConfirm('edit', S.editingRelativeId, data);
@@ -3545,7 +3614,10 @@ function relativeCardHTML(rel) {
   return '<div class="bg-maroon-950/50 rounded-lg p-3 mb-2">' +
     '<p class="text-cream font-semibold text-[14px]">' + esc(rel.name) + ' <span class="text-creamdim text-[12px] font-normal">(' + esc(tRelation(rel.relation)) + ')</span></p>' +
     '<p class="text-creamdim text-[12px] mt-0.5">' + esc(tVeda(rel.vedaShakha)) + (rel.deathDate ? ' · ' + t('pt_death_date_word') + ' ' + esc(rel.deathDate) : '') + '</p>' +
-    '<p class="text-creamdim text-[12px] mt-0.5">' + esc(MASA_NAMES[masaIdx]) + ' · ' + esc(PAKSHA_NAMES[pakshaIdx]) + ' · ' + esc(tithiLabel) + '</p>' +
+    '<p class="text-creamdim text-[12px] mt-0.5">' + esc(MASA_NAMES[masaIdx]) + ' · ' + esc(PAKSHA_NAMES[pakshaIdx]) + ' · ' + esc(tithiLabel) +
+      (rel.tithiSource === 'manual'
+        ? ' · <span class="text-gold-300">' + t('tithi_src_manual_tag') + '</span>'
+        : ' · <span class="text-creamdim">' + t('tithi_src_auto_tag') + '</span>') + '</p>' +
     '<div class="mt-2 text-[13px]">' +
       (!info.masikaDone
         ? '<div class="flex justify-between"><span class="text-gold-300">' + t('next_masika_lbl') + ' (' + (info.masikaCount + 1) + '/12)</span><span class="text-cream">' + esc(fmtSchedDate(info.nextMasika)) + '</span></div>'
