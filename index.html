@@ -396,22 +396,47 @@
       </div>
     </div>
 
-    <!-- ================= PANEL 3 — PITRU TITHI ANNIVERSARY REGISTRY & ALERTS ================= -->
+    <!-- ================= PANEL 3 — CUSTOMER & RELATIVE DEATH-RITUAL REGISTRY ================= -->
     <div class="card mb-3 overflow-hidden">
       <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('ledger-body-pitru','ledger-arrow-pitru')" aria-expanded="false">
-        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="panel_pitru_title">🌕 Pitru Tithi Anniversary Registry & Alerts</span>
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="panel_pitru_title">🌕 Customer & Relative Death-Ritual Registry</span>
         <span id="ledger-arrow-pitru" class="acc-arrow text-gold-400 text-lg">▸</span>
       </button>
       <div id="ledger-body-pitru" class="acc-body px-4 pb-4">
+
+        <!-- Add / Edit Customer -->
         <div class="card p-4 mb-4 bg-maroon-950/40">
-          <input id="pt-name" class="inp mb-2" data-ph="pt_name_ph" placeholder="Name" />
-          <p class="text-creamdim text-[13px] mb-1" data-i18n="pt_death_date_lbl">Death date (Gregorian calendar)</p>
-          <input id="pt-death-date" class="inp mb-2" type="date" />
-          <p class="text-creamdim text-[11px] mb-2 leading-snug" data-i18n="pt_death_date_note">The Tithi is calculated automatically from this date, and next year's observance date is worked out for you every year.</p>
-          <button id="pt-save-btn" class="btn-gold w-full" onclick="savePitruForm()" data-i18n="add_register">Add to register</button>
-          <button id="pt-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetPitruForm()" data-i18n="cancel_edit">Cancel edit</button>
+          <p class="text-gold-300 font-semibold text-[14px] mb-2" data-i18n="customer_hdr">Customer (Family)</p>
+          <div class="flex gap-2 mb-2">
+            <input id="cu-name" class="inp flex-1" data-ph="name_ph" placeholder="Name" />
+            <button class="btn-line shrink-0" onclick="pickCustomerContact()" title="Pick from Contacts">📇</button>
+          </div>
+          <input id="cu-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
+          <button id="cu-save-btn" class="btn-gold w-full" onclick="saveCustomerForm()" data-i18n="add_customer_btn">+ Add Customer</button>
+          <button id="cu-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetCustomerForm()" data-i18n="cancel_edit">Cancel edit</button>
         </div>
-        <div id="pitru-list"></div>
+
+        <div id="customer-registry-list"></div>
+
+        <!-- Legacy Pitru entries — untouched, pre-upgrade data, kept safe until manually migrated -->
+        <div class="card mb-2 overflow-hidden mt-4">
+          <button class="w-full flex items-center justify-between text-left p-3" onclick="toggleAccordion('legacy-pitru-body','legacy-pitru-arrow')">
+            <span class="text-gold-300 font-semibold text-[13px]" data-i18n="legacy_pitru_title">📋 Legacy Pitru Entries (pre-upgrade)</span>
+            <span id="legacy-pitru-arrow" class="acc-arrow text-gold-400">▸</span>
+          </button>
+          <div id="legacy-pitru-body" class="acc-body px-3 pb-3">
+            <p class="text-creamdim text-[11px] mb-2 leading-snug" data-i18n="legacy_pitru_note">These were added before the new Customer/Relative system. Re-add each person under the right customer above whenever convenient — nothing here is deleted automatically.</p>
+            <div class="card p-4 mb-4 bg-maroon-950/40">
+              <input id="pt-name" class="inp mb-2" data-ph="pt_name_ph" placeholder="Name" />
+              <p class="text-creamdim text-[13px] mb-1" data-i18n="pt_death_date_lbl">Death date (Gregorian calendar)</p>
+              <input id="pt-death-date" class="inp mb-2" type="date" />
+              <button id="pt-save-btn" class="btn-gold w-full" onclick="savePitruForm()" data-i18n="add_register">Add to register</button>
+              <button id="pt-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetPitruForm()" data-i18n="cancel_edit">Cancel edit</button>
+            </div>
+            <div id="pitru-list"></div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -545,6 +570,62 @@
 <div id="modal-pitruconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="pitruconfirm-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- CUSTOMER EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL     -->
+<!-- ==================================================== -->
+<div id="modal-customerconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="customerconfirm-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- RELATIVE ADD/EDIT MODAL                              -->
+<!-- ==================================================== -->
+<div id="modal-relativeform" class="hidden fixed inset-0 z-[72] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
+  <div class="card w-full max-w-md m-3 p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-display text-gold-400 text-lg" id="relform-title" data-i18n="relform_title_add">Add Relative</h3>
+      <button class="text-creamdim text-2xl leading-none px-2" onclick="closeRelativeForm()" aria-label="Close">×</button>
+    </div>
+    <input id="rel-name" class="inp mb-2" data-ph="rel_name_ph" placeholder="Relative's name" />
+    <p class="text-creamdim text-[13px] mb-1" data-i18n="relation_lbl">Relation to customer</p>
+    <select id="rel-relation" class="inp mb-2">
+      <option value="Father" data-i18n="rel_father">Father</option>
+      <option value="Mother" data-i18n="rel_mother">Mother</option>
+      <option value="Grandfather" data-i18n="rel_grandfather">Grandfather</option>
+      <option value="Grandmother" data-i18n="rel_grandmother">Grandmother</option>
+      <option value="Husband" data-i18n="rel_husband">Husband</option>
+      <option value="Wife" data-i18n="rel_wife">Wife</option>
+      <option value="Other" data-i18n="rel_other">Other</option>
+    </select>
+    <p class="text-creamdim text-[13px] mb-1" data-i18n="pt_death_date_lbl">Death date (Gregorian calendar)</p>
+    <input id="rel-death-date" class="inp mb-2" type="date" />
+    <p class="text-creamdim text-[13px] mb-1" data-i18n="veda_lbl">Veda Shakha</p>
+    <select id="rel-veda" class="inp mb-3">
+      <option value="Rigveda" data-i18n="veda_rigveda">Rigveda</option>
+      <option value="Yajurveda" data-i18n="veda_yajurveda">Yajurveda</option>
+      <option value="Samaveda" data-i18n="veda_samaveda">Samaveda</option>
+      <option value="Atharvaveda" data-i18n="veda_atharvaveda">Atharvaveda</option>
+      <option value="Other" data-i18n="veda_other">Other</option>
+    </select>
+    <label id="lbl-vaikuntha-toggle" class="chip w-full text-center cursor-pointer !m-0 py-2.5 mb-3 block">
+      <input type="checkbox" id="rel-vaikuntha" class="hidden" onchange="onVaikunthaToggle()" />
+      <span data-i18n="wants_vaikuntha_lbl">🎉 Also perform Vaikuntha Samaradhana?</span>
+    </label>
+    <button id="rel-save-btn" class="btn-gold w-full" onclick="saveRelativeForm()" data-i18n="add_relative_btn">+ Add Relative</button>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- RELATIVE EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL     -->
+<!-- ==================================================== -->
+<div id="modal-relativeconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="relativeconfirm-body"></div>
   </div>
 </div>
 
@@ -847,7 +928,7 @@ const I18N = {
     /* ledger */
     panel_pnl_title:'💳 Master Financial P&L Dashboard',
     panel_conv_title:'📅 Dual-Way Gregorian ↔️ Vedic Date Converter',
-    panel_pitru_title:'🌕 Pitru Tithi Anniversary Registry & Alerts',
+    panel_pitru_title:'🌕 Customer & Relative Death-Ritual Registry',
     panel_anniv_title:'⏰ 1-Year Automated Past Customer Anniversary Reminder Radar',
     master_pnl:'Master P&L', month_lbl:'Month:', date_lbl:'Date:',
     bookings_word:'bookings',
@@ -888,6 +969,36 @@ const I18N = {
     pt_next_unknown:'Could not compute — please check the date.',
     add_register:'Add to register',
     no_pitru:'No Tithis registered yet.',
+    legacy_pitru_title:'📋 Legacy Pitru Entries (pre-upgrade)',
+    legacy_pitru_note:'These were added before the new Customer/Relative system. Re-add each person under the right customer above whenever convenient — nothing here is deleted automatically.',
+    /* customer & relative registry */
+    customer_hdr:'Customer (Family)', add_customer_btn:'+ Add Customer',
+    customer_added:'added as a new customer.', customer_updated:'Customer details updated.',
+    customer_removed:'Customer and linked relatives removed.',
+    cust_edit_title1:'Save these changes?', cust_edit_body1:'This will update the customer record for',
+    cust_edit_title2:'Confirm update', cust_edit_body2:'Please confirm the details are correct before saving.',
+    cust_save_confirm_final:'Yes, save changes',
+    cust_rmv_title1:'Remove this customer?', cust_rmv_body1:'This will permanently remove',
+    cust_rmv_cascade_note:'linked relative(s) will also be removed',
+    cust_rmv_body2:'This action cannot be undone. All linked relatives and their ritual schedules will be permanently deleted too.',
+    no_customers:'No customers registered yet. Add one above.',
+    relform_title_add:'Add Relative', relform_title_edit:'Edit Relative',
+    rel_name_ph:"Relative's name", relation_lbl:'Relation to customer',
+    rel_father:'Father', rel_mother:'Mother', rel_grandfather:'Grandfather', rel_grandmother:'Grandmother',
+    rel_husband:'Husband', rel_wife:'Wife', rel_other:'Other',
+    veda_lbl:'Veda Shakha',
+    veda_rigveda:'Rigveda', veda_yajurveda:'Yajurveda', veda_samaveda:'Samaveda', veda_atharvaveda:'Atharvaveda', veda_other:'Other',
+    wants_vaikuntha_lbl:'🎉 Also perform Vaikuntha Samaradhana?',
+    add_relative_btn:'+ Add Relative', no_relatives:'No relatives added yet.',
+    relative_added:'added as a relative.', relative_updated:'Relative details updated.',
+    relative_removed:'Relative removed from the registry.',
+    rel_edit_title1:'Save these changes?', rel_edit_body1:'This will update the relative record for',
+    rel_edit_title2:'Confirm update', rel_edit_body2:'Please confirm the death date is correct before saving — this recalculates the ritual schedule.',
+    rel_save_confirm_final:'Yes, save changes',
+    rel_rmv_title1:'Remove this relative?', rel_rmv_body1:'This will permanently remove the ritual record for',
+    rel_rmv_body2:'This action cannot be undone.',
+    next_masika_lbl:'🕯 Next Masika', next_varshika_lbl:'🪔 Next Varshika', next_vaikuntha_lbl:'🎉 Next Vaikuntha Samaradhana',
+    masika_complete_note:'Monthly Masika complete — now annual Varshika only.',
     anniv_note:'Scans every past ceremony and surfaces anyone whose next annual anniversary falls within 30 days — tap to send a ready-made WhatsApp or SMS greeting.',
     anniv_empty:'No customer anniversaries due in the next 30 days.',
     anniv_today:'Anniversary is today!', anniv_in:'Anniversary in', anniv_days:'days',
@@ -1071,7 +1182,7 @@ const I18N = {
     /* ledger */
     panel_pnl_title:'💳 ఆర్థిక లాభ–నష్టాల డాష్‌బోర్డ్',
     panel_conv_title:'📅 ఇంగ్లీషు ↔️ వేద తేదీ మార్పిడి',
-    panel_pitru_title:'🌕 పితృ తిథి వార్షిక పట్టిక & గుర్తింపులు',
+    panel_pitru_title:'🌕 కస్టమర్ & బంధువుల మరణాంతర కర్మల పట్టిక',
     panel_anniv_title:'⏰ పాత క్లయింట్ల వార్షికోత్సవ రిమైండర్ రాడార్ (1-సంవత్సరం ఆటోమేటిక్)',
     master_pnl:'లాభ–నష్టాల పట్టిక', month_lbl:'నెల:', date_lbl:'తేదీ:',
     bookings_word:'బుకింగ్‌లు',
@@ -1112,6 +1223,36 @@ const I18N = {
     pt_next_unknown:'లెక్కించలేకపోయాం — తేదీ సరిచూడండి.',
     add_register:'పట్టికలో చేర్చండి',
     no_pitru:'ఇంకా తిథులు నమోదు కాలేదు.',
+    legacy_pitru_title:'📋 పాత పితృ ఎంట్రీలు (అప్‌గ్రేడ్ ముందు)',
+    legacy_pitru_note:'ఇవి కొత్త కస్టమర్/బంధువుల విధానానికి ముందు చేర్చినవి. వీలును బట్టి ప్రతి వ్యక్తిని పైన సరైన కస్టమర్ కింద మళ్ళీ చేర్చండి — ఇక్కడివి ఏవీ స్వయంచాలకంగా తొలగించబడవు.',
+    /* customer & relative registry */
+    customer_hdr:'కస్టమర్ (కుటుంబం)', add_customer_btn:'+ కస్టమర్ చేర్చండి',
+    customer_added:'కొత్త కస్టమర్‌గా చేర్చారు.', customer_updated:'కస్టమర్ వివరాలు నవీకరించబడ్డాయి.',
+    customer_removed:'కస్టమర్ మరియు అనుసంధానిత బంధువులు తొలగించారు.',
+    cust_edit_title1:'ఈ మార్పులను సేవ్ చేయాలా?', cust_edit_body1:'ఇది కస్టమర్ రికార్డును నవీకరిస్తుంది —',
+    cust_edit_title2:'నవీకరణను నిర్ధారించండి', cust_edit_body2:'సేవ్ చేసే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి.',
+    cust_save_confirm_final:'అవును, మార్పులు సేవ్ చేయండి',
+    cust_rmv_title1:'ఈ కస్టమర్‌ని తొలగించాలా?', cust_rmv_body1:'ఇది శాశ్వతంగా తొలగిస్తుంది —',
+    cust_rmv_cascade_note:'అనుసంధానిత బంధువులు కూడా తొలగించబడతారు',
+    cust_rmv_body2:'ఈ చర్యను వెనక్కి తీసుకోలేము. అనుసంధానిత బంధువులు మరియు వారి కర్మల షెడ్యూల్ కూడా శాశ్వతంగా తొలగించబడతాయి.',
+    no_customers:'ఇంకా కస్టమర్లు నమోదు కాలేదు. పైన ఒకటి చేర్చండి.',
+    relform_title_add:'బంధువును చేర్చండి', relform_title_edit:'బంధువును మార్చండి',
+    rel_name_ph:'బంధువు పేరు', relation_lbl:'కస్టమర్‌తో సంబంధం',
+    rel_father:'తండ్రి', rel_mother:'తల్లి', rel_grandfather:'తాత', rel_grandmother:'నాయనమ్మ/అమ్మమ్మ',
+    rel_husband:'భర్త', rel_wife:'భార్య', rel_other:'ఇతరం',
+    veda_lbl:'వేద శాఖ',
+    veda_rigveda:'ఋగ్వేదం', veda_yajurveda:'యజుర్వేదం', veda_samaveda:'సామవేదం', veda_atharvaveda:'అథర్వవేదం', veda_other:'ఇతరం',
+    wants_vaikuntha_lbl:'🎉 వైకుంఠ సమారాధన కూడా చేయాలా?',
+    add_relative_btn:'+ బంధువును చేర్చండి', no_relatives:'ఇంకా బంధువులను చేర్చలేదు.',
+    relative_added:'బంధువుగా చేర్చారు.', relative_updated:'బంధువు వివరాలు నవీకరించబడ్డాయి.',
+    relative_removed:'బంధువు పట్టిక నుండి తొలగించారు.',
+    rel_edit_title1:'ఈ మార్పులను సేవ్ చేయాలా?', rel_edit_body1:'ఇది బంధువు రికార్డును నవీకరిస్తుంది —',
+    rel_edit_title2:'నవీకరణను నిర్ధారించండి', rel_edit_body2:'సేవ్ చేసే ముందు మరణించిన తేదీ సరిగ్గా ఉందో నిర్ధారించండి — ఇది కర్మల షెడ్యూల్‌ని మళ్ళీ లెక్కిస్తుంది.',
+    rel_save_confirm_final:'అవును, మార్పులు సేవ్ చేయండి',
+    rel_rmv_title1:'ఈ బంధువును తొలగించాలా?', rel_rmv_body1:'ఇది ఈ వ్యక్తి కర్మల రికార్డును శాశ్వతంగా తొలగిస్తుంది —',
+    rel_rmv_body2:'ఈ చర్యను వెనక్కి తీసుకోలేము.',
+    next_masika_lbl:'🕯 తదుపరి మాసిక', next_varshika_lbl:'🪔 తదుపరి వార్షిక', next_vaikuntha_lbl:'🎉 తదుపరి వైకుంఠ సమారాధన',
+    masika_complete_note:'నెలవారీ మాసికం పూర్తయింది — ఇక నుండి వార్షికం మాత్రమే.',
     anniv_note:'ప్రతి పాత కార్యక్రమాన్ని పరిశీలించి, 30 రోజుల్లో వార్షికోత్సవం ఉన్నవారిని చూపిస్తుంది — వాట్సాప్ లేదా SMS గ్రీటింగ్ పంపడానికి నొక్కండి.',
     anniv_empty:'రాబోయే 30 రోజుల్లో క్లయింట్ వార్షికోత్సవాలు లేవు.',
     anniv_today:'వార్షికోత్సవం ఈరోజే!', anniv_in:'వార్షికోత్సవం', anniv_days:'రోజుల్లో',
@@ -1284,6 +1425,11 @@ const S = {
   unassignTarget: null,
   editingPitruId: null,
   pitruConfirmTarget: null,
+  editingCustomerId: null,
+  customerConfirmTarget: null,
+  relativeFormCustomerId: null,
+  editingRelativeId: null,
+  relativeConfirmTarget: null,
   cache: {
     events:    {},
     expenses:  {},
@@ -1292,6 +1438,8 @@ const S = {
     staff:     {},
     rates:     {},
     pitru:     {},
+    customers: {},
+    relatives: {},
     pnl:       {},
     settings:  {}
   },
@@ -1318,6 +1466,16 @@ const ROLE_I18N = {
   'Server':'role_server', 'Cleaner':'role_cleaner', 'Driver':'role_driver'
 };
 function tRole(v) { return ROLE_I18N[v] ? t(ROLE_I18N[v]) : txt(v); }
+const RELATION_I18N = {
+  'Father':'rel_father', 'Mother':'rel_mother', 'Grandfather':'rel_grandfather',
+  'Grandmother':'rel_grandmother', 'Husband':'rel_husband', 'Wife':'rel_wife', 'Other':'rel_other'
+};
+function tRelation(v) { return RELATION_I18N[v] ? t(RELATION_I18N[v]) : txt(v); }
+const VEDA_I18N = {
+  'Rigveda':'veda_rigveda', 'Yajurveda':'veda_yajurveda', 'Samaveda':'veda_samaveda',
+  'Atharvaveda':'veda_atharvaveda', 'Other':'veda_other'
+};
+function tVeda(v) { return VEDA_I18N[v] ? t(VEDA_I18N[v]) : txt(v); }
 function tCat(v) {
   const key = 'cat_' + txt(v);
   return (I18N.en[key] !== undefined) ? t(key) : txt(v);
@@ -1345,7 +1503,7 @@ function applyLang() {
   headerDateLine();
   renderHome(); renderLog(); renderPitruList(); renderExpRecent();
   renderTiffin(); renderStaff(); renderRates(); renderPnl(); renderRadar();
-  renderAnniversaryRadar();
+  renderAnniversaryRadar(); renderCustomerRegistry();
   updateBkTotal();
   if (!document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
 }
@@ -1576,6 +1734,7 @@ async function pickContactInto(nameId, phoneId) {
 }
 function pickContact()      { return pickContactInto('bk-client', 'bk-phone'); }
 function pickStaffContact() { return pickContactInto('st-name', 'st-phone'); }
+function pickCustomerContact() { return pickContactInto('cu-name', 'cu-phone'); }
 function openBooking() {
   document.getElementById('modal-booking').classList.remove('hidden');
   if (!document.getElementById('bk-service-ceremony').checked && !document.getElementById('bk-service-catering').checked) {
@@ -2211,6 +2370,319 @@ function doV2G() {
       (matches.length > 1 ? '<p class="text-creamdim text-[13px] mt-1">' + t('v2g_two') + '</p>' : '')
     : '<p class="text-creamdim">' + t('v2g_none') + '</p>';
 }
+/* =====================================================
+   CUSTOMER & RELATIVE DEATH-RITUAL REGISTRY
+   One customer (family) can have several linked relatives,
+   each with their own death Tithi and Veda Shakha. Masika
+   (monthly) runs for the first 12 lunar-month occurrences,
+   then Varshika (yearly) continues indefinitely. Vaikuntha
+   Samaradhana is optional per relative, sharing the same
+   annual Tithi date as Varshika.
+   ===================================================== */
+/* Note: nextPitruOccurrence() (defined later in this file) does the Masa+Paksha+Tithi
+   annual scan; function declarations are hoisted, so it's safely callable from here. */
+/* Scans forward (up to ~40 days) for the next date matching this Paksha+Tithi, ignoring Masa —
+   i.e. the next monthly Masika occurrence. */
+function nextMonthlyTithiOccurrence(pakshaIdx, tIdx, fromDate) {
+  const start = fromDate ? new Date(fromDate) : new Date();
+  start.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 40; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const p = panchangaFor(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    if (p.pakshaIdx === pakshaIdx && p.tIdx === tIdx) return p;
+  }
+  return null;
+}
+/* Counts how many monthly Tithi occurrences have passed since the death date, up to today. */
+function countMasikaOccurrences(deathDateISO, pakshaIdx, tIdx) {
+  const parts = txt(deathDateISO).split('-').map(x => int(x));
+  if (parts.length < 3 || !parts[0]) return 0;
+  const cursor = new Date(parts[0], parts[1] - 1, parts[2]);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let count = 0;
+  for (let i = 0; i < 400; i++) {
+    cursor.setDate(cursor.getDate() + 1);
+    if (cursor > today) break;
+    const p = panchangaFor(cursor.getFullYear(), cursor.getMonth() + 1, cursor.getDate());
+    if (p.pakshaIdx === pakshaIdx && p.tIdx === tIdx) {
+      count++;
+      cursor.setDate(cursor.getDate() + 20); /* skip ahead so the same lunar day isn't re-counted */
+    }
+  }
+  return count;
+}
+/* Full schedule for one relative: Masika progress + next date, next Varshika, and (if opted in) next Vaikuntha. */
+function relativeScheduleInfo(rel) {
+  const masaIdx = int(rel.masa), pakshaIdx = int(rel.paksha), tIdx = int(rel.tithi) || 1;
+  const masikaCount = rel.deathDate ? countMasikaOccurrences(rel.deathDate, pakshaIdx, tIdx) : 0;
+  const masikaDone = masikaCount >= 12;
+  const info = { masikaCount, masikaDone };
+  if (!masikaDone) info.nextMasika = nextMonthlyTithiOccurrence(pakshaIdx, tIdx, new Date());
+  info.nextVarshika = nextPitruOccurrence(masaIdx, pakshaIdx, tIdx);
+  if (rel.wantsVaikuntha) info.nextVaikuntha = info.nextVarshika;
+  return info;
+}
+function fmtSchedDate(p) {
+  return p ? p.dateObj.toLocaleDateString(loc(), { day:'numeric', month:'long', year:'numeric' }) : t('pt_next_unknown');
+}
+/* ---------- Customer CRUD (single-tap add, double-confirm edit/remove) ---------- */
+function saveCustomerForm() {
+  const name = txt(document.getElementById('cu-name').value);
+  if (!name) { toast(t('err_name'), true); return; }
+  const data = { name, phone: txt(document.getElementById('cu-phone').value) };
+  if (S.editingCustomerId) {
+    openCustomerConfirm('edit', S.editingCustomerId, data);
+  } else {
+    const id = uid('cu');
+    save('customers/' + id, Object.assign({ id, created: Date.now() }, data)).then(() => {
+      resetCustomerForm();
+      toast(name + ' — ' + t('customer_added'));
+    });
+  }
+}
+function editCustomer(id) {
+  const cu = S.cache.customers[id];
+  if (!cu) return;
+  S.editingCustomerId = id;
+  document.getElementById('cu-name').value  = cu.name || '';
+  document.getElementById('cu-phone').value = cu.phone || '';
+  document.getElementById('cu-save-btn').textContent = t('save_changes');
+  document.getElementById('cu-cancel-edit').classList.remove('hidden');
+  document.getElementById('cu-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function resetCustomerForm() {
+  S.editingCustomerId = null;
+  document.getElementById('cu-name').value  = '';
+  document.getElementById('cu-phone').value = '';
+  document.getElementById('cu-save-btn').textContent = t('add_customer_btn');
+  document.getElementById('cu-cancel-edit').classList.add('hidden');
+}
+function delCustomer(id, name) {
+  openCustomerConfirm('remove', id, { name });
+}
+function openCustomerConfirm(action, id, data) {
+  S.customerConfirmTarget = { action, id, data };
+  renderCustomerConfirmStep(1);
+  document.getElementById('modal-customerconfirm').classList.remove('hidden');
+}
+function renderCustomerConfirmStep(step) {
+  const body = document.getElementById('customerconfirm-body');
+  const tgt = S.customerConfirmTarget;
+  if (!tgt) return;
+  const isRemove = tgt.action === 'remove';
+  const name = esc(tgt.data.name);
+  if (step === 1) {
+    const relCount = isRemove ? Object.values(S.cache.relatives || {}).filter(r => r && r.customerId === tgt.id).length : 0;
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + (isRemove ? t('cust_rmv_title1') : t('cust_edit_title1')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('cust_rmv_body1') : t('cust_edit_body1')) + ' <b>' + name + '</b>' +
+        (isRemove && relCount ? ' — ' + relCount + ' ' + t('cust_rmv_cascade_note') : '') + '?</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelCustomerConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderCustomerConfirmStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + (isRemove ? t('rmv_title2') : t('cust_edit_title2')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('cust_rmv_body2') : t('cust_edit_body2')) + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelCustomerConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmCustomerAction()">' + (isRemove ? t('rmv_confirm_final') : t('cust_save_confirm_final')) + '</button>' +
+      '</div>';
+  }
+}
+function cancelCustomerConfirm() {
+  document.getElementById('modal-customerconfirm').classList.add('hidden');
+  S.customerConfirmTarget = null;
+}
+function confirmCustomerAction() {
+  const tgt = S.customerConfirmTarget;
+  if (!tgt) return;
+  if (tgt.action === 'remove') {
+    /* Cascade: removing a customer also removes their linked relatives, so nothing is orphaned. */
+    const relIds = Object.values(S.cache.relatives || {}).filter(r => r && r.customerId === tgt.id).map(r => r.id);
+    removeKey('customers', tgt.id);
+    relIds.forEach(rid => removeKey('relatives', rid));
+    toast(t('customer_removed'));
+    if (S.editingCustomerId === tgt.id) resetCustomerForm();
+  } else {
+    save('customers/' + tgt.id, tgt.data).then(() => {
+      toast(t('customer_updated'));
+      resetCustomerForm();
+    });
+  }
+  cancelCustomerConfirm();
+}
+/* ---------- Relative CRUD (modal-based add/edit; single-tap add, double-confirm edit/remove) ---------- */
+function onVaikunthaToggle() {
+  const on = document.getElementById('rel-vaikuntha').checked;
+  document.getElementById('lbl-vaikuntha-toggle').classList.toggle('on', on);
+}
+function openRelativeForm(customerId) {
+  S.relativeFormCustomerId = customerId;
+  S.editingRelativeId = null;
+  document.getElementById('rel-name').value = '';
+  document.getElementById('rel-relation').value = 'Father';
+  document.getElementById('rel-death-date').value = '';
+  document.getElementById('rel-veda').value = 'Yajurveda';
+  document.getElementById('rel-vaikuntha').checked = false;
+  onVaikunthaToggle();
+  document.getElementById('relform-title').textContent = t('relform_title_add');
+  document.getElementById('rel-save-btn').textContent = t('add_relative_btn');
+  document.getElementById('modal-relativeform').classList.remove('hidden');
+}
+function closeRelativeForm() {
+  document.getElementById('modal-relativeform').classList.add('hidden');
+}
+function editRelative(id) {
+  const rel = S.cache.relatives[id];
+  if (!rel) return;
+  S.relativeFormCustomerId = rel.customerId;
+  S.editingRelativeId = id;
+  document.getElementById('rel-name').value = rel.name || '';
+  document.getElementById('rel-relation').value = rel.relation || 'Father';
+  document.getElementById('rel-death-date').value = rel.deathDate || '';
+  document.getElementById('rel-veda').value = rel.vedaShakha || 'Yajurveda';
+  document.getElementById('rel-vaikuntha').checked = !!rel.wantsVaikuntha;
+  onVaikunthaToggle();
+  document.getElementById('relform-title').textContent = t('relform_title_edit');
+  document.getElementById('rel-save-btn').textContent = t('save_changes');
+  document.getElementById('modal-relativeform').classList.remove('hidden');
+}
+function saveRelativeForm() {
+  const name = txt(document.getElementById('rel-name').value);
+  if (!name) { toast(t('err_name'), true); return; }
+  const deathDate = txt(document.getElementById('rel-death-date').value);
+  if (!deathDate) { toast(t('err_death_date'), true); return; }
+  const parts = deathDate.split('-').map(x => int(x));
+  const p = panchangaFor(parts[0], parts[1], parts[2]);
+  const data = {
+    customerId:    S.relativeFormCustomerId,
+    name,
+    relation:      txt(document.getElementById('rel-relation').value) || 'Other',
+    deathDate,
+    vedaShakha:    txt(document.getElementById('rel-veda').value) || 'Other',
+    wantsVaikuntha: !!document.getElementById('rel-vaikuntha').checked,
+    masa: p.masaIdx, paksha: p.pakshaIdx, tithi: p.tIdx
+  };
+  if (S.editingRelativeId) {
+    openRelativeConfirm('edit', S.editingRelativeId, data);
+  } else {
+    const id = uid('rel');
+    save('relatives/' + id, Object.assign({ id, created: Date.now() }, data)).then(() => {
+      closeRelativeForm();
+      toast(name + ' — ' + t('relative_added'));
+    });
+  }
+}
+function delRelative(id, name) {
+  openRelativeConfirm('remove', id, { name });
+}
+function openRelativeConfirm(action, id, data) {
+  S.relativeConfirmTarget = { action, id, data };
+  renderRelativeConfirmStep(1);
+  document.getElementById('modal-relativeconfirm').classList.remove('hidden');
+}
+function renderRelativeConfirmStep(step) {
+  const body = document.getElementById('relativeconfirm-body');
+  const tgt = S.relativeConfirmTarget;
+  if (!tgt) return;
+  const isRemove = tgt.action === 'remove';
+  const name = esc(tgt.data.name);
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + (isRemove ? t('rel_rmv_title1') : t('rel_edit_title1')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('rel_rmv_body1') : t('rel_edit_body1')) + ' <b>' + name + '</b>?</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelRelativeConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderRelativeConfirmStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + (isRemove ? t('rmv_title2') : t('rel_edit_title2')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('rel_rmv_body2') : t('rel_edit_body2')) + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelRelativeConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmRelativeAction()">' + (isRemove ? t('rmv_confirm_final') : t('rel_save_confirm_final')) + '</button>' +
+      '</div>';
+  }
+}
+function cancelRelativeConfirm() {
+  document.getElementById('modal-relativeconfirm').classList.add('hidden');
+  S.relativeConfirmTarget = null;
+}
+function confirmRelativeAction() {
+  const tgt = S.relativeConfirmTarget;
+  if (!tgt) return;
+  if (tgt.action === 'remove') {
+    removeKey('relatives', tgt.id);
+    toast(t('relative_removed'));
+    if (S.editingRelativeId === tgt.id) closeRelativeForm();
+  } else {
+    save('relatives/' + tgt.id, tgt.data).then(() => {
+      toast(t('relative_updated'));
+      closeRelativeForm();
+    });
+  }
+  cancelRelativeConfirm();
+}
+/* ---------- Rendering: Customers, each expandable to show their linked Relatives ---------- */
+function relativeCardHTML(rel) {
+  const masaIdx = int(rel.masa), pakshaIdx = int(rel.paksha), tIdx = int(rel.tithi) || 1;
+  const tithiLabel = tIdx === 15 ? (pakshaIdx === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[tIdx - 1];
+  const info = relativeScheduleInfo(rel);
+  return '<div class="bg-maroon-950/50 rounded-lg p-3 mb-2">' +
+    '<p class="text-cream font-semibold text-[14px]">' + esc(rel.name) + ' <span class="text-creamdim text-[12px] font-normal">(' + esc(tRelation(rel.relation)) + ')</span></p>' +
+    '<p class="text-creamdim text-[12px] mt-0.5">' + esc(tVeda(rel.vedaShakha)) + (rel.deathDate ? ' · ' + t('pt_death_date_word') + ' ' + esc(rel.deathDate) : '') + '</p>' +
+    '<p class="text-creamdim text-[12px] mt-0.5">' + esc(MASA_NAMES[masaIdx]) + ' · ' + esc(PAKSHA_NAMES[pakshaIdx]) + ' · ' + esc(tithiLabel) + '</p>' +
+    '<div class="mt-2 text-[13px]">' +
+      (!info.masikaDone
+        ? '<div class="flex justify-between"><span class="text-gold-300">' + t('next_masika_lbl') + ' (' + (info.masikaCount + 1) + '/12)</span><span class="text-cream">' + esc(fmtSchedDate(info.nextMasika)) + '</span></div>'
+        : '<p class="text-creamdim text-[11px]">' + t('masika_complete_note') + '</p>') +
+      '<div class="flex justify-between mt-1"><span class="text-gold-300">' + t('next_varshika_lbl') + '</span><span class="text-cream">' + esc(fmtSchedDate(info.nextVarshika)) + '</span></div>' +
+      (rel.wantsVaikuntha
+        ? '<div class="flex justify-between mt-1"><span class="text-gold-300">' + t('next_vaikuntha_lbl') + '</span><span class="text-cream">' + esc(fmtSchedDate(info.nextVaikuntha)) + '</span></div>'
+        : '') +
+    '</div>' +
+    '<div class="grid grid-cols-2 gap-2 mt-2">' +
+      '<button class="btn-line text-[12px]" onclick="editRelative(\'' + rel.id + '\')">' + t('edit_word') + '</button>' +
+      '<button class="btn-line text-[12px]" onclick="delRelative(\'' + rel.id + '\',\'' + esc(rel.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
+    '</div>' +
+  '</div>';
+}
+function renderCustomerRegistry() {
+  const box = document.getElementById('customer-registry-list');
+  if (!box) return;
+  const customers = Object.values(S.cache.customers || {}).filter(Boolean)
+    .sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
+  if (!customers.length) {
+    box.innerHTML = '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_customers') + '</div>';
+    return;
+  }
+  const relatives = Object.values(S.cache.relatives || {}).filter(Boolean);
+  box.innerHTML = customers.map(cu => {
+    const myRelatives = relatives.filter(r => r.customerId === cu.id);
+    const relHTML = myRelatives.length
+      ? myRelatives.map(relativeCardHTML).join('')
+      : '<p class="text-creamdim text-[13px] mb-2">' + t('no_relatives') + '</p>';
+    return '<div class="card mb-3 overflow-hidden">' +
+      '<div class="flex items-center justify-between gap-2 p-3">' +
+        '<button class="flex-1 min-w-0 text-left flex items-center gap-2" onclick="toggleAccordion(\'cust-body-' + cu.id + '\',\'cust-arrow-' + cu.id + '\')">' +
+          '<span id="cust-arrow-' + cu.id + '" class="acc-arrow text-gold-400 shrink-0">▸</span>' +
+          '<span class="text-cream font-semibold truncate">' + esc(cu.name) + '</span>' +
+          (cu.phone ? '<span class="text-creamdim text-[12px] shrink-0">· ' + esc(cu.phone) + '</span>' : '') +
+        '</button>' +
+        '<button class="text-gold-300 text-[12px] underline shrink-0" onclick="editCustomer(\'' + cu.id + '\')">' + t('edit_word') + '</button>' +
+        '<button class="text-creamdim text-[12px] underline shrink-0" onclick="delCustomer(\'' + cu.id + '\',\'' + esc(cu.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
+      '</div>' +
+      '<div id="cust-body-' + cu.id + '" class="acc-body px-3 pb-3">' +
+        relHTML +
+        '<button class="btn-line w-full mt-1 text-[13px]" onclick="openRelativeForm(\'' + cu.id + '\')">' + t('add_relative_btn') + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
 function savePitruForm() {
   const name = txt(document.getElementById('pt-name').value);
   if (!name) { toast(t('err_name'), true); return; }
@@ -3183,6 +3655,8 @@ function attachListeners() {
   bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); });
   bind('expenses',  'expenses',  () => { renderExpRecent(); renderPnl(); });
   bind('pitru',     'pitru',     () => { renderPitruList(); });
+  bind('customers', 'customers', () => { renderCustomerRegistry(); });
+  bind('relatives', 'relatives', () => { renderCustomerRegistry(); });
   bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); });
   bind('tiffinlog', 'tiffinlog', () => {
     renderTiffin(); renderPnl();
