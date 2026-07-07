@@ -736,7 +736,7 @@
 <!-- ==================================================== -->
 <div id="modal-booking" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card w-full max-w-md m-3 p-5">
-    <div class="flex items-center justify-between mb-3">
+    <div class="sticky top-0 z-10 flex items-center justify-between mb-3 -mx-5 -mt-5 px-5 pt-5 pb-3" style="background: linear-gradient(180deg, rgba(58,11,16,.98), rgba(58,11,16,.98)); border-radius: 14px 14px 0 0;">
       <h3 id="bm-title-el" class="font-display text-gold-400 text-lg" data-i18n="bm_title">New Booking</h3>
       <button class="text-creamdim text-2xl leading-none px-2" onclick="closeBooking()" aria-label="Close">×</button>
     </div>
@@ -869,7 +869,9 @@
       <p id="bk-balance-line" class="text-creamdim text-[13px]"></p>
     </div>
 
-    <button id="bk-save-btn" class="btn-gold w-full" onclick="saveBooking()" data-i18n="save_booking">Save booking</button>
+    <div class="sticky bottom-0 z-10 -mx-5 -mb-5 px-5 pt-3 pb-5" style="background: linear-gradient(0deg, rgba(38,7,10,.98), rgba(38,7,10,.98)); border-radius: 0 0 14px 14px;">
+      <button id="bk-save-btn" class="btn-gold w-full" onclick="saveBooking()" data-i18n="save_booking">Save booking</button>
+    </div>
   </div>
 </div>
 
@@ -4990,6 +4992,23 @@ applyLang();     /* paints every static + dynamic string in the saved language *
 attachListeners();
 initVoice();
 nav('home');
+
+/* ---------- Body scroll lock while any modal is open ----------
+   Without this, on some phones a touch-drag inside a long modal (e.g. the booking
+   form with the catering item checklist expanded) can scroll the page behind it
+   instead of the modal, making the Close button / Save button feel unreachable.
+   This watches every modal and locks/unlocks page scroll automatically, covering
+   all current and future modals with no per-modal code changes needed. */
+(function () {
+  const modals = document.querySelectorAll('.modal-bg');
+  function updateBodyScrollLock() {
+    const anyOpen = Array.from(modals).some(m => !m.classList.contains('hidden'));
+    document.body.style.overflow = anyOpen ? 'hidden' : '';
+  }
+  const observer = new MutationObserver(updateBodyScrollLock);
+  modals.forEach(m => observer.observe(m, { attributes: true, attributeFilter: ['class'] }));
+  updateBodyScrollLock();
+})();
 </script>
 </body>
 </html>
