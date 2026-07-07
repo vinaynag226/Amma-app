@@ -729,23 +729,39 @@
       <p id="bk-veda-display" class="text-creamdim text-[12px] mb-2 hidden"></p>
 
       <div id="bk-freq-block" class="hidden mb-2">
-        <p class="text-creamdim text-[12px] mb-1" data-i18n="freq_lbl">How often is this performed?</p>
-        <div class="grid grid-cols-3 gap-2">
+        <p class="text-creamdim text-[12px] mb-1" data-i18n="freq_lbl">Which ceremony is this?</p>
+        <div class="grid grid-cols-2 gap-2">
           <label id="lbl-freq-onetime" class="chip on w-full text-center cursor-pointer !m-0 py-2">
             <input type="radio" name="bk-freq" id="bk-freq-onetime" value="onetime" class="hidden" onchange="onBkFreqChange()" checked />
             <span data-i18n="freq_onetime">One-time</span>
           </label>
           <label id="lbl-freq-monthly" class="chip w-full text-center cursor-pointer !m-0 py-2">
             <input type="radio" name="bk-freq" id="bk-freq-monthly" value="monthly" class="hidden" onchange="onBkFreqChange()" />
-            <span data-i18n="freq_monthly">Monthly</span>
+            <span data-i18n="freq_monthly">Monthly (Masika)</span>
           </label>
           <label id="lbl-freq-yearly" class="chip w-full text-center cursor-pointer !m-0 py-2">
             <input type="radio" name="bk-freq" id="bk-freq-yearly" value="yearly" class="hidden" onchange="onBkFreqChange()" />
-            <span data-i18n="freq_yearly">Yearly</span>
+            <span data-i18n="freq_yearly">Yearly (Varshika)</span>
+          </label>
+          <label id="lbl-freq-vaikuntha" class="chip w-full text-center cursor-pointer !m-0 py-2">
+            <input type="radio" name="bk-freq" id="bk-freq-vaikuntha" value="vaikuntha" class="hidden" onchange="onBkFreqChange()" />
+            <span data-i18n="freq_vaikuntha">Vaikuntha Samaradhana</span>
           </label>
         </div>
       </div>
       <div id="bk-schedule-preview" class="hidden bg-maroon-950/60 rounded-lg p-3 mb-2 text-[13px]"></div>
+
+      <!-- Ceremony menu — appears once Monthly/Yearly/Vaikuntha is chosen, switchable per dish category -->
+      <div id="bk-menu-block" class="hidden mb-2">
+        <p class="text-gold-300 font-semibold text-[13px] mb-1" data-i18n="menu_lbl">🍽️ Ceremony Menu</p>
+        <div id="bk-menu-fixed" class="bg-maroon-950/50 rounded-lg p-2 mb-2 text-[12px] text-creamdim"></div>
+        <div id="bk-menu-slots"></div>
+        <label id="lbl-menu-payasam-toggle" class="chip w-full text-center cursor-pointer !m-0 py-2 mb-2 hidden block">
+          <input type="checkbox" id="bk-menu-include-payasam" class="hidden" onchange="onMenuPayasamToggle()" />
+          <span data-i18n="menu_include_payasam">🍮 Include Payasam?</span>
+        </label>
+        <div id="bk-menu-payasam-slot" class="hidden"></div>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 gap-2 mb-2">
@@ -1154,15 +1170,32 @@ const I18N = {
     link_customer_lbl:'Link to a registered Customer (optional)',
     walkin_opt:'— Walk-in (no record) —', pick_relative_opt:'— Pick a relative —',
     freq_lbl:'How often is this performed?',
-    freq_onetime:'One-time', freq_monthly:'Monthly', freq_yearly:'Yearly',
+    freq_onetime:'One-time', freq_monthly:'Monthly (Masika)', freq_yearly:'Yearly (Varshika)',
+    freq_vaikuntha:'Vaikuntha Samaradhana',
     masika_word:'Masika',
     sched_preview_monthly_hdr:'{n} monthly bookings will be created:',
     sched_preview_yearly_hdr:'Next Varshika booking:',
     sched_preview_yearly_note:'Future years will keep showing automatically on this relative in the Ledger — create that booking when it gets closer.',
+    sched_preview_vaikuntha_hdr:'Next Vaikuntha Samaradhana booking:',
     bookings_created_note:'bookings created for',
     bked_title1:'Save these changes?', bked_body1:'This will update the saved booking for',
     bked_body2:'Please confirm the details are correct before saving. Checklist, staff assignment, and lock status are not affected.',
     bked_confirm_final:'Yes, save changes', booking_updated:'Booking updated.',
+    /* ritual ceremony menus */
+    menu_lbl:'🍽️ Ceremony Menu', menu_included_hdr:'Included:', menu_include_payasam:'🍮 Include Payasam?',
+    menu_slot_charu:'Charu / Sambar', menu_slot_palya:'Vegetable Curry (Palya)',
+    menu_slot_riceitem:'Rice Item', menu_slot_payasam:'Payasam', menu_slot_sweet:'Sweet',
+    menu_fixed_rice_ghee:'Rice + Ghee', menu_fixed_pappu_plain:'Plain Pappu (no tadka)',
+    menu_fixed_pappu_charu:'Pappu', menu_fixed_curd:'Curd', menu_fixed_daddojanam:'Daddojanam (Curd Rice)',
+    menu_fixed_appadam_pickle:'Appadam & Pickle', menu_fixed_appadam_pickle_chutney:'Appadam, Pickle & Coconut Chutney',
+    dish_majjiga_charu:'Majjiga Charu (Buttermilk Rasam)', dish_rasam:'Rasam / Charu', dish_menthi_pulusu:'Menthi Pulusu',
+    dish_sambar:'Sambar', dish_huli:'Huli (Kannada style)',
+    dish_beerakaya:'Beerakaya (Ridge Gourd)', dish_vankaya:'Vankaya (Brinjal)', dish_gummadikaya:'Gummadikaya (Pumpkin)',
+    dish_aratikaya:'Aratikaya (Raw Banana)', dish_chikkudukaya:'Chikkudukaya (Cluster Beans)',
+    dish_plain:'Plain Rice', dish_pulihora:'Pulihora (Tamarind Rice)', dish_chitranna:'Chitranna (Lemon Rice)',
+    dish_semiya:'Semiya Payasam', dish_paramannam:'Paramannam', dish_sago:'Sago / Saggubiyyam Payasam',
+    dish_chana_dal_payasam:'Chana Dal Payasam', dish_kayi_payasa:'Kayi Payasa (Kannada Coconut)', dish_godhi_payasa:'Godhi Payasa (Kannada Wheat)',
+    dish_poornam_boorelu:'Poornam Boorelu', dish_laddu:'Laddu',
     pkg_regular:'Regular — ₹9,000', pkg_muthidya:'Muthidya — ₹9,500',
     extra_plates:'Extra plates', each_note:'(+₹250 each)',
     advance_ph:'Advance received (₹)',
@@ -1425,15 +1458,32 @@ const I18N = {
     link_customer_lbl:'నమోదైన కస్టమర్‌తో లింక్ చేయండి (ఐచ్ఛికం)',
     walkin_opt:'— వాక్-ఇన్ (రికార్డు లేదు) —', pick_relative_opt:'— బంధువును ఎంచుకోండి —',
     freq_lbl:'ఇది ఎంత తరచుగా చేస్తారు?',
-    freq_onetime:'ఒకసారి', freq_monthly:'నెలవారీ', freq_yearly:'వార్షికం',
+    freq_onetime:'ఒకసారి', freq_monthly:'నెలవారీ (మాసికం)', freq_yearly:'వార్షికం',
+    freq_vaikuntha:'వైకుంఠ సమారాధన',
     masika_word:'మాసికం',
     sched_preview_monthly_hdr:'{n} నెలవారీ బుకింగ్‌లు చేర్చబడతాయి:',
     sched_preview_yearly_hdr:'తదుపరి వార్షిక బుకింగ్:',
     sched_preview_yearly_note:'రాబోయే సంవత్సరాలు ఈ బంధువు కార్డులో లెడ్జర్‌లో స్వయంచాలకంగా చూపిస్తూనే ఉంటాయి — దగ్గరవుతున్నప్పుడు ఆ బుకింగ్ చేయండి.',
+    sched_preview_vaikuntha_hdr:'తదుపరి వైకుంఠ సమారాధన బుకింగ్:',
     bookings_created_note:'బుకింగ్‌లు చేర్చబడ్డాయి —',
     bked_title1:'ఈ మార్పులను సేవ్ చేయాలా?', bked_body1:'ఇది సేవ్ అయిన బుకింగ్‌ని నవీకరిస్తుంది —',
     bked_body2:'సేవ్ చేసే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి. చెక్‌లిస్ట్, సిబ్బంది కేటాయింపు, లాక్ స్థితి మారవు.',
     bked_confirm_final:'అవును, మార్పులు సేవ్ చేయండి', booking_updated:'బుకింగ్ నవీకరించబడింది.',
+    /* ritual ceremony menus */
+    menu_lbl:'🍽️ కార్యక్రమ మెనూ', menu_included_hdr:'చేర్చినవి:', menu_include_payasam:'🍮 పాయసం చేర్చాలా?',
+    menu_slot_charu:'చారు / సాంబార్', menu_slot_palya:'కూర (పలియ)',
+    menu_slot_riceitem:'అన్నం రకం', menu_slot_payasam:'పాయసం', menu_slot_sweet:'తీపి పదార్థం',
+    menu_fixed_rice_ghee:'అన్నం + నెయ్యి', menu_fixed_pappu_plain:'పప్పు (తాలింపు లేకుండా)',
+    menu_fixed_pappu_charu:'పప్పు', menu_fixed_curd:'పెరుగు', menu_fixed_daddojanam:'దద్దోజనం (పెరుగన్నం)',
+    menu_fixed_appadam_pickle:'అప్పడం & ఊరగాయ', menu_fixed_appadam_pickle_chutney:'అప్పడం, ఊరగాయ & కొబ్బరి పచ్చడి',
+    dish_majjiga_charu:'మజ్జిగ చారు', dish_rasam:'రసం / చారు', dish_menthi_pulusu:'మెంతి పులుసు',
+    dish_sambar:'సాంబార్', dish_huli:'హుళి (కన్నడ శైలి)',
+    dish_beerakaya:'బీరకాయ కూర', dish_vankaya:'వంకాయ కూర', dish_gummadikaya:'గుమ్మడికాయ కూర',
+    dish_aratikaya:'అరటికాయ కూర', dish_chikkudukaya:'చిక్కుడుకాయ కూర',
+    dish_plain:'తెల్ల అన్నం', dish_pulihora:'పులిహోర', dish_chitranna:'చిత్రాన్నం',
+    dish_semiya:'సేమియా పాయసం', dish_paramannam:'పరమాన్నం', dish_sago:'సగ్గుబియ్యం పాయసం',
+    dish_chana_dal_payasam:'శనగపప్పు పాయసం', dish_kayi_payasa:'కాయి పాయస (కన్నడ కొబ్బరి)', dish_godhi_payasa:'గోధి పాయస (కన్నడ గోధుమ)',
+    dish_poornam_boorelu:'పూర్ణం బూరెలు', dish_laddu:'లడ్డు',
     pkg_regular:'రెగ్యులర్ — ₹9,000', pkg_muthidya:'ముత్తైదువ — ₹9,500',
     extra_plates:'అదనపు ప్లేట్లు', each_note:'(ఒక్కొక్కటి +₹250)',
     advance_ph:'తీసుకున్న అడ్వాన్స్ (₹)',
@@ -1937,15 +1987,17 @@ function resetRitualLinking(keepBlockOpen) {
   document.getElementById('bk-veda-display').classList.add('hidden');
   document.getElementById('bk-freq-block').classList.add('hidden');
   document.getElementById('bk-schedule-preview').classList.add('hidden');
+  document.getElementById('bk-menu-block').classList.add('hidden');
   document.getElementById('bk-freq-onetime').checked = true;
   S.bkSelectedRelative = null;
   if (!keepBlockOpen) document.getElementById('bk-customer').value = '';
 }
 function onBkFreqChange() {
   const freq = document.querySelector('input[name="bk-freq"]:checked').value;
-  ['onetime','monthly','yearly'].forEach(f =>
+  ['onetime','monthly','yearly','vaikuntha'].forEach(f =>
     document.getElementById('lbl-freq-' + f).classList.toggle('on', f === freq));
   renderSchedulePreview(freq);
+  renderMenuBlock(freq);
 }
 /* Full list of remaining monthly Masika occurrences (not just the next one) — used for the schedule preview
    and for actually generating each booking when "Monthly" is confirmed. */
@@ -1980,8 +2032,138 @@ function renderSchedulePreview(freq) {
       '<p class="text-gold-300 font-semibold mb-1">' + t('sched_preview_yearly_hdr') + '</p>' +
       '<p class="text-cream">' + esc(fmtSchedDate(info.nextVarshika)) + '</p>' +
       '<p class="text-creamdim text-[11px] mt-1">' + t('sched_preview_yearly_note') + '</p>';
+  } else if (freq === 'vaikuntha') {
+    const info = relativeScheduleInfo(rel);
+    box.innerHTML =
+      '<p class="text-gold-300 font-semibold mb-1">' + t('sched_preview_vaikuntha_hdr') + '</p>' +
+      '<p class="text-cream">' + esc(fmtSchedDate(info.nextVarshika)) + '</p>';
   }
   box.classList.remove('hidden');
+}
+
+/* =====================================================
+   RITUAL CEREMONY MENUS — Masika / Varshika / Vaikuntha
+   Default templates with switchable dish categories, so
+   the same base plan can vary (different Sambar, Payasam,
+   Palya types) per booking without re-typing the whole menu.
+   ===================================================== */
+const DISH_OPTIONS = {
+  charu:    ['majjiga_charu', 'rasam', 'menthi_pulusu', 'sambar', 'huli'],
+  palya:    ['beerakaya', 'vankaya', 'gummadikaya', 'aratikaya', 'chikkudukaya'],
+  riceitem: ['plain', 'pulihora', 'chitranna'],
+  payasam:  ['semiya', 'paramannam', 'sago', 'chana_dal_payasam', 'kayi_payasa', 'godhi_payasa'],
+  sweet:    ['poornam_boorelu', 'laddu']
+};
+const RITUAL_MENU_TEMPLATES = {
+  masika: {
+    fixedKeys: ['menu_fixed_rice_ghee', 'menu_fixed_pappu_plain', 'menu_fixed_curd'],
+    slots: [
+      { key: 'charu',  pool: 'charu', default: 'majjiga_charu' },
+      { key: 'palya1', pool: 'palya', default: 'beerakaya' }
+    ],
+    payasamOptional: true
+  },
+  yearly: {
+    fixedKeys: ['menu_fixed_rice_ghee', 'menu_fixed_pappu_charu', 'menu_fixed_daddojanam', 'menu_fixed_appadam_pickle'],
+    slots: [
+      { key: 'charu',    pool: 'charu',    default: 'rasam' },
+      { key: 'riceitem', pool: 'riceitem', default: 'pulihora' },
+      { key: 'palya1',   pool: 'palya',    default: 'vankaya' },
+      { key: 'palya2',   pool: 'palya',    default: 'gummadikaya' },
+      { key: 'payasam1', pool: 'payasam',  default: 'semiya' }
+    ]
+  },
+  vaikuntha: {
+    fixedKeys: ['menu_fixed_rice_ghee', 'menu_fixed_daddojanam', 'menu_fixed_appadam_pickle_chutney'],
+    slots: [
+      { key: 'charu1',   pool: 'charu',    default: 'sambar' },
+      { key: 'charu2',   pool: 'charu',    default: 'rasam' },
+      { key: 'riceitem', pool: 'riceitem', default: 'pulihora' },
+      { key: 'palya1',   pool: 'palya',    default: 'beerakaya' },
+      { key: 'palya2',   pool: 'palya',    default: 'vankaya' },
+      { key: 'palya3',   pool: 'palya',    default: 'gummadikaya' },
+      { key: 'payasam1', pool: 'payasam',  default: 'semiya' },
+      { key: 'payasam2', pool: 'payasam',  default: 'kayi_payasa' },
+      { key: 'sweet',    pool: 'sweet',    default: 'poornam_boorelu' }
+    ]
+  }
+};
+/* "monthly" (the booking frequency) maps to the Masika menu template; "yearly" and
+   "vaikuntha" frequencies map to templates of the same name. */
+function menuTemplateFor(freq) {
+  if (freq === 'monthly') return RITUAL_MENU_TEMPLATES.masika;
+  return RITUAL_MENU_TEMPLATES[freq] || null;
+}
+function slotLabel(key) {
+  const base = key.replace(/[0-9]+$/, '');
+  const num = key.match(/[0-9]+$/);
+  return t('menu_slot_' + base) + (num ? ' (' + num[0] + ')' : '');
+}
+function renderMenuBlock(freq) {
+  const block = document.getElementById('bk-menu-block');
+  const tpl = menuTemplateFor(freq);
+  if (!tpl) { block.classList.add('hidden'); return; }
+  block.classList.remove('hidden');
+  document.getElementById('bk-menu-fixed').innerHTML =
+    '<p class="font-semibold text-gold-300 mb-1">' + t('menu_included_hdr') + '</p>' +
+    tpl.fixedKeys.map(k => '<p>• ' + t(k) + '</p>').join('');
+  document.getElementById('bk-menu-slots').innerHTML = tpl.slots.map(slot => {
+    const opts = DISH_OPTIONS[slot.pool].map(o =>
+      '<option value="' + o + '"' + (o === slot.default ? ' selected' : '') + '>' + t('dish_' + o) + '</option>').join('');
+    return '<p class="text-creamdim text-[12px] mb-1 mt-2">' + slotLabel(slot.key) + '</p>' +
+      '<select id="bk-menu-slot-' + slot.key + '" class="inp mb-1">' + opts + '</select>';
+  }).join('');
+  const payasamToggleLbl = document.getElementById('lbl-menu-payasam-toggle');
+  const payasamSlotDiv = document.getElementById('bk-menu-payasam-slot');
+  if (tpl.payasamOptional) {
+    payasamToggleLbl.classList.remove('hidden');
+    payasamToggleLbl.classList.remove('on');
+    document.getElementById('bk-menu-include-payasam').checked = false;
+    payasamSlotDiv.classList.add('hidden');
+    payasamSlotDiv.innerHTML = '<select id="bk-menu-slot-payasam" class="inp mb-1">' +
+      DISH_OPTIONS.payasam.map(o => '<option value="' + o + '">' + t('dish_' + o) + '</option>').join('') + '</select>';
+  } else {
+    payasamToggleLbl.classList.add('hidden');
+    payasamSlotDiv.classList.add('hidden');
+    payasamSlotDiv.innerHTML = '';
+  }
+}
+function onMenuPayasamToggle() {
+  const on = document.getElementById('bk-menu-include-payasam').checked;
+  document.getElementById('lbl-menu-payasam-toggle').classList.toggle('on', on);
+  document.getElementById('bk-menu-payasam-slot').classList.toggle('hidden', !on);
+}
+/* Reads whatever is currently selected in the menu block into a plain data object for saving. */
+function gatherMenuSelection(freq) {
+  const tpl = menuTemplateFor(freq);
+  if (!tpl) return null;
+  const slots = {};
+  tpl.slots.forEach(slot => {
+    const el = document.getElementById('bk-menu-slot-' + slot.key);
+    if (el) slots[slot.key] = el.value;
+  });
+  const result = { template: freq, slots };
+  if (tpl.payasamOptional) {
+    const included = document.getElementById('bk-menu-include-payasam').checked;
+    if (included) {
+      const el = document.getElementById('bk-menu-slot-payasam');
+      if (el) result.payasam = el.value;
+    }
+  }
+  return result;
+}
+/* Human-readable one-line-per-dish summary of a saved menu selection, for display/WhatsApp use. */
+function menuSummaryLines(menu) {
+  if (!menu) return [];
+  const tpl = menuTemplateFor(menu.template);
+  if (!tpl) return [];
+  const lines = tpl.fixedKeys.map(k => t(k));
+  tpl.slots.forEach(slot => {
+    const chosen = menu.slots && menu.slots[slot.key];
+    if (chosen) lines.push(slotLabel(slot.key) + ': ' + t('dish_' + chosen));
+  });
+  if (menu.payasam) lines.push(t('menu_slot_payasam') + ': ' + t('dish_' + menu.payasam));
+  return lines;
 }
 
 function closeBooking() {
@@ -2031,6 +2213,24 @@ function editBookingEvent(id) {
       veda.classList.remove('hidden');
     }
   }
+  /* The menu can still be changed on edit, even though the schedule/frequency itself cannot. */
+  if (e.ritualFrequency && menuTemplateFor(e.ritualFrequency)) {
+    renderMenuBlock(e.ritualFrequency);
+    const tpl = menuTemplateFor(e.ritualFrequency);
+    if (e.menu) {
+      tpl.slots.forEach(slot => {
+        const el = document.getElementById('bk-menu-slot-' + slot.key);
+        if (el && e.menu.slots && e.menu.slots[slot.key]) el.value = e.menu.slots[slot.key];
+      });
+      if (tpl.payasamOptional && e.menu.payasam) {
+        document.getElementById('bk-menu-include-payasam').checked = true;
+        onMenuPayasamToggle();
+        document.getElementById('bk-menu-slot-payasam').value = e.menu.payasam;
+      }
+    }
+  } else {
+    document.getElementById('bk-menu-block').classList.add('hidden');
+  }
   updateBkTotal();
 }
 function saveBooking() {
@@ -2063,7 +2263,7 @@ function saveBooking() {
     const dates = remainingMasikaDates(rel);
     if (!dates.length) { toast(t('masika_complete_note'), true); return; }
     occurrences = dates.map(d => ({ date: d.p.iso, masikaIndex: d.index }));
-  } else if (freq === 'yearly') {
+  } else if (freq === 'yearly' || freq === 'vaikuntha') {
     const info = relativeScheduleInfo(rel);
     if (!info.nextVarshika) { toast(t('pt_next_unknown'), true); return; }
     occurrences = [{ date: info.nextVarshika.iso }];
@@ -2072,6 +2272,7 @@ function saveBooking() {
     if (!dateVal) { toast(t('err_date'), true); return; }
     occurrences = [{ date: dateVal }];
   }
+  const menuSelection = gatherMenuSelection(freq);
 
   const baseFields = {
     client,
@@ -2099,6 +2300,7 @@ function saveBooking() {
     const evData = Object.assign({ id }, baseFields, ritualMeta, { date: occ.date, ritualFrequency: freq });
     if (seriesId) evData.seriesId = seriesId;
     if (occ.masikaIndex !== undefined) evData.masikaIndex = occ.masikaIndex;
+    if (menuSelection) evData.menu = menuSelection;
     updates['events/' + id] = evData;
   });
 
@@ -2127,6 +2329,9 @@ function saveBookingEdit() {
   const ritualMeta = (rel && !document.getElementById('bk-relative').classList.contains('hidden') && txt(document.getElementById('bk-relative').value)) ? {
     customerId: rel.customerId, relativeId: rel.id, vedaShakha: rel.vedaShakha, relation: rel.relation
   } : {};
+  const existing = S.cache.events[S.editingEventId];
+  const menuMeta = (existing && existing.ritualFrequency && menuTemplateFor(existing.ritualFrequency)) ?
+    { menu: gatherMenuSelection(existing.ritualFrequency) } : {};
   const data = Object.assign({
     client,
     phone:          txt(document.getElementById('bk-phone').value),
@@ -2144,7 +2349,7 @@ function saveBookingEdit() {
     surchargeNote:  txt(document.getElementById('bk-surcharge-note').value),
     total:          pkg.price + extra * EXTRA_PLATE + prasadam + surcharge,
     advance:        num(document.getElementById('bk-advance').value)
-  }, ritualMeta);
+  }, ritualMeta, menuMeta);
   openBookingEditConfirm(S.editingEventId, client, data);
 }
 function openBookingEditConfirm(id, name, data) {
@@ -2349,6 +2554,10 @@ function waEvent(eid) {
   if (int(e.extraPlates)) msg += '\n' + t('extra_plates') + ': ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
   if (num(e.prasadamCharge)) msg += '\n' + t('prasadam_line') + ': ' + inr(num(e.prasadamCharge));
   if (num(e.surcharge)) msg += '\n' + t('surcharge_line') + (e.surchargeNote ? ' (' + e.surchargeNote + ')' : '') + ': ' + inr(num(e.surcharge));
+  if (e.menu) {
+    const lines = menuSummaryLines(e.menu);
+    if (lines.length) msg += '\n\n' + t('menu_lbl') + ':\n' + lines.map(l => '• ' + l).join('\n');
+  }
   msg += '\n\n*' + t('total') + ': ' + inr(total) + '*' +
     '\n' + t('advance_word') + ': ' + inr(num(e.advance)) +
     '\n' + t('balance_word') + ': ' + inr(Math.max(0, total - num(e.advance))) +
@@ -2472,6 +2681,11 @@ function renderLog() {
           '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('assigned_staff_hdr') + '</p>' +
           assignedStaffSummary(e, staffArr) +
         '</div>' +
+
+        (e.menu ? '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
+          '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('menu_lbl') + '</p>' +
+          menuSummaryLines(e.menu).map(l => '<p class="text-creamdim text-[13px]">' + esc(l) + '</p>').join('') +
+        '</div>' : '') +
 
         '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
           '<div class="flex justify-between"><span class="text-creamdim">' +
