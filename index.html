@@ -293,7 +293,16 @@
 
   <!-- 2 ▸ LOG (Ceremonies & Catering) -->
   <section id="view-log" data-view="log" class="hidden">
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="ceremonies">Ceremonies</h2>
+    <div class="grid grid-cols-2 gap-2 mb-3">
+      <label id="lbl-log-ceremonies" class="chip on w-full text-center cursor-pointer !m-0 py-2.5">
+        <input type="radio" name="log-tab" id="log-tab-ceremonies" value="ceremony" class="hidden" onchange="onLogTabChange()" checked />
+        <span data-i18n="log_tab_ceremonies">🕉 Ceremonies</span>
+      </label>
+      <label id="lbl-log-catering" class="chip w-full text-center cursor-pointer !m-0 py-2.5">
+        <input type="radio" name="log-tab" id="log-tab-catering" value="catering" class="hidden" onchange="onLogTabChange()" />
+        <span data-i18n="log_tab_catering">🍽 Catering Orders</span>
+      </label>
+    </div>
 
     <!-- Active upcoming bookings — strictly first -->
     <div id="log-list"></div>
@@ -555,7 +564,19 @@
       </div>
     </div>
 
-    <!-- ================= PANEL 5 — DATA BACKUP & RESTORE ================= -->
+    <!-- ================= PANEL 5 — CATERING MENU TEMPLATES ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-catering','setup-arrow-catering')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="catering_menu_hdr">🍽️ Catering Menu Templates</span>
+        <span id="setup-arrow-catering" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-catering" class="acc-body px-4 pb-4">
+        <p class="text-creamdim text-[13px] mb-2" data-i18n="catering_menu_note">Plain veg menu items for catering-only orders — set your prices, or add your own dishes. Separate from the ceremony ritual menus.</p>
+        <div id="catering-menu-list"></div>
+      </div>
+    </div>
+
+    <!-- ================= PANEL 6 — DATA BACKUP & RESTORE ================= -->
     <div class="card mb-3 overflow-hidden">
       <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-backup','setup-arrow-backup')" aria-expanded="false">
         <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="db_backup">💾 Data Backup & Restore</span>
@@ -596,6 +617,15 @@
 <div id="modal-addrateconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="rar-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- ADD-CUSTOM-CATERING-ITEM — DOUBLE-CONFIRMATION MODAL -->
+<!-- ==================================================== -->
+<div id="modal-addcateringconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="acr-body"></div>
   </div>
 </div>
 
@@ -775,25 +805,45 @@
       </label>
     </div>
 
-    <div class="grid grid-cols-2 gap-2 mb-2">
-      <select id="bk-package" class="inp" onchange="updateBkTotal()">
-        <option value="regular" data-i18n="pkg_regular">Regular — ₹9,000</option>
-        <option value="muthidya" data-i18n="pkg_muthidya">Muthidya — ₹9,500</option>
-      </select>
-      <select id="bk-floor" class="inp">
-        <option value="first" data-i18n="floor_first" selected>First Floor</option>
-        <option value="ground" data-i18n="floor_ground">Ground Floor</option>
-      </select>
+    <!-- Ceremony-specific pricing — package + floor + extra plates -->
+    <div id="bk-ceremony-fields">
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <select id="bk-package" class="inp" onchange="updateBkTotal()">
+          <option value="regular" data-i18n="pkg_regular">Regular — ₹9,000</option>
+          <option value="muthidya" data-i18n="pkg_muthidya">Muthidya — ₹9,500</option>
+        </select>
+        <select id="bk-floor" class="inp">
+          <option value="first" data-i18n="floor_first" selected>First Floor</option>
+          <option value="ground" data-i18n="floor_ground">Ground Floor</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-creamdim text-[14px] flex-1">
+          <span data-i18n="extra_plates">Extra plates</span>
+          <span class="text-[12px]" data-i18n="each_note">(+₹250 each)</span>
+        </span>
+        <button class="stepbtn" onclick="stepExtra(-1)" aria-label="Fewer extra plates">−</button>
+        <input id="bk-extra" class="inp !w-16 text-center" type="number" min="0" value="0" onchange="updateBkTotal()" />
+        <button class="stepbtn" onclick="stepExtra(1)" aria-label="More extra plates">+</button>
+      </div>
     </div>
 
-    <div class="flex items-center gap-3 mb-2">
-      <span class="text-creamdim text-[14px] flex-1">
-        <span data-i18n="extra_plates">Extra plates</span>
-        <span class="text-[12px]" data-i18n="each_note">(+₹250 each)</span>
-      </span>
-      <button class="stepbtn" onclick="stepExtra(-1)" aria-label="Fewer extra plates">−</button>
-      <input id="bk-extra" class="inp !w-16 text-center" type="number" min="0" value="0" onchange="updateBkTotal()" />
-      <button class="stepbtn" onclick="stepExtra(1)" aria-label="More extra plates">+</button>
+    <!-- Catering-specific pricing — occasion + per-plate price + standard/custom menu -->
+    <div id="bk-catering-fields" class="hidden">
+      <input id="bk-cater-occasion" class="inp mb-2" data-ph="cater_occasion_ph" placeholder="Occasion (e.g. Birthday, Get-together)" />
+      <input id="bk-cater-perplate" class="inp mb-2" type="number" min="0" data-ph="cater_perplate_ph" placeholder="Price per plate (₹)" onchange="updateBkTotal()" />
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <label id="lbl-cater-standard" class="chip on w-full text-center cursor-pointer !m-0 py-2">
+          <input type="radio" name="bk-cater-menutype" id="bk-cater-menutype-standard" value="standard" class="hidden" onchange="onCaterMenuTypeChange()" checked />
+          <span data-i18n="cater_menu_standard">Standard menu</span>
+        </label>
+        <label id="lbl-cater-custom" class="chip w-full text-center cursor-pointer !m-0 py-2">
+          <input type="radio" name="bk-cater-menutype" id="bk-cater-menutype-custom" value="custom" class="hidden" onchange="onCaterMenuTypeChange()" />
+          <span data-i18n="cater_menu_custom">Customer's own menu</span>
+        </label>
+      </div>
+      <div id="bk-cater-items-block" class="hidden bg-maroon-950/50 rounded-lg p-3 mb-2"></div>
     </div>
 
     <input id="bk-advance" class="inp mb-2" type="number" min="0" data-ph="advance_ph" placeholder="Advance received (₹)" onchange="updateBkTotal()" />
@@ -1149,6 +1199,11 @@ const I18N = {
     rt_name_ph:'Item (e.g. Jaggery)', rt_unit_ph:'Unit (per kg)', rt_price_ph:'Price ₹',
     never_updated:'never updated', updated_today:'updated today',
     updated_pre:'updated', days_ago:'days ago', day_ago:'day ago',
+    catering_menu_hdr:'🍽️ Catering Menu Templates',
+    catering_menu_note:'Plain veg menu items for catering-only orders — set your prices, or add your own dishes. Separate from the ceremony ritual menus.',
+    cat_starters:'Starters / Snacks', cat_cater_rice:'Rice', cat_curries:'Curries', cat_dal:'Dal / Sambar',
+    cat_breads:'Breads', cat_accompaniments:'Accompaniments', cat_sweets:'Sweets',
+    cf_remove_catering_item:'from the catering menu?',
     db_backup:'💾 Data Backup & Restore',
     export_btn:'⬇ Export full backup (JSON)', import_btn:'⬆ Import backup (JSON)',
     backup_note:'Export saves everything — bookings, expenses, tiffins, staff, rates and Pitru register — as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.',
@@ -1167,6 +1222,13 @@ const I18N = {
     ty_birthday:'Birthday', ty_corporate:'Corporate', ty_other:'Other',
     svc_ceremony:'Ceremony + Catering', svc_catering:'Catering only',
     svc_ceremony_only:'Ceremony Only', svc_catering_only:'Catering Only',
+    log_tab_ceremonies:'🕉 Ceremonies', log_tab_catering:'🍽 Catering Orders',
+    no_catering:'No catering orders yet.',
+    cater_occasion_ph:'Occasion (e.g. Birthday, Get-together)', cater_perplate_ph:'Price per plate (₹)',
+    cater_menu_standard:'Standard menu', cater_menu_custom:"Customer's own menu",
+    cater_occasion_fallback:'Catering order', cater_perplate_suffix:'per plate',
+    cater_perplate_line:'Per-plate price', cater_items_chosen_hdr:'Chosen dishes',
+    cater_occasion_label:'Occasion', cater_perplate_label:'Per-plate price',
     link_customer_lbl:'Link to a registered Customer (optional)',
     walkin_opt:'— Walk-in (no record) —', pick_relative_opt:'— Pick a relative —',
     freq_lbl:'How often is this performed?',
@@ -1437,6 +1499,11 @@ const I18N = {
     rt_name_ph:'వస్తువు (ఉదా: బెల్లం)', rt_unit_ph:'కొలత (కిలోకి)', rt_price_ph:'ధర ₹',
     never_updated:'ఇంకా నమోదు కాలేదు', updated_today:'ఈరోజు నమోదైంది',
     updated_pre:'నమోదైంది', days_ago:'రోజుల క్రితం', day_ago:'రోజు క్రితం',
+    catering_menu_hdr:'🍽️ క్యాటరింగ్ మెనూ మూసలు',
+    catering_menu_note:'క్యాటరింగ్-మాత్రమే ఆర్డర్ల కోసం వెజ్ మెనూ వస్తువులు — ధరలు సెట్ చేయండి, లేదా మీ సొంత వంటకాలు చేర్చండి. ఇది కార్యక్రమ కర్మల మెనూల నుండి వేరుగా ఉంటుంది.',
+    cat_starters:'స్టార్టర్స్ / స్నాక్స్', cat_cater_rice:'అన్నం', cat_curries:'కూరలు', cat_dal:'పప్పు / సాంబార్',
+    cat_breads:'రొట్టెలు', cat_accompaniments:'తోడు పదార్థాలు', cat_sweets:'తీపి పదార్థాలు',
+    cf_remove_catering_item:'క్యాటరింగ్ మెనూ నుండి తొలగించాలా?',
     db_backup:'💾 డేటా బ్యాకప్',
     export_btn:'⬇ పూర్తి బ్యాకప్ డౌన్‌లోడ్ (JSON)', import_btn:'⬆ బ్యాకప్ ఇంపోర్ట్ (JSON)',
     backup_note:'బ్యాకప్‌లో అన్నీ ఉంటాయి — బుకింగ్‌లు, ఖర్చులు, టిఫిన్లు, సిబ్బంది, ధరలు, పితృ పట్టిక. ఇంపోర్ట్ update() ద్వారా కలుపుతుంది; ఒకే ID ఉన్నవి మారతాయి, మిగతావి చెరిగిపోవు.',
@@ -1455,6 +1522,13 @@ const I18N = {
     ty_birthday:'పుట్టినరోజు', ty_corporate:'కార్పొరేట్', ty_other:'ఇతరం',
     svc_ceremony:'కార్యక్రమం + క్యాటరింగ్', svc_catering:'క్యాటరింగ్ మాత్రమే',
     svc_ceremony_only:'కార్యక్రమం మాత్రమే', svc_catering_only:'క్యాటరింగ్ మాత్రమే',
+    log_tab_ceremonies:'🕉 కార్యక్రమాలు', log_tab_catering:'🍽 క్యాటరింగ్ ఆర్డర్లు',
+    no_catering:'ఇంకా క్యాటరింగ్ ఆర్డర్లు లేవు.',
+    cater_occasion_ph:'సందర్భం (ఉదా: పుట్టినరోజు, గెట్-టుగెదర్)', cater_perplate_ph:'ఒక్కో ప్లేటు ధర (₹)',
+    cater_menu_standard:'ప్రామాణిక మెనూ', cater_menu_custom:'కస్టమర్ సొంత మెనూ',
+    cater_occasion_fallback:'క్యాటరింగ్ ఆర్డర్', cater_perplate_suffix:'ఒక్కో ప్లేటుకు',
+    cater_perplate_line:'ఒక్కో ప్లేటు ధర', cater_items_chosen_hdr:'ఎంచుకున్న వంటకాలు',
+    cater_occasion_label:'సందర్భం', cater_perplate_label:'ఒక్కో ప్లేటు ధర',
     link_customer_lbl:'నమోదైన కస్టమర్‌తో లింక్ చేయండి (ఐచ్ఛికం)',
     walkin_opt:'— వాక్-ఇన్ (రికార్డు లేదు) —', pick_relative_opt:'— బంధువును ఎంచుకోండి —',
     freq_lbl:'ఇది ఎంత తరచుగా చేస్తారు?',
@@ -1605,6 +1679,9 @@ const S = {
   editingEventId: null,
   bookingEditConfirmTarget: null,
   logCardOpen: {},
+  caterCatOpen: {},
+  addCateringTarget: null,
+  bkCaterItemsChosen: {},
   cache: {
     events:    {},
     expenses:  {},
@@ -1615,6 +1692,7 @@ const S = {
     pitru:     {},
     customers: {},
     relatives: {},
+    cateringItems: {},
     pnl:       {},
     settings:  {}
   },
@@ -1678,7 +1756,7 @@ function applyLang() {
   headerDateLine();
   renderHome(); renderLog(); renderPitruList(); renderExpRecent();
   renderTiffin(); renderStaff(); renderRates(); renderPnl(); renderRadar();
-  renderAnniversaryRadar(); renderCustomerRegistry(); renderContactsCurrentTab();
+  renderAnniversaryRadar(); renderCustomerRegistry(); renderContactsCurrentTab(); renderCateringMenu();
   updateBkTotal();
   if (!document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
 }
@@ -1872,18 +1950,29 @@ function stepExtra(delta) {
   updateBkTotal();
 }
 function updateBkTotal() {
-  const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
-  const pkg = PKG[pkgKey] || PKG.regular;
-  const extra = int(document.getElementById('bk-extra').value);
+  const isCatering = document.getElementById('bk-service-catering').checked;
   const advance = num(document.getElementById('bk-advance').value);
   const prasadam = num(document.getElementById('bk-prasadam').value);
   const surcharge = num(document.getElementById('bk-surcharge').value);
-  const total = pkg.price + extra * EXTRA_PLATE + prasadam + surcharge;
-  document.getElementById('bk-total-line').textContent =
-    t('total') + ': ' + inr(total) + '  (' + t('pkg_name_' + pkg.key) +
-    (extra ? ' + ' + extra + ' × ₹' + EXTRA_PLATE : '') +
-    (prasadam ? ' + ' + t('prasadam_line') : '') +
-    (surcharge ? ' + ' + t('surcharge_line') : '') + ')';
+  let total, line;
+  if (isCatering) {
+    const perPlate = num(document.getElementById('bk-cater-perplate').value);
+    const guests = int(document.getElementById('bk-guests').value);
+    total = perPlate * guests + prasadam + surcharge;
+    line = t('total') + ': ' + inr(total) + '  (' + t('cater_perplate_line') + ' ₹' + perPlate + ' × ' + guests +
+      (prasadam ? ' + ' + t('prasadam_line') : '') +
+      (surcharge ? ' + ' + t('surcharge_line') : '') + ')';
+  } else {
+    const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
+    const pkg = PKG[pkgKey] || PKG.regular;
+    const extra = int(document.getElementById('bk-extra').value);
+    total = pkg.price + extra * EXTRA_PLATE + prasadam + surcharge;
+    line = t('total') + ': ' + inr(total) + '  (' + t('pkg_name_' + pkg.key) +
+      (extra ? ' + ' + extra + ' × ₹' + EXTRA_PLATE : '') +
+      (prasadam ? ' + ' + t('prasadam_line') : '') +
+      (surcharge ? ' + ' + t('surcharge_line') : '') + ')';
+  }
+  document.getElementById('bk-total-line').textContent = line;
   document.getElementById('bk-balance-line').textContent =
     t('balance_after') + ': ' + inr(Math.max(0, total - advance));
 }
@@ -1891,6 +1980,41 @@ function onServiceToggle() {
   const ceremonyOn = document.getElementById('bk-service-ceremony').checked;
   document.getElementById('lbl-svc-ceremony').classList.toggle('on', ceremonyOn);
   document.getElementById('lbl-svc-catering').classList.toggle('on', !ceremonyOn);
+  document.getElementById('bk-ceremony-fields').classList.toggle('hidden', !ceremonyOn);
+  document.getElementById('bk-catering-fields').classList.toggle('hidden', ceremonyOn);
+  onBkTypeChange(); /* the ritual (Shraddha) block only ever applies to ceremony bookings */
+  if (!ceremonyOn) renderCateringItemsChecklist();
+  updateBkTotal();
+}
+function onCaterMenuTypeChange() {
+  const custom = document.getElementById('bk-cater-menutype-custom').checked;
+  document.getElementById('lbl-cater-standard').classList.toggle('on', !custom);
+  document.getElementById('lbl-cater-custom').classList.toggle('on', custom);
+  document.getElementById('bk-cater-items-block').classList.toggle('hidden', !custom);
+  if (custom) renderCateringItemsChecklist();
+}
+/* Reference/planning checklist of catering dishes, grouped by category — used only for
+   "Customer's own menu" so Vinay knows what to prepare. Pricing stays the simple
+   per-plate rate; this list does not add its own line-item costs. */
+function renderCateringItemsChecklist(selected) {
+  const box = document.getElementById('bk-cater-items-block');
+  if (!box || box.classList.contains('hidden')) return;
+  const chosen = selected || S.bkCaterItemsChosen || {};
+  const rows = allCateringItems();
+  box.innerHTML = CATERING_CATEGORIES.map(catDef => {
+    const items = rows.filter(r => (r.cat || 'starters') === catDef.id);
+    if (!items.length) return '';
+    return '<p class="text-creamdim text-[12px] font-semibold mt-2 mb-1">' + catDef.icon + ' ' + t(catDef.labelKey) + '</p>' +
+      items.map(it =>
+        '<button type="button" class="chip ' + (chosen[it.id] ? 'on' : '') + '" onclick="toggleCaterItemChoice(\'' + it.id + '\')">' +
+        (chosen[it.id] ? '✓ ' : '') + esc(it.name) + '</button>'
+      ).join('');
+  }).join('');
+}
+function toggleCaterItemChoice(itemId) {
+  S.bkCaterItemsChosen = S.bkCaterItemsChosen || {};
+  S.bkCaterItemsChosen[itemId] = !S.bkCaterItemsChosen[itemId];
+  renderCateringItemsChecklist();
 }
 async function pickContactInto(nameId, phoneId) {
   if (!('contacts' in navigator) || !('select' in navigator.contacts)) {
@@ -1925,7 +2049,8 @@ function openBooking() {
 }
 /* ---------- Ritual booking: link to Customer/Relative, ask frequency, preview schedule ---------- */
 function onBkTypeChange() {
-  const isRitual = txt(document.getElementById('bk-type').value) === 'Shraddha / Pitru Karya';
+  const isCatering = document.getElementById('bk-service-catering').checked;
+  const isRitual = !isCatering && txt(document.getElementById('bk-type').value) === 'Shraddha / Pitru Karya';
   document.getElementById('bk-ritual-block').classList.toggle('hidden', !isRitual);
   if (!isRitual) resetRitualLinking();
 }
@@ -2196,6 +2321,17 @@ function editBookingEvent(id) {
   document.getElementById('bk-surcharge').value = e.surcharge || '';
   document.getElementById('bk-surcharge-note').value = e.surchargeNote || '';
 
+  if (e.service === 'catering') {
+    document.getElementById('bk-cater-occasion').value = e.caterOccasion || '';
+    document.getElementById('bk-cater-perplate').value = e.caterPerPlate || '';
+    const isCustom = e.caterMenuType === 'custom';
+    document.getElementById('bk-cater-menutype-standard').checked = !isCustom;
+    document.getElementById('bk-cater-menutype-custom').checked = isCustom;
+    S.bkCaterItemsChosen = {};
+    (e.caterItems || []).forEach(itemId => { S.bkCaterItemsChosen[itemId] = true; });
+    onCaterMenuTypeChange();
+  }
+
   populateCustomerSelect();
   onBkTypeChange(); /* shows/hides the ritual block based on type */
   /* Editing a single already-created booking never regenerates a schedule —
@@ -2237,13 +2373,16 @@ function saveBooking() {
   if (S.editingEventId) { saveBookingEdit(); return; }
   const client = txt(document.getElementById('bk-client').value);
   if (!client) { toast(t('err_client'), true); return; }
+  const service = document.getElementById('bk-service-catering').checked ? 'catering' : 'ceremony';
+
+  if (service === 'catering') { saveCateringBooking(client); return; }
+
   const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
   const pkg = PKG[pkgKey] || PKG.regular;
   const extra = int(document.getElementById('bk-extra').value);
   const prasadam = num(document.getElementById('bk-prasadam').value);
   const surcharge = num(document.getElementById('bk-surcharge').value);
   const surchargeNote = txt(document.getElementById('bk-surcharge-note').value);
-  const service = document.getElementById('bk-service-catering').checked ? 'catering' : 'ceremony';
   const type = txt(document.getElementById('bk-type').value);
   const isRitual = type === 'Shraddha / Pitru Karya' && !document.getElementById('bk-ritual-block').classList.contains('hidden');
   const rel = isRitual ? S.bkSelectedRelative : null;
@@ -2312,6 +2451,45 @@ function saveBooking() {
     resetBookingForm();
   }).catch(err => { toast(t('err_save'), true); console.error(err); });
 }
+/* Catering orders skip ritual type/customer-linking/frequency entirely — just occasion,
+   headcount, a standard or custom menu, and a simple per-plate price. */
+function saveCateringBooking(client) {
+  const dateVal = txt(document.getElementById('bk-date').value);
+  if (!dateVal) { toast(t('err_date'), true); return; }
+  const perPlate = num(document.getElementById('bk-cater-perplate').value);
+  const guests = int(document.getElementById('bk-guests').value);
+  const prasadam = num(document.getElementById('bk-prasadam').value);
+  const surcharge = num(document.getElementById('bk-surcharge').value);
+  const menuType = document.getElementById('bk-cater-menutype-custom').checked ? 'custom' : 'standard';
+  const chosenItems = menuType === 'custom'
+    ? Object.keys(S.bkCaterItemsChosen || {}).filter(k => S.bkCaterItemsChosen[k])
+    : [];
+  const total = perPlate * guests + prasadam + surcharge;
+  const id = uid('ev');
+  save('events/' + id, {
+    id, client,
+    phone:            txt(document.getElementById('bk-phone').value),
+    date:             dateVal,
+    guests,
+    type:             'Catering',
+    service:          'catering',
+    caterOccasion:    txt(document.getElementById('bk-cater-occasion').value),
+    caterPerPlate:    perPlate,
+    caterMenuType:    menuType,
+    caterItems:       chosenItems,
+    prasadamCharge:   prasadam,
+    surcharge:        surcharge,
+    surchargeNote:    txt(document.getElementById('bk-surcharge-note').value),
+    total,
+    advance:          num(document.getElementById('bk-advance').value),
+    locked:           true,
+    created:          Date.now()
+  }).then(() => {
+    closeBooking();
+    toast(t('booking_saved') + ' ' + client + ' — ' + inr(total));
+    resetBookingForm();
+  }).catch(err => { toast(t('err_save'), true); console.error(err); });
+}
 /* Editing an existing booking always requires double-confirmation, matching every other
    edit flow in this app (staff, Pitru, customer, relative). update() merges fields, so
    checklist/staff/locked/created/id on the record are left untouched. */
@@ -2320,36 +2498,65 @@ function saveBookingEdit() {
   if (!client) { toast(t('err_client'), true); return; }
   const dateVal = txt(document.getElementById('bk-date').value);
   if (!dateVal) { toast(t('err_date'), true); return; }
-  const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
-  const pkg = PKG[pkgKey] || PKG.regular;
-  const extra = int(document.getElementById('bk-extra').value);
   const prasadam = num(document.getElementById('bk-prasadam').value);
   const surcharge = num(document.getElementById('bk-surcharge').value);
-  const rel = S.bkSelectedRelative;
-  const ritualMeta = (rel && !document.getElementById('bk-relative').classList.contains('hidden') && txt(document.getElementById('bk-relative').value)) ? {
-    customerId: rel.customerId, relativeId: rel.id, vedaShakha: rel.vedaShakha, relation: rel.relation
-  } : {};
-  const existing = S.cache.events[S.editingEventId];
-  const menuMeta = (existing && existing.ritualFrequency && menuTemplateFor(existing.ritualFrequency)) ?
-    { menu: gatherMenuSelection(existing.ritualFrequency) } : {};
-  const data = Object.assign({
-    client,
-    phone:          txt(document.getElementById('bk-phone').value),
-    date:           dateVal,
-    guests:         int(document.getElementById('bk-guests').value),
-    type:           txt(document.getElementById('bk-type').value),
-    service:        document.getElementById('bk-service-catering').checked ? 'catering' : 'ceremony',
-    floor:          txt(document.getElementById('bk-floor').value) || 'first',
-    package:        pkgKey,
-    basePrice:      pkg.price,
-    extraPlates:    extra,
-    extraAmount:    extra * EXTRA_PLATE,
-    prasadamCharge: prasadam,
-    surcharge:      surcharge,
-    surchargeNote:  txt(document.getElementById('bk-surcharge-note').value),
-    total:          pkg.price + extra * EXTRA_PLATE + prasadam + surcharge,
-    advance:        num(document.getElementById('bk-advance').value)
-  }, ritualMeta, menuMeta);
+  const isCatering = document.getElementById('bk-service-catering').checked;
+
+  let data;
+  if (isCatering) {
+    const perPlate = num(document.getElementById('bk-cater-perplate').value);
+    const guests = int(document.getElementById('bk-guests').value);
+    const menuType = document.getElementById('bk-cater-menutype-custom').checked ? 'custom' : 'standard';
+    const chosenItems = menuType === 'custom'
+      ? Object.keys(S.bkCaterItemsChosen || {}).filter(k => S.bkCaterItemsChosen[k])
+      : [];
+    data = {
+      client,
+      phone:          txt(document.getElementById('bk-phone').value),
+      date:           dateVal,
+      guests,
+      type:           'Catering',
+      service:        'catering',
+      caterOccasion:  txt(document.getElementById('bk-cater-occasion').value),
+      caterPerPlate:  perPlate,
+      caterMenuType:  menuType,
+      caterItems:     chosenItems,
+      prasadamCharge: prasadam,
+      surcharge:      surcharge,
+      surchargeNote:  txt(document.getElementById('bk-surcharge-note').value),
+      total:          perPlate * guests + prasadam + surcharge,
+      advance:        num(document.getElementById('bk-advance').value)
+    };
+  } else {
+    const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
+    const pkg = PKG[pkgKey] || PKG.regular;
+    const extra = int(document.getElementById('bk-extra').value);
+    const rel = S.bkSelectedRelative;
+    const ritualMeta = (rel && !document.getElementById('bk-relative').classList.contains('hidden') && txt(document.getElementById('bk-relative').value)) ? {
+      customerId: rel.customerId, relativeId: rel.id, vedaShakha: rel.vedaShakha, relation: rel.relation
+    } : {};
+    const existing = S.cache.events[S.editingEventId];
+    const menuMeta = (existing && existing.ritualFrequency && menuTemplateFor(existing.ritualFrequency)) ?
+      { menu: gatherMenuSelection(existing.ritualFrequency) } : {};
+    data = Object.assign({
+      client,
+      phone:          txt(document.getElementById('bk-phone').value),
+      date:           dateVal,
+      guests:         int(document.getElementById('bk-guests').value),
+      type:           txt(document.getElementById('bk-type').value),
+      service:        'ceremony',
+      floor:          txt(document.getElementById('bk-floor').value) || 'first',
+      package:        pkgKey,
+      basePrice:      pkg.price,
+      extraPlates:    extra,
+      extraAmount:    extra * EXTRA_PLATE,
+      prasadamCharge: prasadam,
+      surcharge:      surcharge,
+      surchargeNote:  txt(document.getElementById('bk-surcharge-note').value),
+      total:          pkg.price + extra * EXTRA_PLATE + prasadam + surcharge,
+      advance:        num(document.getElementById('bk-advance').value)
+    }, ritualMeta, menuMeta);
+  }
   openBookingEditConfirm(S.editingEventId, client, data);
 }
 function openBookingEditConfirm(id, name, data) {
@@ -2403,8 +2610,12 @@ function resetBookingForm() {
   document.getElementById('bk-floor').value = 'first';
   document.getElementById('bk-service-ceremony').checked = true;
   document.getElementById('bk-type').value = 'Shraddha / Pitru Karya';
+  ['bk-cater-occasion','bk-cater-perplate'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('bk-cater-menutype-standard').checked = true;
+  S.bkCaterItemsChosen = {};
   onServiceToggle();
   onBkTypeChange();
+  onCaterMenuTypeChange();
   resetRitualLinking();
   updateBkTotal();
 }
@@ -2545,13 +2756,30 @@ function waEvent(eid) {
   const waPhone = phone.length === 10 ? '91' + phone : phone;
   if (!waPhone) { toast(t('err_phone'), true); return; }
   const total = evTotal(e);
-  let msg = '🪔 *Anantha Shree — Booking Confirmation*' + '\n\n' +
-    'Namaskaram ' + e.client + ' garu,' + '\n\n' +
-    'Function: ' + tType(e.type) + '\n' + 'Date: ' + (e.date || t('date_tbd')) +
-    '\n' + t('headcount') + ': ' + int(e.guests) +
-    '\n' + t('package_word') + ': ' + t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) +
-    ' — ' + inr(num(e.basePrice) || PKG.regular.price);
-  if (int(e.extraPlates)) msg += '\n' + t('extra_plates') + ': ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
+  let msg;
+  if (e.service === 'catering') {
+    msg = '🪔 *Anantha Shree — Catering Confirmation*' + '\n\n' +
+      'Namaskaram ' + e.client + ' garu,' + '\n\n' +
+      t('cater_occasion_label') + ': ' + (e.caterOccasion || t('cater_occasion_fallback')) + '\n' +
+      'Date: ' + (e.date || t('date_tbd')) +
+      '\n' + t('headcount') + ': ' + int(e.guests) +
+      '\n' + t('cater_perplate_label') + ': ₹' + num(e.caterPerPlate) + ' ' + t('cater_perplate_suffix');
+    if (e.caterMenuType === 'custom' && (e.caterItems || []).length) {
+      const names = (e.caterItems || []).map(id => {
+        const it = allCateringItems().find(x => x.id === id);
+        return it ? it.name : null;
+      }).filter(Boolean);
+      if (names.length) msg += '\n\n' + t('cater_items_chosen_hdr') + ':\n' + names.map(n => '• ' + n).join('\n');
+    }
+  } else {
+    msg = '🪔 *Anantha Shree — Booking Confirmation*' + '\n\n' +
+      'Namaskaram ' + e.client + ' garu,' + '\n\n' +
+      'Function: ' + tType(e.type) + '\n' + 'Date: ' + (e.date || t('date_tbd')) +
+      '\n' + t('headcount') + ': ' + int(e.guests) +
+      '\n' + t('package_word') + ': ' + t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) +
+      ' — ' + inr(num(e.basePrice) || PKG.regular.price);
+    if (int(e.extraPlates)) msg += '\n' + t('extra_plates') + ': ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
+  }
   if (num(e.prasadamCharge)) msg += '\n' + t('prasadam_line') + ': ' + inr(num(e.prasadamCharge));
   if (num(e.surcharge)) msg += '\n' + t('surcharge_line') + (e.surchargeNote ? ' (' + e.surchargeNote + ')' : '') + ': ' + inr(num(e.surcharge));
   if (e.menu) {
@@ -2619,17 +2847,28 @@ function toggleLogCard(id) {
   if (body) body.classList.toggle('hidden', !S.logCardOpen[id]);
   if (arrow) arrow.style.transform = S.logCardOpen[id] ? 'rotate(90deg)' : 'rotate(0deg)';
 }
+function onLogTabChange() {
+  const tab = document.querySelector('input[name="log-tab"]:checked').value;
+  document.getElementById('lbl-log-ceremonies').classList.toggle('on', tab === 'ceremony');
+  document.getElementById('lbl-log-catering').classList.toggle('on', tab === 'catering');
+  renderLog();
+}
 function renderLog() {
   const box = document.getElementById('log-list');
   const todayISO = isoOf(new Date());
-  /* Strictly: chronological list of active upcoming bookings at the top of the Log view. */
+  const tabEl = document.querySelector('input[name="log-tab"]:checked');
+  const activeTab = tabEl ? tabEl.value : 'ceremony';
+  /* Strictly: chronological list of active upcoming bookings at the top of the Log view,
+     filtered to whichever tab (Ceremonies / Catering Orders) is currently selected. */
   const evs = Object.values(S.cache.events || {}).filter(Boolean)
+    .filter(e => (e.service === 'catering' ? 'catering' : 'ceremony') === activeTab)
     .filter(e => !txt(e.date) || txt(e.date) >= todayISO)
     .sort((a, b) => txt(a.date).localeCompare(txt(b.date)));
   const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
 
   if (!evs.length) {
-    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">' + t('no_ceremonies') + '</p>' +
+    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">' +
+      (activeTab === 'catering' ? t('no_catering') : t('no_ceremonies')) + '</p>' +
       '<p class="text-creamdim text-sm mt-2">' + t('no_ceremonies_hint') + '</p></div>';
     return;
   }
@@ -2663,10 +2902,13 @@ function renderLog() {
       '<div id="log-body-' + e.id + '" class="' + (isOpen ? '' : 'hidden') + ' px-4 pb-4">' +
         '<div class="flex justify-between items-start">' +
           '<div>' +
-            '<p class="text-cream font-semibold text-[15px]">' + esc(tType(e.type)) + '</p>' +
-            '<p class="text-creamdim text-[13px]">' + int(e.guests) + ' ' + t('pax') + ' · ' +
-              (e.floor === 'first' ? t('floor_first') : t('floor_ground')) +
-              (e.service === 'catering' ? ' · ' + t('svc_catering') : '') + '</p>' +
+            (e.service === 'catering'
+              ? '<p class="text-cream font-semibold text-[15px]">' + esc(e.caterOccasion || t('cater_occasion_fallback')) + '</p>' +
+                '<p class="text-creamdim text-[13px]">' + int(e.guests) + ' ' + t('pax') + ' · ₹' + num(e.caterPerPlate) + ' ' + t('cater_perplate_suffix') + ' · ' +
+                  (e.caterMenuType === 'custom' ? t('cater_menu_custom') : t('cater_menu_standard')) + '</p>'
+              : '<p class="text-cream font-semibold text-[15px]">' + esc(tType(e.type)) + '</p>' +
+                '<p class="text-creamdim text-[13px]">' + int(e.guests) + ' ' + t('pax') + ' · ' +
+                  (e.floor === 'first' ? t('floor_first') : t('floor_ground')) + '</p>') +
             (e.vedaShakha ? '<p class="text-creamdim text-[12px] mt-0.5">' + esc(tVeda(e.vedaShakha)) +
               (e.relation ? ' · ' + esc(tRelation(e.relation)) : '') +
               (e.ritualFrequency === 'monthly' && e.masikaIndex ? ' · ' + t('masika_word') + ' ' + e.masikaIndex + '/12' : '') +
@@ -2687,10 +2929,20 @@ function renderLog() {
           menuSummaryLines(e.menu).map(l => '<p class="text-creamdim text-[13px]">' + esc(l) + '</p>').join('') +
         '</div>' : '') +
 
+        (e.service === 'catering' && e.caterMenuType === 'custom' && (e.caterItems || []).length ? '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
+          '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('cater_items_chosen_hdr') + '</p>' +
+          (e.caterItems || []).map(itemId => {
+            const it = allCateringItems().find(x => x.id === itemId);
+            return it ? '<p class="text-creamdim text-[13px]">• ' + esc(it.name) + '</p>' : '';
+          }).join('') +
+        '</div>' : '') +
+
         '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
-          '<div class="flex justify-between"><span class="text-creamdim">' +
-            t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) + ' ' + t('package_word') + '</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
-          (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('extra_plates_x') + ' ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '') +
+          (e.service === 'catering'
+            ? '<div class="flex justify-between"><span class="text-creamdim">₹' + num(e.caterPerPlate) + ' ' + t('cater_perplate_suffix') + ' × ' + int(e.guests) + '</span><span>' + inr(num(e.caterPerPlate) * int(e.guests)) + '</span></div>'
+            : '<div class="flex justify-between"><span class="text-creamdim">' +
+                t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) + ' ' + t('package_word') + '</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
+              (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('extra_plates_x') + ' ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '')) +
           (num(e.prasadamCharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('prasadam_line') + '</span><span>' + inr(num(e.prasadamCharge)) + '</span></div>' : '') +
           (num(e.surcharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('surcharge_line') + (e.surchargeNote ? ' — ' + esc(e.surchargeNote) : '') + '</span><span>' + inr(num(e.surcharge)) + '</span></div>' : '') +
           '<div class="flex justify-between text-gold-300 font-bold mt-1"><span>' + t('total') + '</span><span>' + inr(total) + '</span></div>' +
@@ -4066,6 +4318,182 @@ const DEFAULT_RATES = [
   { id:'rate_akshintalu',   name:'Akshintalu / Turmeric Rice (అక్షింతలు)', unit:'per kg',      cat:'pooja' },
   { id:'rate_newcloth',     name:'New Cotton Cloth / Vastram (వస్త్రం)', unit:'per piece',     cat:'pooja' }
 ];
+/* =====================================================
+   CATERING MENU TEMPLATES — separate from ceremony/ritual
+   menus. Plain veg, Karnataka + Andhra style, editable with
+   custom items and prices, same accordion pattern as the
+   Rate Book.
+   ===================================================== */
+const CATERING_CATEGORIES = [
+  { id:'starters',       icon:'🍟', labelKey:'cat_starters' },
+  { id:'rice',            icon:'🍚', labelKey:'cat_cater_rice' },
+  { id:'curries',        icon:'🍛', labelKey:'cat_curries' },
+  { id:'dal',            icon:'🍲', labelKey:'cat_dal' },
+  { id:'breads',         icon:'🫓', labelKey:'cat_breads' },
+  { id:'accompaniments', icon:'🥗', labelKey:'cat_accompaniments' },
+  { id:'sweets',         icon:'🍮', labelKey:'cat_sweets' }
+];
+const DEFAULT_CATERING_ITEMS = [
+  { id:'cater_mirchibajji',     name:'Mirchi Bajji',        unit:'per plate', cat:'starters' },
+  { id:'cater_onionpakodi',     name:'Onion Pakodi',        unit:'per plate', cat:'starters' },
+  { id:'cater_gobimanchurian',  name:'Gobi Manchurian',     unit:'per plate', cat:'starters' },
+  { id:'cater_paneertikka',     name:'Paneer Tikka',        unit:'per plate', cat:'starters' },
+  { id:'cater_corncutlet',      name:'Corn Cutlet',         unit:'per plate', cat:'starters' },
+  { id:'cater_vegspringroll',   name:'Veg Spring Roll',     unit:'per plate', cat:'starters' },
+
+  { id:'cater_steamedrice',     name:'Steamed Rice',        unit:'per plate', cat:'rice' },
+  { id:'cater_jeerarice',       name:'Jeera Rice',          unit:'per plate', cat:'rice' },
+  { id:'cater_vegbiryani',      name:'Veg Biryani / Bagara Rice', unit:'per plate', cat:'rice' },
+  { id:'cater_curdrice',        name:'Curd Rice',           unit:'per plate', cat:'rice' },
+
+  { id:'cater_mixedveg',        name:'Mixed Veg Curry',     unit:'per plate', cat:'curries' },
+  { id:'cater_paneerbuttermasala', name:'Paneer Butter Masala', unit:'per plate', cat:'curries' },
+  { id:'cater_guttivankaya',    name:'Gutti Vankaya',       unit:'per plate', cat:'curries' },
+  { id:'cater_bendakayafry',    name:'Bendakaya Fry',       unit:'per plate', cat:'curries' },
+  { id:'cater_dondakayafry',    name:'Dondakaya Fry',       unit:'per plate', cat:'curries' },
+  { id:'cater_aloocurry',       name:'Aloo Curry',          unit:'per plate', cat:'curries' },
+
+  { id:'cater_sambar',          name:'Sambar',              unit:'per plate', cat:'dal' },
+  { id:'cater_rasam',           name:'Rasam / Charu',       unit:'per plate', cat:'dal' },
+  { id:'cater_plaindal',        name:'Plain Dal Fry',       unit:'per plate', cat:'dal' },
+
+  { id:'cater_chapati',         name:'Chapati',             unit:'per plate', cat:'breads' },
+  { id:'cater_poori',           name:'Poori',               unit:'per plate', cat:'breads' },
+  { id:'cater_naan',            name:'Naan',                unit:'per plate', cat:'breads' },
+
+  { id:'cater_papad',           name:'Papad',               unit:'per plate', cat:'accompaniments' },
+  { id:'cater_pickle',          name:'Pickle',              unit:'per plate', cat:'accompaniments' },
+  { id:'cater_raitha',          name:'Perugu Pachadi / Raitha', unit:'per plate', cat:'accompaniments' },
+  { id:'cater_salad',           name:'Salad',               unit:'per plate', cat:'accompaniments' },
+
+  { id:'cater_gulabjamun',      name:'Gulab Jamun',         unit:'per plate', cat:'sweets' },
+  { id:'cater_bobbatlu',        name:'Bobbatlu / Holige',   unit:'per plate', cat:'sweets' },
+  { id:'cater_doublekameetha',  name:'Double ka Meetha',    unit:'per plate', cat:'sweets' },
+  { id:'cater_kesaribath',      name:'Kesari Bath / Rava Kesari', unit:'per plate', cat:'sweets' },
+  { id:'cater_payasam',         name:'Payasam',             unit:'per plate', cat:'sweets' }
+];
+function setCateringItem(id, name, unit, val) {
+  save('cateringItems/' + id, { id, name, unit, price: num(val), updated: Date.now() })
+    .then(() => toast(name + ': ₹' + num(val) + ' ' + unit));
+}
+function delCateringItem(id, name) {
+  if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_catering_item'))) removeKey('cateringItems', id);
+}
+function toggleCateringCategory(catId) {
+  S.caterCatOpen = S.caterCatOpen || {};
+  S.caterCatOpen[catId] = !S.caterCatOpen[catId];
+  const body  = document.getElementById('cater-body-' + catId);
+  const arrow = document.getElementById('cater-arrow-' + catId);
+  if (body)  body.classList.toggle('hidden', !S.caterCatOpen[catId]);
+  if (arrow) arrow.style.transform = S.caterCatOpen[catId] ? 'rotate(90deg)' : 'rotate(0deg)';
+}
+/* ---------- Add-custom-item: double-confirmation before writing, same pattern as the Rate Book ---------- */
+function openAddCateringItemConfirm(catId) {
+  const name  = txt(document.getElementById('ct-name-' + catId).value);
+  const unit  = txt(document.getElementById('ct-unit-' + catId).value) || 'per plate';
+  const price = num(document.getElementById('ct-price-' + catId).value);
+  if (!name) { toast(t('err_item'), true); return; }
+  S.addCateringTarget = { catId, name, unit, price };
+  renderAddCateringItemStep(1);
+  document.getElementById('modal-addcateringconfirm').classList.remove('hidden');
+}
+function renderAddCateringItemStep(step) {
+  const body = document.getElementById('acr-body');
+  const tgt = S.addCateringTarget;
+  if (!tgt) return;
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + t('rar_title1') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4"><b>' + esc(tgt.name) + '</b> — ' + esc(tgt.unit) + ' — ₹' + tgt.price + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelAddCateringItem()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderAddCateringItemStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + t('rar_title2') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('rar_body2') + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelAddCateringItem()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmAddCateringItem()">' + t('rar_confirm_final') + '</button>' +
+      '</div>';
+  }
+}
+function cancelAddCateringItem() {
+  document.getElementById('modal-addcateringconfirm').classList.add('hidden');
+  S.addCateringTarget = null;
+}
+function confirmAddCateringItem() {
+  const tgt = S.addCateringTarget;
+  if (!tgt) return;
+  const id = uid('cater');
+  save('cateringItems/' + id, { id, name: tgt.name, unit: tgt.unit, price: tgt.price, cat: tgt.catId, updated: Date.now() })
+    .then(() => {
+      toast(tgt.name + ' — ' + t('rate_added'));
+      ['ct-name-', 'ct-unit-', 'ct-price-'].forEach(prefix => {
+        const el = document.getElementById(prefix + tgt.catId);
+        if (el) el.value = '';
+      });
+    });
+  cancelAddCateringItem();
+}
+function allCateringItems() {
+  const stored = S.cache.cateringItems || {};
+  const rows = DEFAULT_CATERING_ITEMS.map(d => Object.assign({}, d, stored[d.id] || {}));
+  Object.values(stored).forEach(r => {
+    if (r && !DEFAULT_CATERING_ITEMS.some(d => d.id === r.id)) rows.push(Object.assign({ cat: 'starters' }, r));
+  });
+  return rows;
+}
+function renderCateringMenu() {
+  const box = document.getElementById('catering-menu-list');
+  if (!box) return;
+  const rows = allCateringItems();
+
+  box.innerHTML = CATERING_CATEGORIES.map(catDef => {
+    const items = rows.filter(r => (r.cat || 'starters') === catDef.id);
+    const isOpen = !!(S.caterCatOpen && S.caterCatOpen[catDef.id]);
+
+    const itemRows = items.map(r => {
+      const isDefault = DEFAULT_CATERING_ITEMS.some(d => d.id === r.id);
+      return '<div class="card p-3 mb-2 flex items-center gap-3">' +
+        '<div class="flex-1">' +
+          '<p class="text-cream font-semibold text-[15px]">' + esc(r.name) + '</p>' +
+          '<p class="text-creamdim text-[12px]">' + esc(r.unit) + ' · ' + daysAgoLabel(r.updated) + '</p>' +
+        '</div>' +
+        '<div class="flex items-center gap-1">' +
+          '<span class="text-gold-300">₹</span>' +
+          '<input class="inp !w-24 text-right" type="number" min="0" step="0.5" value="' + (r.price !== undefined ? num(r.price) : '') + '" ' +
+            'onchange="setCateringItem(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\',\'' + esc(r.unit).replace(/'/g,'') + '\', this.value)" />' +
+        '</div>' +
+        (!isDefault ? '<button class="text-creamdim text-[13px] underline" onclick="delCateringItem(\'' + r.id + '\',\'' + esc(r.name).replace(/'/g,'') + '\')">✕</button>' : '') +
+      '</div>';
+    }).join('');
+
+    return '<div class="card mb-3 overflow-hidden">' +
+      '<button class="w-full flex items-center justify-between text-left p-4" onclick="toggleCateringCategory(\'' + catDef.id + '\')" aria-expanded="' + isOpen + '">' +
+        '<span class="text-gold-300 font-semibold">' + catDef.icon + ' ' + t(catDef.labelKey) +
+          ' <span class="text-creamdim text-[12px] font-normal">(' + items.length + ')</span></span>' +
+        '<span id="cater-arrow-' + catDef.id + '" class="text-gold-400 text-lg transition-transform" style="transform:' + (isOpen ? 'rotate(90deg)' : 'rotate(0deg)') + '">▸</span>' +
+      '</button>' +
+      '<div id="cater-body-' + catDef.id + '" class="' + (isOpen ? '' : 'hidden') + ' px-4 pb-4">' +
+        (items.length ? itemRows : '<p class="text-creamdim text-[13px] mb-2">' + t('rate_cat_empty') + '</p>') +
+        '<div class="bg-maroon-950/50 rounded-lg p-3 mt-2">' +
+          '<p class="text-gold-300 font-semibold mb-2 text-[14px]">' + t('add_custom') + '</p>' +
+          '<div class="grid grid-cols-2 gap-2 mb-2">' +
+            '<input id="ct-name-' + catDef.id + '" class="inp" placeholder="' + t('rt_name_ph') + '" />' +
+            '<input id="ct-unit-' + catDef.id + '" class="inp" placeholder="' + t('rt_unit_ph') + '" />' +
+          '</div>' +
+          '<div class="flex gap-2">' +
+            '<input id="ct-price-' + catDef.id + '" class="inp flex-1" type="number" min="0" step="0.5" placeholder="' + t('rt_price_ph') + '" />' +
+            '<button class="btn-gold shrink-0" onclick="openAddCateringItemConfirm(\'' + catDef.id + '\')">' + t('add_btn') + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
 function daysAgoLabel(ts) {
   if (!ts) return t('never_updated');
   const days = Math.floor((Date.now() - num(ts)) / 86400000);
@@ -4402,6 +4830,7 @@ function attachListeners() {
   bind('pitru',     'pitru',     () => { renderPitruList(); });
   bind('customers', 'customers', () => { renderCustomerRegistry(); renderContactsCurrentTab(); });
   bind('relatives', 'relatives', () => { renderCustomerRegistry(); });
+  bind('cateringItems', 'cateringItems', () => { renderCateringMenu(); });
   bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); renderContactsCurrentTab(); });
   bind('tiffinlog', 'tiffinlog', () => {
     renderTiffin(); renderPnl();
