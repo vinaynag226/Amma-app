@@ -188,6 +188,14 @@
   .capbar { height: 10px; border-radius: 999px; background: rgba(28,4,7,.7); overflow: hidden; border: 1px solid rgba(212,169,74,.3); }
   .capbar > div { height: 100%; border-radius: 999px; }
 
+  /* ---------- Smooth-slide accordion bodies (Ledger panels) ---------- */
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+  .acc-arrow { display: inline-block; transition: transform .25s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .acc-body { transition: none; }
+    .acc-arrow { transition: none; }
+  }
+
   button:focus-visible { outline: 2px solid #E2BE6C; outline-offset: 2px; }
   .pad-safe-b { padding-bottom: calc(env(safe-area-inset-bottom, 0px)); }
 </style>
@@ -280,67 +288,115 @@
   <!-- 3 ▸ LEDGER -->
   <section id="view-ledger" data-view="ledger" class="hidden">
 
-    <!-- ===== 3-TIER MASTER P&L ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="master_pnl">Master P&L</h2>
-    <div class="card p-4 mb-2 flex items-center gap-2">
-      <span class="text-creamdim text-[14px] shrink-0" data-i18n="month_lbl">Month:</span>
-      <input id="pnl-month" type="month" class="inp" onchange="renderPnl()" />
-    </div>
-    <div id="pnl-out" class="mb-6"></div>
+    <!-- ================= PANEL 1 — MASTER FINANCIAL P&L DASHBOARD (open by default) ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('ledger-body-pnl','ledger-arrow-pnl')" aria-expanded="true">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="panel_pnl_title">💳 Master Financial P&L Dashboard</span>
+        <span id="ledger-arrow-pnl" class="acc-arrow text-gold-400 text-lg" style="transform:rotate(90deg)">▸</span>
+      </button>
+      <div id="ledger-body-pnl" class="acc-body px-4 pb-4" style="max-height:none" data-open="1">
+        <div class="card p-4 mb-2 flex items-center gap-2 bg-maroon-950/40">
+          <span class="text-creamdim text-[14px] shrink-0" data-i18n="month_lbl">Month:</span>
+          <input id="pnl-month" type="month" class="inp" onchange="renderPnl()" />
+        </div>
+        <div id="pnl-out" class="mb-3"></div>
 
-    <!-- ===== CONFLICT RADAR ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="conflict_radar">Conflict Radar</h2>
-    <div class="card p-4 mb-2 flex items-center gap-2">
-      <span class="text-creamdim text-[14px] shrink-0" data-i18n="date_lbl">Date:</span>
-      <input id="cr-date" type="date" class="inp" onchange="renderRadar()" />
-    </div>
-    <div id="cr-out" class="mb-6"></div>
+        <!-- sub-accordion: conflict radar -->
+        <div class="card mb-2 overflow-hidden">
+          <button class="w-full flex items-center justify-between text-left p-3" onclick="toggleAccordion('ledger-subbody-radar','ledger-subarrow-radar')">
+            <span class="text-gold-300 font-semibold text-[14px]" data-i18n="conflict_radar">Conflict Radar</span>
+            <span id="ledger-subarrow-radar" class="acc-arrow text-gold-400">▸</span>
+          </button>
+          <div id="ledger-subbody-radar" class="acc-body px-3 pb-3">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-creamdim text-[13px] shrink-0" data-i18n="date_lbl">Date:</span>
+              <input id="cr-date" type="date" class="inp" onchange="renderRadar()" />
+            </div>
+            <div id="cr-out"></div>
+          </div>
+        </div>
 
-    <!-- ===== DATE CONVERTER ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="date_converter">Date Converter</h2>
-
-    <div class="card p-4 mb-4">
-      <p class="text-gold-300 font-semibold mb-2" data-i18n="g2v">Gregorian → Vedic</p>
-      <div class="flex gap-2">
-        <input id="g2v-date" type="date" class="inp flex-1" />
-        <button class="btn-gold shrink-0" onclick="doG2V()" data-i18n="convert">Convert</button>
+        <!-- sub-accordion: recent expenses -->
+        <div class="card overflow-hidden">
+          <button class="w-full flex items-center justify-between text-left p-3" onclick="toggleAccordion('ledger-subbody-expenses','ledger-subarrow-expenses')">
+            <span class="text-gold-300 font-semibold text-[14px]" data-i18n="recent_expenses">Recent Expenses</span>
+            <span id="ledger-subarrow-expenses" class="acc-arrow text-gold-400">▸</span>
+          </button>
+          <div id="ledger-subbody-expenses" class="acc-body px-3 pb-3">
+            <div id="exp-recent"></div>
+          </div>
+        </div>
       </div>
-      <div id="g2v-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
     </div>
 
-    <div class="card p-4 mb-4">
-      <p class="text-gold-300 font-semibold mb-2" data-i18n="v2g">Vedic → Gregorian</p>
-      <div class="grid grid-cols-2 gap-2">
-        <select id="v2g-masa" class="inp"></select>
-        <select id="v2g-paksha" class="inp">
-          <option value="0">Shukla Paksha</option>
-          <option value="1">Krishna Paksha</option>
-        </select>
-        <select id="v2g-tithi" class="inp"></select>
-        <input id="v2g-year" type="number" class="inp" min="1990" max="2099" />
+    <!-- ================= PANEL 2 — DUAL-WAY GREGORIAN ↔ VEDIC DATE CONVERTER ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('ledger-body-conv','ledger-arrow-conv')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="panel_conv_title">📅 Dual-Way Gregorian ↔️ Vedic Date Converter</span>
+        <span id="ledger-arrow-conv" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="ledger-body-conv" class="acc-body px-4 pb-4">
+        <div class="card p-4 mb-4 bg-maroon-950/40">
+          <p class="text-gold-300 font-semibold mb-2" data-i18n="g2v">Gregorian → Vedic</p>
+          <div class="flex gap-2">
+            <input id="g2v-date" type="date" class="inp flex-1" />
+            <button class="btn-gold shrink-0" onclick="doG2V()" data-i18n="convert">Convert</button>
+          </div>
+          <div id="g2v-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
+        </div>
+
+        <div class="card p-4 bg-maroon-950/40">
+          <p class="text-gold-300 font-semibold mb-2" data-i18n="v2g">Vedic → Gregorian</p>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="v2g-masa" class="inp"></select>
+            <select id="v2g-paksha" class="inp">
+              <option value="0">Shukla Paksha</option>
+              <option value="1">Krishna Paksha</option>
+            </select>
+            <select id="v2g-tithi" class="inp"></select>
+            <input id="v2g-year" type="number" class="inp" min="1990" max="2099" />
+          </div>
+          <button class="btn-gold w-full mt-2" onclick="doV2G()" data-i18n="find_date">Find date</button>
+          <div id="v2g-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
+        </div>
       </div>
-      <button class="btn-gold w-full mt-2" onclick="doV2G()" data-i18n="find_date">Find date</button>
-      <div id="v2g-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
     </div>
 
-    <!-- ===== PITRU REGISTRY ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3" data-i18n="pitru_register">Pitru Tithi Register</h2>
-    <div class="card p-4 mb-4">
-      <input id="pt-name" class="inp mb-2" data-ph="pt_name_ph" placeholder="Name" />
-      <div class="grid grid-cols-3 gap-2">
-        <select id="pt-masa" class="inp"></select>
-        <select id="pt-paksha" class="inp">
-          <option value="0">Shukla</option>
-          <option value="1">Krishna</option>
-        </select>
-        <select id="pt-tithi" class="inp"></select>
+    <!-- ================= PANEL 3 — PITRU TITHI ANNIVERSARY REGISTRY & ALERTS ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('ledger-body-pitru','ledger-arrow-pitru')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="panel_pitru_title">🌕 Pitru Tithi Anniversary Registry & Alerts</span>
+        <span id="ledger-arrow-pitru" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="ledger-body-pitru" class="acc-body px-4 pb-4">
+        <div class="card p-4 mb-4 bg-maroon-950/40">
+          <input id="pt-name" class="inp mb-2" data-ph="pt_name_ph" placeholder="Name" />
+          <div class="grid grid-cols-3 gap-2">
+            <select id="pt-masa" class="inp"></select>
+            <select id="pt-paksha" class="inp">
+              <option value="0">Shukla</option>
+              <option value="1">Krishna</option>
+            </select>
+            <select id="pt-tithi" class="inp"></select>
+          </div>
+          <button class="btn-gold w-full mt-2" onclick="addPitru()" data-i18n="add_register">Add to register</button>
+        </div>
+        <div id="pitru-list"></div>
       </div>
-      <button class="btn-gold w-full mt-2" onclick="addPitru()" data-i18n="add_register">Add to register</button>
     </div>
-    <div id="pitru-list"></div>
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3" data-i18n="recent_expenses">Recent Expenses</h2>
-    <div id="exp-recent"></div>
+    <!-- ================= PANEL 4 — 1-YEAR AUTOMATED PAST CUSTOMER ANNIVERSARY REMINDER RADAR ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('ledger-body-anniv','ledger-arrow-anniv')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="panel_anniv_title">⏰ 1-Year Automated Past Customer Anniversary Reminder Radar</span>
+        <span id="ledger-arrow-anniv" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="ledger-body-anniv" class="acc-body px-4 pb-4">
+        <p class="text-creamdim text-[12px] mb-3 leading-snug" data-i18n="anniv_note">Scans every past ceremony and surfaces anyone whose next annual anniversary falls within 30 days — tap to send a ready-made WhatsApp or SMS greeting.</p>
+        <div id="anniv-out"></div>
+      </div>
+    </div>
+
   </section>
 
   <!-- 4 ▸ TIFFIN -->
@@ -726,11 +782,18 @@ const I18N = {
     check_0:'Advance received', check_1:'Menu finalized', check_2:'Groceries purchased',
     check_3:'Staff assigned', check_4:'Venue confirmed',
     /* ledger */
+    panel_pnl_title:'💳 Master Financial P&L Dashboard',
+    panel_conv_title:'📅 Dual-Way Gregorian ↔️ Vedic Date Converter',
+    panel_pitru_title:'🌕 Pitru Tithi Anniversary Registry & Alerts',
+    panel_anniv_title:'⏰ 1-Year Automated Past Customer Anniversary Reminder Radar',
     master_pnl:'Master P&L', month_lbl:'Month:', date_lbl:'Date:',
     bookings_word:'bookings',
     income:'INCOME', deductions:'DEDUCTIONS',
     ceremony_gross:'Ceremony gross', catering_gross:'Catering gross', tiffin_gross:'Tiffin gross',
     total_gross:'Total gross',
+    exp_pools_title:'EXPENSE POOLS',
+    exp_pool_ceremony:'Ceremony Daily Expenses', exp_pool_ceremony_sub:'Recurring day-to-day ceremony costs — staff wages + cooking groceries.',
+    exp_pool_catering:'Catering Occasional Expenses', exp_pool_catering_sub:'Ad-hoc catering-business costs — fuel, rent, transport, misc.',
     wages:'Wages (Labour expenses)',
     var_groceries:'Variable groceries (Groceries + Dairy + Flowers)',
     other_exp:'Other logged expenses (Fuel, Rent, Transport…)',
@@ -757,6 +820,12 @@ const I18N = {
     pt_name_ph:'Name (e.g. Father — Ramaiah garu)',
     add_register:'Add to register',
     no_pitru:'No Tithis registered yet.',
+    anniv_note:'Scans every past ceremony and surfaces anyone whose next annual anniversary falls within 30 days — tap to send a ready-made WhatsApp or SMS greeting.',
+    anniv_empty:'No customer anniversaries due in the next 30 days.',
+    anniv_today:'Anniversary is today!', anniv_in:'Anniversary in', anniv_days:'days',
+    anniv_year_word:'anniversary', anniv_send_wa:'Send WhatsApp', anniv_send_sms:'Send SMS',
+    anniv_wish_line:'Wishing you a very happy', anniv_wish_suffix:'anniversary of your',
+    anniv_offer_note:'It would be our honour to serve you again for this special occasion — do let us know if we can help plan anything. 🙏',
     recent_expenses:'Recent Expenses',
     no_expenses:'No expenses yet. Tell Sahaaya: "కూరగాయలు ఖర్చు 500".',
     /* tiffin */
@@ -915,11 +984,18 @@ const I18N = {
     check_0:'అడ్వాన్స్ వచ్చింది', check_1:'మెనూ ఖరారు', check_2:'సరుకులు కొన్నాం',
     check_3:'సిబ్బంది కేటాయించాం', check_4:'హాల్ ఖరారు',
     /* ledger */
+    panel_pnl_title:'💳 ఆర్థిక లాభ–నష్టాల డాష్‌బోర్డ్',
+    panel_conv_title:'📅 ఇంగ్లీషు ↔️ వేద తేదీ మార్పిడి',
+    panel_pitru_title:'🌕 పితృ తిథి వార్షిక పట్టిక & గుర్తింపులు',
+    panel_anniv_title:'⏰ పాత క్లయింట్ల వార్షికోత్సవ రిమైండర్ రాడార్ (1-సంవత్సరం ఆటోమేటిక్)',
     master_pnl:'లాభ–నష్టాల పట్టిక', month_lbl:'నెల:', date_lbl:'తేదీ:',
     bookings_word:'బుకింగ్‌లు',
     income:'ఆదాయం', deductions:'ఖర్చులు',
     ceremony_gross:'కార్యక్రమాల ఆదాయం', catering_gross:'క్యాటరింగ్ ఆదాయం', tiffin_gross:'టిఫిన్ ఆదాయం',
     total_gross:'మొత్తం ఆదాయం',
+    exp_pools_title:'ఖర్చుల విభాగాలు',
+    exp_pool_ceremony:'కార్యక్రమాల రోజువారీ ఖర్చులు', exp_pool_ceremony_sub:'నిత్యం జరిగే కార్యక్రమ ఖర్చులు — సిబ్బంది కూలీలు + వంట సరుకులు.',
+    exp_pool_catering:'క్యాటరింగ్ అప్పుడప్పుడు ఖర్చులు', exp_pool_catering_sub:'అప్పుడప్పుడు వచ్చే క్యాటరింగ్ వ్యాపార ఖర్చులు — ఇంధనం, అద్దె, రవాణా, ఇతరం.',
     wages:'కూలీలు (లేబర్ ఖర్చులు)',
     var_groceries:'సరుకులు (కిరాణా + పాలు + పూలు)',
     other_exp:'ఇతర ఖర్చులు (ఇంధనం, అద్దె, రవాణా…)',
@@ -946,6 +1022,12 @@ const I18N = {
     pt_name_ph:'పేరు (ఉదా: నాన్న — రామయ్య గారు)',
     add_register:'పట్టికలో చేర్చండి',
     no_pitru:'ఇంకా తిథులు నమోదు కాలేదు.',
+    anniv_note:'ప్రతి పాత కార్యక్రమాన్ని పరిశీలించి, 30 రోజుల్లో వార్షికోత్సవం ఉన్నవారిని చూపిస్తుంది — వాట్సాప్ లేదా SMS గ్రీటింగ్ పంపడానికి నొక్కండి.',
+    anniv_empty:'రాబోయే 30 రోజుల్లో క్లయింట్ వార్షికోత్సవాలు లేవు.',
+    anniv_today:'వార్షికోత్సవం ఈరోజే!', anniv_in:'వార్షికోత్సవం', anniv_days:'రోజుల్లో',
+    anniv_year_word:'వార్షికోత్సవం', anniv_send_wa:'వాట్సాప్ పంపండి', anniv_send_sms:'SMS పంపండి',
+    anniv_wish_line:'మీకు చాలా శుభాకాంక్షలు', anniv_wish_suffix:'వార్షికోత్సవ శుభాకాంక్షలు —',
+    anniv_offer_note:'ఈ ప్రత్యేక సందర్భంలో మళ్ళీ మీకు సేవ చేయడం మా అదృష్టంగా భావిస్తాం — ప్లాన్ చేయడంలో ఏదైనా సహాయం కావాలంటే తెలియజేయండి. 🙏',
     recent_expenses:'ఇటీవలి ఖర్చులు',
     no_expenses:'ఇంకా ఖర్చులు లేవు. సహాయకి చెప్పండి: "కూరగాయలు ఖర్చు 500".',
     /* tiffin */
@@ -1152,6 +1234,7 @@ function applyLang() {
   headerDateLine();
   renderHome(); renderLog(); renderPitruList(); renderExpRecent();
   renderTiffin(); renderStaff(); renderRates(); renderPnl(); renderRadar();
+  renderAnniversaryRadar();
   updateBkTotal();
   if (!document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
 }
@@ -1486,6 +1569,26 @@ function toggleAssign(eid, sid) {
     .catch(err => { toast(t('err_save'), true); console.error(err); });
 }
 function togglePanel(id) { document.getElementById(id).classList.toggle('hidden'); }
+/* ---------- Generic smooth-slide accordion (Ledger panels + sub-panels) ---------- */
+function toggleAccordion(bodyId, arrowId) {
+  const body = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
+  if (!body) return;
+  const isOpen = body.dataset.open === '1';
+  clearTimeout(body._accTimer);
+  if (isOpen) {
+    const current = (body.style.maxHeight === 'none' || !body.style.maxHeight) ? body.scrollHeight : parseInt(body.style.maxHeight, 10);
+    body.style.maxHeight = current + 'px';
+    void body.offsetHeight; /* force reflow so the browser animates from this value */
+    requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
+    body.dataset.open = '0';
+  } else {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    body.dataset.open = '1';
+    body._accTimer = setTimeout(() => { if (body.dataset.open === '1') body.style.maxHeight = 'none'; }, 380);
+  }
+  if (arrow) arrow.style.transform = body.dataset.open === '1' ? 'rotate(90deg)' : 'rotate(0deg)';
+}
 function toggleGroceryAccordion() {
   const body = document.getElementById('gc-accordion-body');
   const arrow = document.getElementById('gc-accordion-arrow');
@@ -1720,6 +1823,12 @@ function renderPnl() {
   const net = gross - wages - groceries - overheads - concessions - otherExp;
   const netColor = net >= 0 ? '#7BC47F' : '#E07470';
 
+  /* Distinct expense pools requested for the dashboard: the recurring, day-to-day
+     ceremony-side costs (staff wages + cooking groceries) versus the occasional,
+     ad-hoc costs of running the wider catering business (fuel, rent, transport, misc). */
+  const ceremonyDailyExp = wages + groceries;
+  const cateringOccasionalExp = otherExp;
+
   const line = (label, val, cls) =>
     '<div class="flex justify-between text-[15px] mb-1 ' + (cls || '') + '"><span>' + label + '</span><span>' + inr(val) + '</span></div>';
 
@@ -1732,6 +1841,16 @@ function renderPnl() {
       line(t('catering_gross'), cateringGross) +
       line(t('tiffin_gross'), tiffinGross) +
       line('<b>' + t('total_gross') + '</b>', gross, 'text-gold-300 border-t border-dashed border-gold-600/50 pt-1') +
+
+      '<p class="text-gold-300 font-semibold text-[14px] mt-4 mb-1">' + t('exp_pools_title') + '</p>' +
+      '<div class="bg-maroon-950/50 rounded-lg p-3 mb-2">' +
+        '<div class="flex justify-between text-[14px]"><span class="text-cream">' + t('exp_pool_ceremony') + '</span><span class="text-gold-300 font-semibold">' + inr(ceremonyDailyExp) + '</span></div>' +
+        '<p class="text-creamdim text-[11px] mt-1">' + t('exp_pool_ceremony_sub') + '</p>' +
+      '</div>' +
+      '<div class="bg-maroon-950/50 rounded-lg p-3 mb-1">' +
+        '<div class="flex justify-between text-[14px]"><span class="text-cream">' + t('exp_pool_catering') + '</span><span class="text-gold-300 font-semibold">' + inr(cateringOccasionalExp) + '</span></div>' +
+        '<p class="text-creamdim text-[11px] mt-1">' + t('exp_pool_catering_sub') + '</p>' +
+      '</div>' +
 
       '<p class="text-gold-300 font-semibold text-[14px] mt-3 mb-1">' + t('deductions') + '</p>' +
       line(t('wages'), wages) +
@@ -1936,6 +2055,86 @@ function renderExpRecent() {
         '<span class="text-gold-300 font-semibold">' + inr(e.amount) + '</span>' +
       '</div>').join('')
     : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_expenses') + '</div>';
+}
+
+/* =====================================================
+   ANNIVERSARY REMINDER RADAR — 1-YEAR AUTOMATED ALERTS
+   Tracks every past ceremony's Gregorian date and surfaces
+   anyone whose next annual anniversary falls within 30 days.
+   ===================================================== */
+function nextAnniversaryInfo(dateStr) {
+  const s = txt(dateStr);
+  if (!s || s.length < 10) return null;
+  const parts = s.split('-').map(x => int(x));
+  if (parts.length < 3 || !parts[0]) return null;
+  const origY = parts[0], m = parts[1], d = parts[2];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let next = new Date(today.getFullYear(), m - 1, d);
+  if (next < today) next = new Date(today.getFullYear() + 1, m - 1, d);
+  const diffDays = Math.round((next - today) / 86400000);
+  const yearsCompleted = next.getFullYear() - origY;
+  return { next, diffDays, yearsCompleted };
+}
+function ordinalWord(n) {
+  const rem100 = n % 100;
+  const suffix = (rem100 >= 11 && rem100 <= 13) ? 'th' :
+    ({1:'st', 2:'nd', 3:'rd'})[n % 10] || 'th';
+  return n + suffix;
+}
+function buildAnnivMessage(e, info) {
+  return '🪔 *Anantha Shree*\n\n' +
+    'Namaskaram ' + e.client + ' garu,\n\n' +
+    t('anniv_wish_line') + ' ' + ordinalWord(info.yearsCompleted) + ' ' + t('anniv_wish_suffix') + ' ' + tType(e.type) + '! 🙏\n\n' +
+    t('anniv_offer_note') + '\n\n' + t('rc_thanks');
+}
+function waAnnivReminder(eid) {
+  const e = S.cache.events[eid];
+  if (!e) return;
+  const info = nextAnniversaryInfo(e.date);
+  if (!info) return;
+  const phone = txt(e.phone).replace(/\D/g, '');
+  const waPhone = phone.length === 10 ? '91' + phone : phone;
+  if (!waPhone) { toast(t('err_phone'), true); return; }
+  window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(buildAnnivMessage(e, info)), '_blank');
+}
+function smsAnnivReminder(eid) {
+  const e = S.cache.events[eid];
+  if (!e) return;
+  const info = nextAnniversaryInfo(e.date);
+  if (!info) return;
+  const phone = txt(e.phone).replace(/\D/g, '');
+  if (!phone) { toast(t('err_phone'), true); return; }
+  window.open('sms:' + phone + '?body=' + encodeURIComponent(buildAnnivMessage(e, info)), '_blank');
+}
+function renderAnniversaryRadar() {
+  const box = document.getElementById('anniv-out');
+  if (!box) return;
+  const evs = Object.values(S.cache.events || {}).filter(Boolean).filter(e => txt(e.date));
+  const upcoming = evs.map(e => {
+    const info = nextAnniversaryInfo(e.date);
+    return info ? { e, info } : null;
+  }).filter(x => x && x.info.yearsCompleted >= 1 && x.info.diffDays >= 0 && x.info.diffDays <= 30)
+    .sort((a, b) => a.info.diffDays - b.info.diffDays);
+
+  if (!upcoming.length) {
+    box.innerHTML = '<div class="card p-4 text-center text-creamdim text-sm">' + t('anniv_empty') + '</div>';
+    return;
+  }
+
+  box.innerHTML = upcoming.map(x => {
+    const e = x.e, info = x.info;
+    return '<div class="card p-4 mb-3">' +
+      '<p class="text-cream font-semibold text-[15px]">' + esc(tType(e.type)) + ' — ' + esc(e.client) + '</p>' +
+      '<p class="text-creamdim text-[13px] mt-1">' +
+        (info.diffDays === 0 ? t('anniv_today') : t('anniv_in') + ' ' + info.diffDays + ' ' + t('anniv_days')) +
+        ' · ' + ordinalWord(info.yearsCompleted) + ' ' + t('anniv_year_word') +
+      '</p>' +
+      '<div class="grid grid-cols-2 gap-2 mt-3">' +
+        '<button class="btn-gold text-[13px]" onclick="waAnnivReminder(\'' + e.id + '\')">💬 ' + t('anniv_send_wa') + '</button>' +
+        '<button class="btn-line text-[13px]" onclick="smsAnnivReminder(\'' + e.id + '\')">✉️ ' + t('anniv_send_sms') + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 /* =====================================================
@@ -2570,7 +2769,7 @@ function attachListeners() {
     });
     S.listeners.push({ ref, fn });
   };
-  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); });
+  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); });
   bind('expenses',  'expenses',  () => { renderExpRecent(); renderPnl(); });
   bind('pitru',     'pitru',     () => { renderPitruList(); });
   bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); });
