@@ -253,21 +253,28 @@
   <section id="view-log" data-view="log" class="hidden">
     <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="ceremonies">Ceremonies</h2>
 
-    <!-- Grocery Calculator -->
-    <div class="card p-4 mb-4">
-      <p class="text-gold-300 font-semibold mb-1">
-        <span data-i18n="grocery_calc">Grocery Calculator</span>
-        <span class="text-creamdim font-normal text-[12px]" data-i18n="margin_note">· 15% protective margin</span>
-      </p>
-      <div class="grid grid-cols-2 gap-2 mb-2">
-        <input id="gc-head" class="inp" type="number" min="1" data-ph="headcount" placeholder="Headcount" />
-        <input id="gc-date" class="inp" type="date" />
-      </div>
-      <button class="btn-gold w-full" onclick="runGrocery()" data-i18n="calc_raw">Calculate raw materials</button>
-      <div id="gc-out" class="mt-3 hidden"></div>
-    </div>
-
+    <!-- Active upcoming bookings — strictly first -->
     <div id="log-list"></div>
+
+    <!-- Grocery Calculator — collapsed accordion -->
+    <div class="card p-4 mt-2 mb-4">
+      <button class="w-full flex items-center justify-between text-left" onclick="toggleGroceryAccordion()" aria-expanded="false" aria-controls="gc-accordion-body">
+        <span class="text-gold-300 font-semibold" data-i18n="grocery_calc_toggle">🧮 Open Material Calculator</span>
+        <span id="gc-accordion-arrow" class="text-gold-400 text-lg transition-transform">▸</span>
+      </button>
+      <div id="gc-accordion-body" class="hidden mt-3">
+        <p class="text-gold-300 font-semibold mb-1">
+          <span data-i18n="grocery_calc">Grocery Calculator</span>
+          <span class="text-creamdim font-normal text-[12px]" data-i18n="margin_note">· 15% protective margin</span>
+        </p>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <input id="gc-head" class="inp" type="number" min="1" data-ph="headcount" placeholder="Headcount" />
+          <input id="gc-date" class="inp" type="date" />
+        </div>
+        <button class="btn-gold w-full" onclick="runGrocery()" data-i18n="calc_raw">Calculate raw materials</button>
+        <div id="gc-out" class="mt-3 hidden"></div>
+      </div>
+    </div>
   </section>
 
   <!-- 3 ▸ LEDGER -->
@@ -434,21 +441,26 @@
       <input id="bk-guests" class="inp" type="number" min="0" data-ph="headcount" placeholder="Headcount" />
     </div>
 
+    <select id="bk-type" class="inp mb-2">
+      <option value="Upanayana" data-i18n="ty_upanayana">Upanayana</option>
+      <option value="Wedding" data-i18n="ty_wedding">Wedding</option>
+      <option value="Gruhapravesham" data-i18n="ty_gruha">Gruhapravesham</option>
+      <option value="Satyanarayana Vratam" data-i18n="ty_vratam">Satyanarayana Vratam</option>
+      <option value="Shraddha / Pitru Karya" data-i18n="ty_shraddha">Shraddha / Pitru Karya</option>
+      <option value="Birthday" data-i18n="ty_birthday">Birthday</option>
+      <option value="Corporate" data-i18n="ty_corporate">Corporate</option>
+      <option value="Other" data-i18n="ty_other">Other</option>
+    </select>
+
     <div class="grid grid-cols-2 gap-2 mb-2">
-      <select id="bk-type" class="inp">
-        <option value="Upanayana" data-i18n="ty_upanayana">Upanayana</option>
-        <option value="Wedding" data-i18n="ty_wedding">Wedding</option>
-        <option value="Gruhapravesham" data-i18n="ty_gruha">Gruhapravesham</option>
-        <option value="Satyanarayana Vratam" data-i18n="ty_vratam">Satyanarayana Vratam</option>
-        <option value="Shraddha / Pitru Karya" data-i18n="ty_shraddha">Shraddha / Pitru Karya</option>
-        <option value="Birthday" data-i18n="ty_birthday">Birthday</option>
-        <option value="Corporate" data-i18n="ty_corporate">Corporate</option>
-        <option value="Other" data-i18n="ty_other">Other</option>
-      </select>
-      <select id="bk-service" class="inp">
-        <option value="ceremony" data-i18n="svc_ceremony">Ceremony + Catering</option>
-        <option value="catering" data-i18n="svc_catering">Catering only</option>
-      </select>
+      <label id="lbl-svc-ceremony" class="chip on w-full text-center cursor-pointer !m-0 py-2.5">
+        <input type="radio" name="bk-service" id="bk-service-ceremony" value="ceremony" class="hidden" onchange="onServiceToggle()" checked />
+        <span data-i18n="svc_ceremony_only">Ceremony Only</span>
+      </label>
+      <label id="lbl-svc-catering" class="chip w-full text-center cursor-pointer !m-0 py-2.5">
+        <input type="radio" name="bk-service" id="bk-service-catering" value="catering" class="hidden" onchange="onServiceToggle()" />
+        <span data-i18n="svc_catering_only">Catering Only</span>
+      </label>
     </div>
 
     <div class="grid grid-cols-2 gap-2 mb-2">
@@ -457,8 +469,8 @@
         <option value="muthidya" data-i18n="pkg_muthidya">Muthidya — ₹9,500</option>
       </select>
       <select id="bk-floor" class="inp">
+        <option value="first" data-i18n="floor_first" selected>First Floor</option>
         <option value="ground" data-i18n="floor_ground">Ground Floor</option>
-        <option value="first" data-i18n="floor_first">First Floor</option>
       </select>
     </div>
 
@@ -474,12 +486,27 @@
 
     <input id="bk-advance" class="inp mb-2" type="number" min="0" data-ph="advance_ph" placeholder="Advance received (₹)" onchange="updateBkTotal()" />
 
+    <div class="grid grid-cols-2 gap-2 mb-2">
+      <input id="bk-prasadam" class="inp" type="number" min="0" data-ph="prasadam_ph" placeholder="🍧 Extra Prasadam Charges (₹)" onchange="updateBkTotal()" />
+      <input id="bk-surcharge" class="inp" type="number" min="0" data-ph="surcharge_ph" placeholder="🎟️ Misc Surcharges (₹)" onchange="updateBkTotal()" />
+    </div>
+    <input id="bk-surcharge-note" class="inp mb-2" data-ph="surcharge_note_ph" placeholder="Surcharge / charge description (optional)" />
+
     <div class="bg-maroon-950/60 rounded-lg p-3 mb-3">
       <p id="bk-total-line" class="text-gold-300 font-bold text-[17px]"></p>
       <p id="bk-balance-line" class="text-creamdim text-[13px]"></p>
     </div>
 
     <button class="btn-gold w-full" onclick="saveBooking()" data-i18n="save_booking">Save booking</button>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- REMOVE RECORD — DOUBLE-CONFIRMATION MODAL            -->
+<!-- ==================================================== -->
+<div id="modal-removeconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-danger w-full max-w-md m-3 p-5">
+    <div id="rmv-body"></div>
   </div>
 </div>
 
@@ -644,6 +671,7 @@ const I18N = {
     no_ceremonies:'No ceremonies logged yet.',
     no_ceremonies_hint:'Tap the big gold button on the Home screen, or tell Sahaaya: "కొత్త బుకింగ్".',
     grocery_calc:'Grocery Calculator', margin_note:'· 15% protective margin',
+    grocery_calc_toggle:'🧮 Open Material Calculator',
     headcount:'Headcount', calc_raw:'Calculate raw materials',
     gc_item:'Item', gc_qty:'Qty (incl. 15%)', gc_cost:'Est. cost',
     gc_set_rate:'set rate in Setup', gc_total:'Estimated cost', gc_partial:' (partial)',
@@ -735,10 +763,22 @@ const I18N = {
     ty_vratam:'Satyanarayana Vratam', ty_shraddha:'Shraddha / Pitru Karya',
     ty_birthday:'Birthday', ty_corporate:'Corporate', ty_other:'Other',
     svc_ceremony:'Ceremony + Catering', svc_catering:'Catering only',
+    svc_ceremony_only:'Ceremony Only', svc_catering_only:'Catering Only',
     pkg_regular:'Regular — ₹9,000', pkg_muthidya:'Muthidya — ₹9,500',
     extra_plates:'Extra plates', each_note:'(+₹250 each)',
     advance_ph:'Advance received (₹)',
+    prasadam_ph:'🍧 Extra Prasadam Charges (₹)', surcharge_ph:'🎟️ Additional/Misc Surcharges (₹)',
+    surcharge_note_ph:'Surcharge / charge description (optional)',
+    prasadam_line:'Extra Prasadam', surcharge_line:'Misc Surcharge',
     balance_after:'Balance after advance', save_booking:'Save booking',
+    lock_locked:'🔒 Locked — tap to unlock', lock_unlocked:'🔓 Unlocked — tap to lock',
+    err_locked:'This card is locked. Tap 🔒 to unlock before editing.',
+    remove_record:'🗑️ Remove Record',
+    rmv_title1:'Remove this booking?', rmv_body1:'This will permanently delete the booking for',
+    cancel:'Cancel', continue_word:'Continue',
+    rmv_title2:'Are you absolutely sure?',
+    rmv_body2:'This action cannot be undone. All checklist, staff assignment, and payment records for this booking will be permanently erased.',
+    rmv_confirm_final:'Yes, delete permanently', booking_removed:'Booking removed.',
     /* tiffin client modal */
     tc_title:'New Tiffin Client', tc_name_ph:'Client / family name',
     rate_per_meal:'Rate per meal (₹)',
@@ -804,6 +844,7 @@ const I18N = {
     no_ceremonies:'ఇంకా బుకింగ్‌లు లేవు.',
     no_ceremonies_hint:'హోమ్ స్క్రీన్‌లో పెద్ద బంగారు బటన్ నొక్కండి, లేదా సహాయకి చెప్పండి: "కొత్త బుకింగ్".',
     grocery_calc:'సరుకుల లెక్క', margin_note:'· 15% అదనపు మార్జిన్',
+    grocery_calc_toggle:'🧮 సరుకుల లెక్క తెరవండి',
     headcount:'అతిథుల సంఖ్య', calc_raw:'సరుకులు లెక్కించండి',
     gc_item:'వస్తువు', gc_qty:'మోతాదు (15%తో)', gc_cost:'అంచనా ఖర్చు',
     gc_set_rate:'సెటప్‌లో ధర పెట్టండి', gc_total:'మొత్తం అంచనా ఖర్చు', gc_partial:' (కొంత మాత్రమే)',
@@ -895,10 +936,23 @@ const I18N = {
     ty_vratam:'సత్యనారాయణ వ్రతం', ty_shraddha:'శ్రాద్ధం / పితృ కార్యం',
     ty_birthday:'పుట్టినరోజు', ty_corporate:'కార్పొరేట్', ty_other:'ఇతరం',
     svc_ceremony:'కార్యక్రమం + క్యాటరింగ్', svc_catering:'క్యాటరింగ్ మాత్రమే',
+    svc_ceremony_only:'కార్యక్రమం మాత్రమే', svc_catering_only:'క్యాటరింగ్ మాత్రమే',
     pkg_regular:'రెగ్యులర్ — ₹9,000', pkg_muthidya:'ముత్తైదువ — ₹9,500',
     extra_plates:'అదనపు ప్లేట్లు', each_note:'(ఒక్కొక్కటి +₹250)',
     advance_ph:'తీసుకున్న అడ్వాన్స్ (₹)',
+    prasadam_ph:'🍧 అదనపు ప్రసాదం ఖర్చులు (₹)', surcharge_ph:'🎟️ ఇతర సర్‌ఛార్జీలు (₹)',
+    surcharge_note_ph:'సర్‌ఛార్జ్ వివరణ (ఐచ్ఛికం)',
+    prasadam_line:'అదనపు ప్రసాదం', surcharge_line:'ఇతర సర్‌ఛార్జ్',
     balance_after:'అడ్వాన్స్ పోగా బాకీ', save_booking:'బుకింగ్ సేవ్ చేయండి',
+    lock_locked:'🔒 లాక్ చేయబడింది — అన్‌లాక్ చేయడానికి నొక్కండి',
+    lock_unlocked:'🔓 అన్‌లాక్ చేయబడింది — లాక్ చేయడానికి నొక్కండి',
+    err_locked:'ఈ కార్డ్ లాక్ అయి ఉంది. ముందుగా 🔒 నొక్కి అన్‌లాక్ చేయండి.',
+    remove_record:'🗑️ రికార్డ్ తొలగించండి',
+    rmv_title1:'ఈ బుకింగ్ తొలగించాలా?', rmv_body1:'ఈ బుకింగ్ శాశ్వతంగా తొలగించబడుతుంది —',
+    cancel:'రద్దు', continue_word:'కొనసాగించు',
+    rmv_title2:'మీరు ఖచ్చితంగా ఉన్నారా?',
+    rmv_body2:'ఈ చర్య వెనక్కి తీసుకోలేము. ఈ బుకింగ్ యొక్క చెక్‌లిస్ట్, సిబ్బంది కేటాయింపు, చెల్లింపుల రికార్డులు అన్నీ శాశ్వతంగా తొలగించబడతాయి.',
+    rmv_confirm_final:'అవును, శాశ్వతంగా తొలగించండి', booking_removed:'బుకింగ్ తొలగించబడింది.',
     /* tiffin client modal */
     tc_title:'కొత్త టిఫిన్ క్లయింట్', tc_name_ph:'క్లయింట్ / కుటుంబం పేరు',
     rate_per_meal:'ఒక్కో భోజనం ధర (₹)',
@@ -968,6 +1022,7 @@ const S = {
   pn30: [],
   tiffinDate: null,
   billClient: null,
+  removeTarget: null,
   cache: {
     events:    {},
     expenses:  {},
@@ -1223,12 +1278,21 @@ function updateBkTotal() {
   const pkg = PKG[pkgKey] || PKG.regular;
   const extra = int(document.getElementById('bk-extra').value);
   const advance = num(document.getElementById('bk-advance').value);
-  const total = pkg.price + extra * EXTRA_PLATE;
+  const prasadam = num(document.getElementById('bk-prasadam').value);
+  const surcharge = num(document.getElementById('bk-surcharge').value);
+  const total = pkg.price + extra * EXTRA_PLATE + prasadam + surcharge;
   document.getElementById('bk-total-line').textContent =
     t('total') + ': ' + inr(total) + '  (' + t('pkg_name_' + pkg.key) +
-    (extra ? ' + ' + extra + ' × ₹' + EXTRA_PLATE : '') + ')';
+    (extra ? ' + ' + extra + ' × ₹' + EXTRA_PLATE : '') +
+    (prasadam ? ' + ' + t('prasadam_line') : '') +
+    (surcharge ? ' + ' + t('surcharge_line') : '') + ')';
   document.getElementById('bk-balance-line').textContent =
     t('balance_after') + ': ' + inr(Math.max(0, total - advance));
+}
+function onServiceToggle() {
+  const ceremonyOn = document.getElementById('bk-service-ceremony').checked;
+  document.getElementById('lbl-svc-ceremony').classList.toggle('on', ceremonyOn);
+  document.getElementById('lbl-svc-catering').classList.toggle('on', !ceremonyOn);
 }
 async function pickContact() {
   if (!('contacts' in navigator) || !('select' in navigator.contacts)) {
@@ -1247,6 +1311,10 @@ async function pickContact() {
 }
 function openBooking() {
   document.getElementById('modal-booking').classList.remove('hidden');
+  if (!document.getElementById('bk-service-ceremony').checked && !document.getElementById('bk-service-catering').checked) {
+    document.getElementById('bk-service-ceremony').checked = true;
+  }
+  onServiceToggle();
   updateBkTotal();
 }
 function closeBooking() { document.getElementById('modal-booking').classList.add('hidden'); }
@@ -1256,45 +1324,104 @@ function saveBooking() {
   const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
   const pkg = PKG[pkgKey] || PKG.regular;
   const extra = int(document.getElementById('bk-extra').value);
+  const prasadam = num(document.getElementById('bk-prasadam').value);
+  const surcharge = num(document.getElementById('bk-surcharge').value);
+  const surchargeNote = txt(document.getElementById('bk-surcharge-note').value);
+  const service = document.getElementById('bk-service-catering').checked ? 'catering' : 'ceremony';
   const id = uid('ev');
   save('events/' + id, {
     id, client,
-    phone:       txt(document.getElementById('bk-phone').value),
-    date:        txt(document.getElementById('bk-date').value),
-    guests:      int(document.getElementById('bk-guests').value),
-    type:        txt(document.getElementById('bk-type').value),
-    service:     txt(document.getElementById('bk-service').value) || 'ceremony',
-    floor:       txt(document.getElementById('bk-floor').value) || 'ground',
-    package:     pkgKey,
-    basePrice:   pkg.price,
-    extraPlates: extra,
-    extraAmount: extra * EXTRA_PLATE,
-    total:       pkg.price + extra * EXTRA_PLATE,
-    advance:     num(document.getElementById('bk-advance').value),
-    created:     Date.now()
+    phone:          txt(document.getElementById('bk-phone').value),
+    date:           txt(document.getElementById('bk-date').value),
+    guests:         int(document.getElementById('bk-guests').value),
+    type:           txt(document.getElementById('bk-type').value),
+    service:        service,
+    floor:          txt(document.getElementById('bk-floor').value) || 'first',
+    package:        pkgKey,
+    basePrice:      pkg.price,
+    extraPlates:    extra,
+    extraAmount:    extra * EXTRA_PLATE,
+    prasadamCharge: prasadam,
+    surcharge:      surcharge,
+    surchargeNote:  surchargeNote,
+    total:          pkg.price + extra * EXTRA_PLATE + prasadam + surcharge,
+    advance:        num(document.getElementById('bk-advance').value),
+    locked:         true,
+    created:        Date.now()
   }).then(() => {
     closeBooking();
-    toast(t('booking_saved') + ' ' + client + ' — ' + inr(pkg.price + extra * EXTRA_PLATE));
-    ['bk-client','bk-phone','bk-date','bk-guests','bk-advance'].forEach(i => document.getElementById(i).value = '');
+    toast(t('booking_saved') + ' ' + client + ' — ' + inr(pkg.price + extra * EXTRA_PLATE + prasadam + surcharge));
+    ['bk-client','bk-phone','bk-date','bk-guests','bk-advance','bk-prasadam','bk-surcharge','bk-surcharge-note'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('bk-extra').value = 0;
+    document.getElementById('bk-floor').value = 'first';
+    document.getElementById('bk-service-ceremony').checked = true;
+    onServiceToggle();
     updateBkTotal();
   });
 }
-function delEvent(id, name) {
-  if (confirm(t('cf_remove_booking') + ' ' + name + '?')) removeKey('events', id);
+/* ---------- Post-save lockout: inline edits guarded, removal via double-confirm ---------- */
+function toggleLock(id) {
+  const e = S.cache.events[id] || {};
+  const isLocked = e.locked !== false;
+  save('events/' + id, { locked: !isLocked });
+}
+function openRemoveConfirm(id, name) {
+  S.removeTarget = { id, name };
+  renderRemoveStep(1);
+  document.getElementById('modal-removeconfirm').classList.remove('hidden');
+}
+function renderRemoveStep(step) {
+  const body = document.getElementById('rmv-body');
+  const name = esc(S.removeTarget ? S.removeTarget.name : '');
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">⚠️ ' + t('rmv_title1') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('rmv_body1') + ' <b>' + name + '</b>?</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelRemove()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderRemoveStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">🚨 ' + t('rmv_title2') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('rmv_body2') + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelRemove()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" style="background:linear-gradient(180deg,#E88A87,#C25450);color:#2A070B" onclick="confirmRemove()">' + t('rmv_confirm_final') + '</button>' +
+      '</div>';
+  }
+}
+function cancelRemove() {
+  document.getElementById('modal-removeconfirm').classList.add('hidden');
+  S.removeTarget = null;
+}
+function confirmRemove() {
+  if (!S.removeTarget) return;
+  removeKey('events', S.removeTarget.id);
+  toast(t('booking_removed'));
+  cancelRemove();
 }
 function toggleCheck(eid, i) {
   const e = S.cache.events[eid] || {};
+  if (e.locked !== false) { toast(t('err_locked'), true); return; }
   const cur = !!(e.check && e.check[i]);
   save('events/' + eid + '/check', { [i]: !cur });
 }
 function toggleAssign(eid, sid) {
   const e = S.cache.events[eid] || {};
+  if (e.locked !== false) { toast(t('err_locked'), true); return; }
   const cur = !!(e.staff && e.staff[sid]);
   S.db.ref('events/' + eid + '/staff').update({ [sid]: cur ? null : true })
     .catch(err => { toast(t('err_save'), true); console.error(err); });
 }
 function togglePanel(id) { document.getElementById(id).classList.toggle('hidden'); }
+function toggleGroceryAccordion() {
+  const body = document.getElementById('gc-accordion-body');
+  const arrow = document.getElementById('gc-accordion-arrow');
+  const opening = body.classList.contains('hidden');
+  body.classList.toggle('hidden');
+  arrow.style.transform = opening ? 'rotate(90deg)' : 'rotate(0deg)';
+}
 function waEvent(eid) {
   const e = S.cache.events[eid];
   if (!e) return;
@@ -1309,6 +1436,8 @@ function waEvent(eid) {
     '\n' + t('package_word') + ': ' + t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) +
     ' — ' + inr(num(e.basePrice) || PKG.regular.price);
   if (int(e.extraPlates)) msg += '\n' + t('extra_plates') + ': ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
+  if (num(e.prasadamCharge)) msg += '\n' + t('prasadam_line') + ': ' + inr(num(e.prasadamCharge));
+  if (num(e.surcharge)) msg += '\n' + t('surcharge_line') + (e.surchargeNote ? ' (' + e.surchargeNote + ')' : '') + ': ' + inr(num(e.surcharge));
   msg += '\n\n*' + t('total') + ': ' + inr(total) + '*' +
     '\n' + t('advance_word') + ': ' + inr(num(e.advance)) +
     '\n' + t('balance_word') + ': ' + inr(Math.max(0, total - num(e.advance))) +
@@ -1325,8 +1454,11 @@ function planGrocery(eid) {
 }
 function renderLog() {
   const box = document.getElementById('log-list');
+  const todayISO = isoOf(new Date());
+  /* Strictly: chronological list of active upcoming bookings at the top of the Log view. */
   const evs = Object.values(S.cache.events || {}).filter(Boolean)
-    .sort((a, b) => txt(b.date).localeCompare(txt(a.date)));
+    .filter(e => !txt(e.date) || txt(e.date) >= todayISO)
+    .sort((a, b) => txt(a.date).localeCompare(txt(b.date)));
   const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
 
   if (!evs.length) {
@@ -1339,19 +1471,21 @@ function renderLog() {
     const total = evTotal(e);
     const balance = Math.max(0, total - num(e.advance));
     const doneCount = [0,1,2,3,4].filter(i => e.check && e.check[i]).length;
+    const isLocked = e.locked !== false;
+    const dim = isLocked ? ' opacity-50 cursor-not-allowed' : '';
 
     const checkChips = [0,1,2,3,4].map(i =>
-      '<button class="chip ' + (e.check && e.check[i] ? 'on' : '') + '" ' +
+      '<button class="chip ' + (e.check && e.check[i] ? 'on' : '') + dim + '" ' +
       'onclick="toggleCheck(\'' + e.id + '\',' + i + ')">' +
       (e.check && e.check[i] ? '✓ ' : '') + t('check_' + i) + '</button>').join('');
 
     const staffChips = staffArr.length ? staffArr.map(s =>
-      '<button class="chip ' + (e.staff && e.staff[s.id] ? 'on' : '') + '" ' +
+      '<button class="chip ' + (e.staff && e.staff[s.id] ? 'on' : '') + dim + '" ' +
       'onclick="toggleAssign(\'' + e.id + '\',\'' + s.id + '\')">' +
       (e.staff && e.staff[s.id] ? '✓ ' : '') + esc(s.name) + ' <span class="opacity-70">(' + esc(tRole(s.role)) + ')</span></button>').join('')
     : '<p class="text-creamdim text-[13px]">' + t('add_staff_first') + '</p>';
 
-    return '<div class="card p-4 mb-4">' +
+    return '<div class="card p-4 mb-4' + (isLocked ? ' card-alert' : '') + '">' +
       '<div class="flex justify-between items-start">' +
         '<div>' +
           '<p class="text-cream font-semibold text-[16px]">' + esc(tType(e.type)) + ' — ' + esc(e.client) + '</p>' +
@@ -1359,13 +1493,17 @@ function renderLog() {
             (e.floor === 'first' ? t('floor_first') : t('floor_ground')) +
             (e.service === 'catering' ? ' · ' + t('svc_catering') : '') + '</p>' +
         '</div>' +
-        '<button class="text-creamdim text-[13px] underline" onclick="delEvent(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
+        '<button class="text-[12px] ' + (isLocked ? 'text-creamdim' : 'text-gold-300') + ' underline shrink-0 ml-2 whitespace-nowrap" onclick="toggleLock(\'' + e.id + '\')">' +
+          (isLocked ? t('lock_locked') : t('lock_unlocked')) +
+        '</button>' +
       '</div>' +
 
       '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
         '<div class="flex justify-between"><span class="text-creamdim">' +
           t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) + ' ' + t('package_word') + '</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
         (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('extra_plates_x') + ' ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '') +
+        (num(e.prasadamCharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('prasadam_line') + '</span><span>' + inr(num(e.prasadamCharge)) + '</span></div>' : '') +
+        (num(e.surcharge) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('surcharge_line') + (e.surchargeNote ? ' — ' + esc(e.surchargeNote) : '') + '</span><span>' + inr(num(e.surcharge)) + '</span></div>' : '') +
         '<div class="flex justify-between text-gold-300 font-bold mt-1"><span>' + t('total') + '</span><span>' + inr(total) + '</span></div>' +
         '<div class="flex justify-between text-[13px]"><span class="text-creamdim">' + t('advance_word') + ' ' + inr(num(e.advance)) + '</span>' +
           '<span class="' + (balance > 0 ? 'text-saffron' : 'text-creamdim') + '">' + t('balance_word') + ' ' + inr(balance) + '</span></div>' +
@@ -1380,6 +1518,9 @@ function renderLog() {
 
       '<div id="evck-' + e.id + '" class="hidden mt-3">' + checkChips + '</div>' +
       '<div id="evst-' + e.id + '" class="hidden mt-3">' + staffChips + '</div>' +
+
+      '<button class="btn-line w-full mt-3 !text-[13px]" style="border-color:rgba(194,84,80,.5);color:#E8A9A6" ' +
+        'onclick="openRemoveConfirm(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove_record') + '</button>' +
     '</div>';
   }).join('');
 }
