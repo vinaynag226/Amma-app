@@ -687,30 +687,6 @@
     </select>
     <p class="text-creamdim text-[13px] mb-1" data-i18n="pt_death_date_lbl">Death date (Gregorian calendar)</p>
     <input id="rel-death-date" class="inp mb-2" type="date" />
-    <p class="text-creamdim text-[11px] mb-2 leading-snug" data-i18n="death_date_note">Used to track how many months have passed — kept even if you enter the Tithi manually below.</p>
-
-    <p class="text-creamdim text-[13px] mb-1" data-i18n="tithi_source_lbl">Tithi source</p>
-    <div class="grid grid-cols-1 gap-2 mb-2">
-      <label id="lbl-tithi-auto" class="chip on w-full text-center cursor-pointer !m-0 py-2">
-        <input type="radio" name="rel-tithi-source" id="rel-tithi-source-auto" value="auto" class="hidden" onchange="onRelTithiSourceChange()" checked />
-        <span data-i18n="tithi_source_auto">🧮 Auto-calculate from date (estimate)</span>
-      </label>
-      <label id="lbl-tithi-manual" class="chip w-full text-center cursor-pointer !m-0 py-2">
-        <input type="radio" name="rel-tithi-source" id="rel-tithi-source-manual" value="manual" class="hidden" onchange="onRelTithiSourceChange()" />
-        <span data-i18n="tithi_source_manual">📿 Enter Panchanga details (Purohit-given)</span>
-      </label>
-    </div>
-    <div id="rel-panchanga-manual" class="hidden mb-2">
-      <p class="text-creamdim text-[11px] mb-1 leading-snug" data-i18n="panchanga_manual_note">Enter exactly what the purohit gave you — this overrides the app's own calculation.</p>
-      <div class="grid grid-cols-3 gap-2">
-        <select id="rel-masa" class="inp"></select>
-        <select id="rel-paksha-manual" class="inp">
-          <option value="0" data-i18n="shukla_paksha">Shukla</option>
-          <option value="1" data-i18n="krishna_paksha">Krishna</option>
-        </select>
-        <select id="rel-tithi-manual-select" class="inp"></select>
-      </div>
-    </div>
 
     <p class="text-creamdim text-[13px] mb-1" data-i18n="veda_lbl">Veda Shakha</p>
     <select id="rel-veda" class="inp mb-3">
@@ -743,6 +719,15 @@
 <div id="modal-bookingeditconfirm" class="hidden fixed inset-0 z-[81] modal-bg flex items-end sm:items-center justify-center">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="bookingeditconfirm-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- FLOOR CONFLICT — SIMPLE CONFIRMATION MODAL           -->
+<!-- ==================================================== -->
+<div id="modal-floorconflict" class="hidden fixed inset-0 z-[82] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="floorconflict-body"></div>
   </div>
 </div>
 
@@ -1141,13 +1126,7 @@ const I18N = {
     pitru_register:'Pitru Tithi Register',
     pt_name_ph:'Name (e.g. Father — Ramaiah garu)',
     pt_death_date_lbl:'Death date (Gregorian calendar)',
-    death_date_note:'Used to track how many months have passed — kept even if you enter the Tithi manually below.',
-    tithi_source_lbl:'Tithi source',
-    tithi_source_auto:'🧮 Auto-calculate from date (estimate)',
-    tithi_source_manual:'📿 Enter Panchanga details (Purohit-given)',
-    panchanga_manual_note:"Enter exactly what the purohit gave you — this overrides the app's own calculation.",
     shukla_paksha:'Shukla', krishna_paksha:'Krishna',
-    tithi_src_manual_tag:'📿 Purohit-given', tithi_src_auto_tag:'🧮 Estimated',
     pt_death_date_note:"The Tithi is calculated automatically from this date, and next year's observance date is worked out for you every year.",
     err_death_date:'Pick the death date first.',
     pt_death_date_word:'Death date:', pt_next_occurrence:'Next observance',
@@ -1275,6 +1254,13 @@ const I18N = {
     bked_title1:'Save these changes?', bked_body1:'This will update the saved booking for',
     bked_body2:'Please confirm the details are correct before saving. Checklist, staff assignment, and lock status are not affected.',
     bked_confirm_final:'Yes, save changes', booking_updated:'Booking updated.',
+    floor_conflict_title1:'This floor is already booked',
+    floor_conflict_title_multi:'{n} of these dates already have a booking on this floor',
+    floor_conflict_body:'is already booked on:',
+    floor_conflict_more:'more',
+    floor_conflict_question:'Move this booking to {floor} instead?',
+    floor_conflict_switch:'Switch to {floor}',
+    floor_conflict_keep:'Keep on {floor} anyway',
     /* ritual ceremony menus */
     menu_lbl:'🍽️ Ceremony Menu', menu_included_hdr:'Included:', menu_include_payasam:'🍮 Include Payasam?',
     menu_slot_charu:'Charu / Sambar', menu_slot_palya:'Vegetable Curry (Palya)',
@@ -1448,13 +1434,7 @@ const I18N = {
     pitru_register:'పితృ తిథి పట్టిక',
     pt_name_ph:'పేరు (ఉదా: నాన్న — రామయ్య గారు)',
     pt_death_date_lbl:'మరణించిన తేదీ (ఆంగ్ల క్యాలెండర్)',
-    death_date_note:'ఎన్ని నెలలు గడిచాయో లెక్కించడానికి వాడతారు — కింద తిథి మాన్యువల్‌గా ఎంటర్ చేసినా ఇది అలాగే ఉంచబడుతుంది.',
-    tithi_source_lbl:'తిథి మూలం',
-    tithi_source_auto:'🧮 తేదీ నుండి స్వయంచాలకంగా లెక్కించండి (అంచనా)',
-    tithi_source_manual:'📿 పంచాంగ వివరాలు నమోదు చేయండి (పురోహితుడు ఇచ్చినది)',
-    panchanga_manual_note:'పురోహితుడు ఇచ్చినది సరిగ్గా నమోదు చేయండి — ఇది యాప్ లెక్కను భర్తీ చేస్తుంది.',
     shukla_paksha:'శుక్ల', krishna_paksha:'కృష్ణ',
-    tithi_src_manual_tag:'📿 పురోహితుడు ఇచ్చినది', tithi_src_auto_tag:'🧮 అంచనా',
     pt_death_date_note:'ఈ తేదీ నుండి తిథి స్వయంచాలకంగా లెక్కించబడుతుంది, ప్రతి సంవత్సరం రాబోయే తిథి తేదీ కూడా మీ కోసం లెక్కించబడుతుంది.',
     err_death_date:'ముందుగా మరణించిన తేదీ ఎంచుకోండి.',
     pt_death_date_word:'మరణించిన తేదీ:', pt_next_occurrence:'రాబోయే వార్షిక తిథి',
@@ -1582,6 +1562,13 @@ const I18N = {
     bked_title1:'ఈ మార్పులను సేవ్ చేయాలా?', bked_body1:'ఇది సేవ్ అయిన బుకింగ్‌ని నవీకరిస్తుంది —',
     bked_body2:'సేవ్ చేసే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి. చెక్‌లిస్ట్, సిబ్బంది కేటాయింపు, లాక్ స్థితి మారవు.',
     bked_confirm_final:'అవును, మార్పులు సేవ్ చేయండి', booking_updated:'బుకింగ్ నవీకరించబడింది.',
+    floor_conflict_title1:'ఈ ఫ్లోర్ ఇప్పటికే బుక్ అయింది',
+    floor_conflict_title_multi:'ఈ తేదీలలో {n} ఇప్పటికే ఈ ఫ్లోర్‌లో బుకింగ్ ఉంది',
+    floor_conflict_body:'ఇప్పటికే బుక్ అయింది —',
+    floor_conflict_more:'మరిన్ని',
+    floor_conflict_question:'ఈ బుకింగ్‌ని {floor}కి మార్చాలా?',
+    floor_conflict_switch:'{floor}కి మార్చండి',
+    floor_conflict_keep:'{floor}లోనే ఉంచండి',
     /* ritual ceremony menus */
     menu_lbl:'🍽️ కార్యక్రమ మెనూ', menu_included_hdr:'చేర్చినవి:', menu_include_payasam:'🍮 పాయసం చేర్చాలా?',
     menu_slot_charu:'చారు / సాంబార్', menu_slot_palya:'కూర (పలియ)',
@@ -1721,6 +1708,8 @@ const S = {
   caterCatOpen: {},
   addCateringTarget: null,
   bkCaterItemsChosen: {},
+  pendingBookingSave: null,
+  pendingEditFloorConflict: null,
   cache: {
     events:    {},
     expenses:  {},
@@ -2471,6 +2460,21 @@ function saveBooking() {
     locked:         true,
     created:        Date.now()
   };
+
+  const pending = { occurrences, baseFields, ritualMeta, freq, menuSelection, client };
+  const conflicts = occurrences
+    .map(occ => ({ occ, conflict: findFloorConflict(occ.date, baseFields.floor, null) }))
+    .filter(x => x.conflict);
+
+  if (conflicts.length) {
+    S.pendingBookingSave = pending;
+    openFloorConflictConfirm(conflicts, baseFields.floor);
+    return;
+  }
+  finalizeCeremonyBooking(pending);
+}
+function finalizeCeremonyBooking(pending) {
+  const { occurrences, baseFields, ritualMeta, freq, menuSelection, client } = pending;
   const seriesId = occurrences.length > 1 ? uid('series') : null;
   const updates = {};
   occurrences.forEach(occ => {
@@ -2489,6 +2493,52 @@ function saveBooking() {
       : t('booking_saved') + ' ' + client + ' — ' + inr(baseFields.total));
     resetBookingForm();
   }).catch(err => { toast(t('err_save'), true); console.error(err); });
+}
+/* ---------- Floor-conflict check: simple switch/keep/cancel confirmation ---------- */
+function getOtherFloor(floor) { return floor === 'first' ? 'ground' : 'first'; }
+function findFloorConflict(date, floor, excludeEventId) {
+  return Object.values(S.cache.events || {}).find(e =>
+    e && e.service !== 'catering' && e.date === date && (e.floor || 'first') === floor && e.id !== excludeEventId
+  ) || null;
+}
+function openFloorConflictConfirm(conflicts, floor) {
+  const other = getOtherFloor(floor);
+  const floorLabel = t(floor === 'first' ? 'floor_first' : 'floor_ground');
+  const otherLabel = t(other === 'first' ? 'floor_first' : 'floor_ground');
+  const isSingle = conflicts.length === 1;
+  const listHtml = conflicts.slice(0, 5).map(c =>
+    '<p class="text-creamdim text-[13px]">• ' + esc(c.occ.date) + ' — ' + esc(c.conflict.client) + ' (' + esc(tType(c.conflict.type)) + ')</p>'
+  ).join('') + (conflicts.length > 5 ? '<p class="text-creamdim text-[12px] mt-1">+' + (conflicts.length - 5) + ' ' + t('floor_conflict_more') + '</p>' : '');
+
+  document.getElementById('floorconflict-body').innerHTML =
+    '<p class="text-cream font-semibold text-[17px] mb-2">' +
+      (isSingle ? t('floor_conflict_title1') : t('floor_conflict_title_multi').replace('{n}', conflicts.length)) +
+    '</p>' +
+    '<p class="text-creamdim text-[14px] mb-2">' + floorLabel + ' ' + t('floor_conflict_body') + '</p>' +
+    listHtml +
+    '<p class="text-creamdim text-[13px] mt-3 mb-3">' + t('floor_conflict_question').replace('{floor}', otherLabel) + '</p>' +
+    '<div class="grid grid-cols-1 gap-2">' +
+      '<button class="btn-gold" onclick="resolveFloorConflict(\'switch\')">' + t('floor_conflict_switch').replace('{floor}', otherLabel) + '</button>' +
+      '<button class="btn-line" onclick="resolveFloorConflict(\'keep\')">' + t('floor_conflict_keep').replace('{floor}', floorLabel) + '</button>' +
+      '<button class="btn-line" onclick="resolveFloorConflict(\'cancel\')">' + t('cancel') + '</button>' +
+    '</div>';
+  document.getElementById('modal-floorconflict').classList.remove('hidden');
+}
+function resolveFloorConflict(choice) {
+  document.getElementById('modal-floorconflict').classList.add('hidden');
+  const pending = S.pendingBookingSave;
+  const editData = S.pendingEditFloorConflict;
+  S.pendingBookingSave = null;
+  S.pendingEditFloorConflict = null;
+  if (choice === 'cancel') return;
+  if (editData) {
+    if (choice === 'switch') editData.data.floor = getOtherFloor(editData.data.floor);
+    openBookingEditConfirm(editData.id, editData.name, editData.data);
+    return;
+  }
+  if (!pending) return;
+  if (choice === 'switch') pending.baseFields.floor = getOtherFloor(pending.baseFields.floor);
+  finalizeCeremonyBooking(pending);
 }
 /* Catering orders skip ritual type/customer-linking/frequency entirely — just occasion,
    headcount, a standard or custom menu, and a simple per-plate price. */
@@ -2595,6 +2645,14 @@ function saveBookingEdit() {
       total:          pkg.price + extra * EXTRA_PLATE + prasadam + surcharge,
       advance:        num(document.getElementById('bk-advance').value)
     }, ritualMeta, menuMeta);
+  }
+  if (!isCatering) {
+    const conflict = findFloorConflict(data.date, data.floor, S.editingEventId);
+    if (conflict) {
+      S.pendingEditFloorConflict = { id: S.editingEventId, name: client, data };
+      openFloorConflictConfirm([{ occ: { date: data.date }, conflict }], data.floor);
+      return;
+    }
   }
   openBookingEditConfirm(S.editingEventId, client, data);
 }
@@ -3285,8 +3343,6 @@ function fillSelectors() {
   document.getElementById('v2g-tithi').innerHTML = tithiOpts;
   document.getElementById('v2g-year').value = new Date().getFullYear();
   document.getElementById('g2v-date').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('rel-masa').innerHTML = masaOpts;
-  document.getElementById('rel-tithi-manual-select').innerHTML = tithiOpts;
 }
 function doG2V() {
   const v = txt(document.getElementById('g2v-date').value);
@@ -3470,12 +3526,6 @@ function onVaikunthaToggle() {
   const on = document.getElementById('rel-vaikuntha').checked;
   document.getElementById('lbl-vaikuntha-toggle').classList.toggle('on', on);
 }
-function onRelTithiSourceChange() {
-  const manual = document.getElementById('rel-tithi-source-manual').checked;
-  document.getElementById('lbl-tithi-auto').classList.toggle('on', !manual);
-  document.getElementById('lbl-tithi-manual').classList.toggle('on', manual);
-  document.getElementById('rel-panchanga-manual').classList.toggle('hidden', !manual);
-}
 function openRelativeForm(customerId) {
   S.relativeFormCustomerId = customerId;
   S.editingRelativeId = null;
@@ -3484,11 +3534,6 @@ function openRelativeForm(customerId) {
   document.getElementById('rel-death-date').value = '';
   document.getElementById('rel-veda').value = 'Yajurveda';
   document.getElementById('rel-vaikuntha').checked = false;
-  document.getElementById('rel-tithi-source-auto').checked = true;
-  document.getElementById('rel-masa').value = '0';
-  document.getElementById('rel-paksha-manual').value = '0';
-  document.getElementById('rel-tithi-manual-select').value = '1';
-  onRelTithiSourceChange();
   onVaikunthaToggle();
   document.getElementById('relform-title').textContent = t('relform_title_add');
   document.getElementById('rel-save-btn').textContent = t('add_relative_btn');
@@ -3507,13 +3552,6 @@ function editRelative(id) {
   document.getElementById('rel-death-date').value = rel.deathDate || '';
   document.getElementById('rel-veda').value = rel.vedaShakha || 'Yajurveda';
   document.getElementById('rel-vaikuntha').checked = !!rel.wantsVaikuntha;
-  const isManual = rel.tithiSource === 'manual';
-  document.getElementById('rel-tithi-source-manual').checked = isManual;
-  document.getElementById('rel-tithi-source-auto').checked = !isManual;
-  document.getElementById('rel-masa').value = int(rel.masa) || 0;
-  document.getElementById('rel-paksha-manual').value = int(rel.paksha) || 0;
-  document.getElementById('rel-tithi-manual-select').value = int(rel.tithi) || 1;
-  onRelTithiSourceChange();
   onVaikunthaToggle();
   document.getElementById('relform-title').textContent = t('relform_title_edit');
   document.getElementById('rel-save-btn').textContent = t('save_changes');
@@ -3524,17 +3562,8 @@ function saveRelativeForm() {
   if (!name) { toast(t('err_name'), true); return; }
   const deathDate = txt(document.getElementById('rel-death-date').value);
   if (!deathDate) { toast(t('err_death_date'), true); return; }
-  const isManual = document.getElementById('rel-tithi-source-manual').checked;
-  let masaIdx, pakshaIdx, tIdx;
-  if (isManual) {
-    masaIdx = int(document.getElementById('rel-masa').value);
-    pakshaIdx = int(document.getElementById('rel-paksha-manual').value);
-    tIdx = int(document.getElementById('rel-tithi-manual-select').value) || 1;
-  } else {
-    const parts = deathDate.split('-').map(x => int(x));
-    const p = panchangaFor(parts[0], parts[1], parts[2]);
-    masaIdx = p.masaIdx; pakshaIdx = p.pakshaIdx; tIdx = p.tIdx;
-  }
+  const parts = deathDate.split('-').map(x => int(x));
+  const p = panchangaFor(parts[0], parts[1], parts[2]);
   const data = {
     customerId:    S.relativeFormCustomerId,
     name,
@@ -3542,8 +3571,7 @@ function saveRelativeForm() {
     deathDate,
     vedaShakha:    txt(document.getElementById('rel-veda').value) || 'Other',
     wantsVaikuntha: !!document.getElementById('rel-vaikuntha').checked,
-    tithiSource:   isManual ? 'manual' : 'auto',
-    masa: masaIdx, paksha: pakshaIdx, tithi: tIdx
+    masa: p.masaIdx, paksha: p.pakshaIdx, tithi: p.tIdx
   };
   if (S.editingRelativeId) {
     openRelativeConfirm('edit', S.editingRelativeId, data);
@@ -3614,10 +3642,7 @@ function relativeCardHTML(rel) {
   return '<div class="bg-maroon-950/50 rounded-lg p-3 mb-2">' +
     '<p class="text-cream font-semibold text-[14px]">' + esc(rel.name) + ' <span class="text-creamdim text-[12px] font-normal">(' + esc(tRelation(rel.relation)) + ')</span></p>' +
     '<p class="text-creamdim text-[12px] mt-0.5">' + esc(tVeda(rel.vedaShakha)) + (rel.deathDate ? ' · ' + t('pt_death_date_word') + ' ' + esc(rel.deathDate) : '') + '</p>' +
-    '<p class="text-creamdim text-[12px] mt-0.5">' + esc(MASA_NAMES[masaIdx]) + ' · ' + esc(PAKSHA_NAMES[pakshaIdx]) + ' · ' + esc(tithiLabel) +
-      (rel.tithiSource === 'manual'
-        ? ' · <span class="text-gold-300">' + t('tithi_src_manual_tag') + '</span>'
-        : ' · <span class="text-creamdim">' + t('tithi_src_auto_tag') + '</span>') + '</p>' +
+    '<p class="text-creamdim text-[12px] mt-0.5">' + esc(MASA_NAMES[masaIdx]) + ' · ' + esc(PAKSHA_NAMES[pakshaIdx]) + ' · ' + esc(tithiLabel) + '</p>' +
     '<div class="mt-2 text-[13px]">' +
       (!info.masikaDone
         ? '<div class="flex justify-between"><span class="text-gold-300">' + t('next_masika_lbl') + ' (' + (info.masikaCount + 1) + '/12)</span><span class="text-cream">' + esc(fmtSchedDate(info.nextMasika)) + '</span></div>'
