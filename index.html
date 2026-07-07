@@ -97,6 +97,13 @@
     border: 1px solid rgba(212,169,74,.5); color: #E2BE6C;
     border-radius: 10px; padding: 10px 14px; font-size: 15px;
   }
+  .btn-mega {
+    background: linear-gradient(180deg, #EFD9A7, #D4A94A 55%, #B08A2E);
+    color: #2A070B; font-weight: 800; border-radius: 16px;
+    padding: 20px 16px; font-size: 21px; width: 100%;
+    box-shadow: 0 8px 24px rgba(212,169,74,.28), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn-mega:active { transform: scale(.98); }
 
   /* ---------- Chips (checklist / staff assign) ---------- */
   .chip {
@@ -206,13 +213,13 @@
     </div>
     <div class="flex items-center gap-2 pr-1" aria-live="polite">
       <span id="conn-dot" class="dot off" aria-hidden="true"></span>
-      <span id="conn-txt" class="text-[12px] text-creamdim">Connecting…</span>
+      <span id="conn-txt" class="text-[12px] text-creamdim">…</span>
     </div>
   </div>
 
   <!-- Sahaaya "Heard" ribbon -->
   <div id="ribbon" aria-live="polite">
-    <p id="ribbon-txt" class="px-4 py-2 text-[15px] text-cream truncate">🗣️ Heard: …</p>
+    <p id="ribbon-txt" class="px-4 py-2 text-[15px] text-cream truncate">🗣️ …</p>
   </div>
 
   <div class="rangoli"></div>
@@ -226,40 +233,37 @@
   <!-- 1 ▸ HOME -->
   <section id="view-home" data-view="home">
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Today's Panchanga</h2>
+    <!-- Massive booking button, front and center -->
+    <button class="btn-mega mb-6 flex items-center justify-center gap-3" onclick="openBooking()">
+      <span class="text-[26px]" aria-hidden="true">➕</span>
+      <span data-i18n="new_booking_big">New Booking</span>
+    </button>
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="todays_panchanga">Today's Panchanga</h2>
     <div id="pn-card" class="card p-5">
-      <p class="text-creamdim text-sm">Calculating…</p>
+      <p class="text-creamdim text-sm">…</p>
     </div>
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Pitru Tithi Alerts · Next 30 Days</h2>
-    <div id="pitru-alerts">
-      <div class="card p-4 text-center text-creamdim text-sm">
-        No Pitru anniversaries in the next 30 days. Add family Tithis in the Ledger tab.
-      </div>
-    </div>
-
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Today's Events</h2>
-    <div id="today-events">
-      <div class="card p-4 text-center text-creamdim text-sm">No ceremonies booked for today.</div>
-    </div>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3" data-i18n="todays_events">Today's Events</h2>
+    <div id="today-events"></div>
 
   </section>
 
   <!-- 2 ▸ LOG (Ceremonies & Catering) -->
   <section id="view-log" data-view="log" class="hidden">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="font-display text-gold-400 text-lg tracking-wide">Ceremonies</h2>
-      <button class="btn-line" onclick="openBooking()">+ New booking</button>
-    </div>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="ceremonies">Ceremonies</h2>
 
     <!-- Grocery Calculator -->
     <div class="card p-4 mb-4">
-      <p class="text-gold-300 font-semibold mb-1">Grocery Calculator <span class="text-creamdim font-normal text-[12px]">· 15% protective margin</span></p>
+      <p class="text-gold-300 font-semibold mb-1">
+        <span data-i18n="grocery_calc">Grocery Calculator</span>
+        <span class="text-creamdim font-normal text-[12px]" data-i18n="margin_note">· 15% protective margin</span>
+      </p>
       <div class="grid grid-cols-2 gap-2 mb-2">
-        <input id="gc-head" class="inp" type="number" min="1" placeholder="Headcount" />
+        <input id="gc-head" class="inp" type="number" min="1" data-ph="headcount" placeholder="Headcount" />
         <input id="gc-date" class="inp" type="date" />
       </div>
-      <button class="btn-gold w-full" onclick="runGrocery()">Calculate raw materials</button>
+      <button class="btn-gold w-full" onclick="runGrocery()" data-i18n="calc_raw">Calculate raw materials</button>
       <div id="gc-out" class="mt-3 hidden"></div>
     </div>
 
@@ -270,35 +274,35 @@
   <section id="view-ledger" data-view="ledger" class="hidden">
 
     <!-- ===== 3-TIER MASTER P&L ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Master P&amp;L</h2>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="master_pnl">Master P&L</h2>
     <div class="card p-4 mb-2 flex items-center gap-2">
-      <span class="text-creamdim text-[14px] shrink-0">Month:</span>
+      <span class="text-creamdim text-[14px] shrink-0" data-i18n="month_lbl">Month:</span>
       <input id="pnl-month" type="month" class="inp" onchange="renderPnl()" />
     </div>
     <div id="pnl-out" class="mb-6"></div>
 
     <!-- ===== CONFLICT RADAR ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Conflict Radar</h2>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="conflict_radar">Conflict Radar</h2>
     <div class="card p-4 mb-2 flex items-center gap-2">
-      <span class="text-creamdim text-[14px] shrink-0">Date:</span>
+      <span class="text-creamdim text-[14px] shrink-0" data-i18n="date_lbl">Date:</span>
       <input id="cr-date" type="date" class="inp" onchange="renderRadar()" />
     </div>
     <div id="cr-out" class="mb-6"></div>
 
     <!-- ===== DATE CONVERTER ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Date Converter</h2>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="date_converter">Date Converter</h2>
 
     <div class="card p-4 mb-4">
-      <p class="text-gold-300 font-semibold mb-2">Gregorian → Vedic</p>
+      <p class="text-gold-300 font-semibold mb-2" data-i18n="g2v">Gregorian → Vedic</p>
       <div class="flex gap-2">
         <input id="g2v-date" type="date" class="inp flex-1" />
-        <button class="btn-gold shrink-0" onclick="doG2V()">Convert</button>
+        <button class="btn-gold shrink-0" onclick="doG2V()" data-i18n="convert">Convert</button>
       </div>
       <div id="g2v-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
     </div>
 
     <div class="card p-4 mb-4">
-      <p class="text-gold-300 font-semibold mb-2">Vedic → Gregorian</p>
+      <p class="text-gold-300 font-semibold mb-2" data-i18n="v2g">Vedic → Gregorian</p>
       <div class="grid grid-cols-2 gap-2">
         <select id="v2g-masa" class="inp"></select>
         <select id="v2g-paksha" class="inp">
@@ -308,14 +312,14 @@
         <select id="v2g-tithi" class="inp"></select>
         <input id="v2g-year" type="number" class="inp" min="1990" max="2099" />
       </div>
-      <button class="btn-gold w-full mt-2" onclick="doV2G()">Find date</button>
+      <button class="btn-gold w-full mt-2" onclick="doV2G()" data-i18n="find_date">Find date</button>
       <div id="v2g-out" class="mt-3 hidden text-[15px] leading-relaxed"></div>
     </div>
 
     <!-- ===== PITRU REGISTRY ===== -->
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Pitru Tithi Register</h2>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3" data-i18n="pitru_register">Pitru Tithi Register</h2>
     <div class="card p-4 mb-4">
-      <input id="pt-name" class="inp mb-2" placeholder="Name (e.g. Father — Ramaiah garu)" />
+      <input id="pt-name" class="inp mb-2" data-ph="pt_name_ph" placeholder="Name" />
       <div class="grid grid-cols-3 gap-2">
         <select id="pt-masa" class="inp"></select>
         <select id="pt-paksha" class="inp">
@@ -324,26 +328,26 @@
         </select>
         <select id="pt-tithi" class="inp"></select>
       </div>
-      <button class="btn-gold w-full mt-2" onclick="addPitru()">Add to register</button>
+      <button class="btn-gold w-full mt-2" onclick="addPitru()" data-i18n="add_register">Add to register</button>
     </div>
     <div id="pitru-list"></div>
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3">Recent Expenses</h2>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mt-6 mb-3" data-i18n="recent_expenses">Recent Expenses</h2>
     <div id="exp-recent"></div>
   </section>
 
   <!-- 4 ▸ TIFFIN -->
   <section id="view-tiffin" data-view="tiffin" class="hidden">
     <div class="flex items-center justify-between mb-3">
-      <h2 class="font-display text-gold-400 text-lg tracking-wide">Tiffin Hub</h2>
-      <button class="btn-line" onclick="openTClient()">+ Add client</button>
+      <h2 class="font-display text-gold-400 text-lg tracking-wide" data-i18n="tiffin_hub">Tiffin Hub</h2>
+      <button class="btn-line" onclick="openTClient()" data-i18n="add_client">+ Add client</button>
     </div>
 
     <div class="card p-3 mb-4 flex items-center justify-between">
       <button class="stepbtn" onclick="shiftTiffinDate(-1)" aria-label="Previous day">‹</button>
       <div class="text-center">
         <p id="tf-date-label" class="text-cream font-semibold text-[16px]"></p>
-        <button class="text-gold-300 text-[13px] underline" onclick="setTiffinToday()">Jump to today</button>
+        <button class="text-gold-300 text-[13px] underline" onclick="setTiffinToday()" data-i18n="jump_today">Jump to today</button>
       </div>
       <button class="stepbtn" onclick="shiftTiffinDate(1)" aria-label="Next day">›</button>
     </div>
@@ -354,45 +358,56 @@
   <!-- 5 ▸ SETUP -->
   <section id="view-setup" data-view="setup" class="hidden">
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Staff Registry</h2>
+    <!-- App language (per-device) -->
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="app_lang">App Language</h2>
+    <div class="card p-4 mb-6">
+      <div class="grid grid-cols-2 gap-2">
+        <button id="lang-en" class="btn-line" onclick="setLang('en')">English</button>
+        <button id="lang-te" class="btn-line" onclick="setLang('te')">తెలుగు</button>
+      </div>
+      <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="lang_note">This choice is saved only on this phone. All phones read the same live data.</p>
+    </div>
+
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="staff_registry">Staff Registry</h2>
     <div class="card p-4 mb-3">
-      <input id="st-name" class="inp mb-2" placeholder="Name" />
+      <input id="st-name" class="inp mb-2" data-ph="name_ph" placeholder="Name" />
       <div class="grid grid-cols-2 gap-2 mb-2">
         <select id="st-role" class="inp">
-          <option>Purohit</option><option>Chef</option><option>Helper</option>
-          <option>Server</option><option>Cleaner</option><option>Driver</option>
+          <option value="Purohit" data-i18n="role_purohit">Purohit</option>
+          <option value="Chef" data-i18n="role_chef">Chef</option>
+          <option value="Helper" data-i18n="role_helper">Helper</option>
+          <option value="Server" data-i18n="role_server">Server</option>
+          <option value="Cleaner" data-i18n="role_cleaner">Cleaner</option>
+          <option value="Driver" data-i18n="role_driver">Driver</option>
         </select>
-        <input id="st-wage" class="inp" type="number" min="0" placeholder="Wage ₹/day" />
+        <input id="st-wage" class="inp" type="number" min="0" data-ph="wage_ph" placeholder="Wage ₹/day" />
       </div>
-      <input id="st-phone" class="inp mb-2" type="tel" placeholder="Phone (WhatsApp)" />
-      <button class="btn-gold w-full" onclick="addStaff()">Add to registry</button>
+      <input id="st-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
+      <button class="btn-gold w-full" onclick="addStaff()" data-i18n="add_registry">Add to registry</button>
     </div>
     <div id="staff-list" class="mb-6"></div>
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Live Market Rate Book</h2>
-    <p class="text-creamdim text-[13px] mb-2">Update today's prices — the grocery calculator and costings use these live rates.</p>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="rate_book">Live Market Rate Book</h2>
+    <p class="text-creamdim text-[13px] mb-2" data-i18n="rate_note">Update today's prices — the grocery calculator and costings use these live rates.</p>
     <div id="rate-list" class="mb-3"></div>
     <div class="card p-4 mb-6">
-      <p class="text-gold-300 font-semibold mb-2 text-[15px]">Add a custom item</p>
+      <p class="text-gold-300 font-semibold mb-2 text-[15px]" data-i18n="add_custom">Add a custom item</p>
       <div class="grid grid-cols-2 gap-2 mb-2">
-        <input id="rt-name" class="inp" placeholder="Item (e.g. Jaggery)" />
-        <input id="rt-unit" class="inp" placeholder="Unit (per kg)" />
+        <input id="rt-name" class="inp" data-ph="rt_name_ph" placeholder="Item (e.g. Jaggery)" />
+        <input id="rt-unit" class="inp" data-ph="rt_unit_ph" placeholder="Unit (per kg)" />
       </div>
       <div class="flex gap-2">
-        <input id="rt-price" class="inp flex-1" type="number" min="0" step="0.5" placeholder="Price ₹" />
-        <button class="btn-gold shrink-0" onclick="addRate()">Add</button>
+        <input id="rt-price" class="inp flex-1" type="number" min="0" step="0.5" data-ph="rt_price_ph" placeholder="Price ₹" />
+        <button class="btn-gold shrink-0" onclick="addRate()" data-i18n="add_btn">Add</button>
       </div>
     </div>
 
-    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3">Database Backup</h2>
+    <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="db_backup">Database Backup</h2>
     <div class="card p-4">
-      <button class="btn-gold w-full mb-2" onclick="exportJSON()">⬇ Export full backup (JSON)</button>
-      <button class="btn-line w-full" onclick="document.getElementById('imp-file').click()">⬆ Import backup (JSON)</button>
+      <button class="btn-gold w-full mb-2" onclick="exportJSON()" data-i18n="export_btn">⬇ Export full backup (JSON)</button>
+      <button class="btn-line w-full" onclick="document.getElementById('imp-file').click()" data-i18n="import_btn">⬆ Import backup (JSON)</button>
       <input id="imp-file" type="file" accept=".json,application/json" class="hidden" onchange="importJSON(this)" />
-      <p class="text-creamdim text-[12px] mt-3 leading-snug">
-        Export saves everything — bookings, expenses, tiffins, staff, rates and Pitru register — as one file.
-        Import merges a backup into the database using update(); existing records with the same IDs are overwritten, nothing else is wiped.
-      </p>
+      <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="backup_note">Export saves everything as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.</p>
     </div>
   </section>
 
@@ -404,59 +419,67 @@
 <div id="modal-booking" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card w-full max-w-md m-3 p-5">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="font-display text-gold-400 text-lg">New Booking</h3>
+      <h3 class="font-display text-gold-400 text-lg" data-i18n="bm_title">New Booking</h3>
       <button class="text-creamdim text-2xl leading-none px-2" onclick="closeBooking()" aria-label="Close">×</button>
     </div>
 
     <div class="flex gap-2 mb-2">
-      <input id="bk-client" class="inp flex-1" placeholder="Client name" />
+      <input id="bk-client" class="inp flex-1" data-ph="client_name_ph" placeholder="Client name" />
       <button class="btn-line shrink-0" onclick="pickContact()" title="Pick from Contacts">📇</button>
     </div>
-    <input id="bk-phone" class="inp mb-2" type="tel" placeholder="Phone (WhatsApp)" />
+    <input id="bk-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
 
     <div class="grid grid-cols-2 gap-2 mb-2">
       <input id="bk-date" class="inp" type="date" />
-      <input id="bk-guests" class="inp" type="number" min="0" placeholder="Headcount" />
+      <input id="bk-guests" class="inp" type="number" min="0" data-ph="headcount" placeholder="Headcount" />
     </div>
 
     <div class="grid grid-cols-2 gap-2 mb-2">
       <select id="bk-type" class="inp">
-        <option>Upanayana</option><option>Wedding</option><option>Gruhapravesham</option>
-        <option>Satyanarayana Vratam</option><option>Shraddha / Pitru Karya</option>
-        <option>Birthday</option><option>Corporate</option><option>Other</option>
+        <option value="Upanayana" data-i18n="ty_upanayana">Upanayana</option>
+        <option value="Wedding" data-i18n="ty_wedding">Wedding</option>
+        <option value="Gruhapravesham" data-i18n="ty_gruha">Gruhapravesham</option>
+        <option value="Satyanarayana Vratam" data-i18n="ty_vratam">Satyanarayana Vratam</option>
+        <option value="Shraddha / Pitru Karya" data-i18n="ty_shraddha">Shraddha / Pitru Karya</option>
+        <option value="Birthday" data-i18n="ty_birthday">Birthday</option>
+        <option value="Corporate" data-i18n="ty_corporate">Corporate</option>
+        <option value="Other" data-i18n="ty_other">Other</option>
       </select>
       <select id="bk-service" class="inp">
-        <option value="ceremony">Ceremony + Catering</option>
-        <option value="catering">Catering only</option>
+        <option value="ceremony" data-i18n="svc_ceremony">Ceremony + Catering</option>
+        <option value="catering" data-i18n="svc_catering">Catering only</option>
       </select>
     </div>
 
     <div class="grid grid-cols-2 gap-2 mb-2">
       <select id="bk-package" class="inp" onchange="updateBkTotal()">
-        <option value="regular">Regular — ₹9,000</option>
-        <option value="muthidya">Muthidya — ₹9,500</option>
+        <option value="regular" data-i18n="pkg_regular">Regular — ₹9,000</option>
+        <option value="muthidya" data-i18n="pkg_muthidya">Muthidya — ₹9,500</option>
       </select>
       <select id="bk-floor" class="inp">
-        <option value="ground">Ground Floor</option>
-        <option value="first">First Floor</option>
+        <option value="ground" data-i18n="floor_ground">Ground Floor</option>
+        <option value="first" data-i18n="floor_first">First Floor</option>
       </select>
     </div>
 
     <div class="flex items-center gap-3 mb-2">
-      <span class="text-creamdim text-[14px] flex-1">Extra plates <span class="text-[12px]">(+₹250 each)</span></span>
+      <span class="text-creamdim text-[14px] flex-1">
+        <span data-i18n="extra_plates">Extra plates</span>
+        <span class="text-[12px]" data-i18n="each_note">(+₹250 each)</span>
+      </span>
       <button class="stepbtn" onclick="stepExtra(-1)" aria-label="Fewer extra plates">−</button>
       <input id="bk-extra" class="inp !w-16 text-center" type="number" min="0" value="0" onchange="updateBkTotal()" />
       <button class="stepbtn" onclick="stepExtra(1)" aria-label="More extra plates">+</button>
     </div>
 
-    <input id="bk-advance" class="inp mb-2" type="number" min="0" placeholder="Advance received (₹)" onchange="updateBkTotal()" />
+    <input id="bk-advance" class="inp mb-2" type="number" min="0" data-ph="advance_ph" placeholder="Advance received (₹)" onchange="updateBkTotal()" />
 
     <div class="bg-maroon-950/60 rounded-lg p-3 mb-3">
-      <p id="bk-total-line" class="text-gold-300 font-bold text-[17px]">Total: ₹9,000</p>
-      <p id="bk-balance-line" class="text-creamdim text-[13px]">Balance after advance: ₹9,000</p>
+      <p id="bk-total-line" class="text-gold-300 font-bold text-[17px]"></p>
+      <p id="bk-balance-line" class="text-creamdim text-[13px]"></p>
     </div>
 
-    <button class="btn-gold w-full" onclick="saveBooking()">Save booking</button>
+    <button class="btn-gold w-full" onclick="saveBooking()" data-i18n="save_booking">Save booking</button>
   </div>
 </div>
 
@@ -466,18 +489,18 @@
 <div id="modal-tclient" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center">
   <div class="card w-full max-w-md m-3 p-5">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="font-display text-gold-400 text-lg">New Tiffin Client</h3>
+      <h3 class="font-display text-gold-400 text-lg" data-i18n="tc_title">New Tiffin Client</h3>
       <button class="text-creamdim text-2xl leading-none px-2" onclick="closeTClient()" aria-label="Close">×</button>
     </div>
-    <input id="tc-name" class="inp mb-2" placeholder="Client / family name" />
-    <input id="tc-phone" class="inp mb-2" type="tel" placeholder="Phone (WhatsApp)" />
-    <p class="text-creamdim text-[13px] mb-1">Rate per meal (₹)</p>
+    <input id="tc-name" class="inp mb-2" data-ph="tc_name_ph" placeholder="Client / family name" />
+    <input id="tc-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
+    <p class="text-creamdim text-[13px] mb-1" data-i18n="rate_per_meal">Rate per meal (₹)</p>
     <div class="grid grid-cols-3 gap-2 mb-3">
-      <input id="tc-rb" class="inp" type="number" min="0" placeholder="B'fast" />
-      <input id="tc-rl" class="inp" type="number" min="0" placeholder="Lunch" />
-      <input id="tc-rd" class="inp" type="number" min="0" placeholder="Dinner" />
+      <input id="tc-rb" class="inp" type="number" min="0" data-ph="ph_bfast" placeholder="B'fast" />
+      <input id="tc-rl" class="inp" type="number" min="0" data-ph="ph_lunch" placeholder="Lunch" />
+      <input id="tc-rd" class="inp" type="number" min="0" data-ph="ph_dinner" placeholder="Dinner" />
     </div>
-    <button class="btn-gold w-full" onclick="saveTClient()">Save client</button>
+    <button class="btn-gold w-full" onclick="saveTClient()" data-i18n="save_client">Save client</button>
   </div>
 </div>
 
@@ -487,16 +510,16 @@
 <div id="modal-receipt" class="hidden fixed inset-0 z-[75] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="w-full max-w-md m-3">
     <div class="flex justify-end mb-2">
-      <button class="btn-line bg-maroon-950/90" onclick="closeReceipt()">Close ×</button>
+      <button class="btn-line bg-maroon-950/90" onclick="closeReceipt()">×</button>
     </div>
     <div class="card p-3 mb-2 flex items-center gap-2">
-      <span class="text-creamdim text-[14px] shrink-0">Bill month:</span>
+      <span class="text-creamdim text-[14px] shrink-0" data-i18n="bill_month">Bill month:</span>
       <input id="rc-month" type="month" class="inp" onchange="refreshReceipt()" />
     </div>
     <div id="rc-body" class="receipt p-5"></div>
     <button id="rc-wa" class="btn-gold w-full mt-3 flex items-center justify-center gap-2">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.66 15L2 22l5.16-1.32A10 10 0 1 0 12 2Zm5.47 14.11c-.23.65-1.34 1.24-1.85 1.28-.5.05-.97.24-3.27-.68-2.77-1.1-4.53-3.93-4.67-4.11-.13-.18-1.11-1.48-1.11-2.83 0-1.34.7-2 .95-2.28.25-.27.55-.34.73-.34l.52.01c.17 0 .4-.06.62.48.23.55.78 1.9.85 2.04.07.14.11.3.02.48-.09.18-.14.29-.27.45l-.41.48c-.13.13-.27.28-.12.55.16.27.7 1.16 1.5 1.87 1.03.92 1.9 1.2 2.17 1.34.27.13.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.23.6-.14.25.09 1.58.75 1.85.88.27.14.45.2.52.32.06.11.06.65-.17 1.3Z"/></svg>
-      Send on WhatsApp
+      <span data-i18n="send_wa">Send on WhatsApp</span>
     </button>
   </div>
 </div>
@@ -529,7 +552,7 @@
         <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>
         </svg>
-        <span class="block text-[12px] font-medium">Home</span>
+        <span class="block text-[12px] font-medium" data-i18n="nav_home">Home</span>
         <span class="navdot"></span>
       </button>
 
@@ -537,7 +560,7 @@
         <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M7 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M9 8h6M9 12h6M9 16h4"/>
         </svg>
-        <span class="block text-[12px] font-medium">Log</span>
+        <span class="block text-[12px] font-medium" data-i18n="nav_log">Log</span>
         <span class="navdot"></span>
       </button>
 
@@ -545,7 +568,7 @@
         <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 3v18"/><path d="M5 6h14"/><path d="M5 6 3 11a3 3 0 0 0 6 0L7 6"/><path d="M15 6l-2 5a3 3 0 0 0 6 0l-2-5"/>
         </svg>
-        <span class="block text-[12px] font-medium">Ledger</span>
+        <span class="block text-[12px] font-medium" data-i18n="nav_ledger">Ledger</span>
         <span class="navdot"></span>
       </button>
 
@@ -553,7 +576,7 @@
         <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 12h16"/><path d="M5 12a7 7 0 0 1 14 0"/><path d="M6 12c0 3.5 2.4 6 6 6s6-2.5 6-6"/><path d="M12 3v2"/>
         </svg>
-        <span class="block text-[12px] font-medium">Tiffin</span>
+        <span class="block text-[12px] font-medium" data-i18n="nav_tiffin">Tiffin</span>
         <span class="navdot"></span>
       </button>
 
@@ -561,7 +584,7 @@
         <svg class="mx-auto" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.51 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.3.62.92 1 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/>
         </svg>
-        <span class="block text-[12px] font-medium">Setup</span>
+        <span class="block text-[12px] font-medium" data-i18n="nav_setup">Setup</span>
         <span class="navdot"></span>
       </button>
 
@@ -579,10 +602,11 @@
 <!-- ==================================================== -->
 <script>
 /* =====================================================
-   ANANTHA SHREE PRO ENTERPRISE — STAGE 4 (FINAL)
-   Stage 1 core · Stage 2 Voice/Panchanga · Stage 3 Tiffin/Setup
-   + Booking pricing engine · Grocery calculator
-   + 3-Tier Master P&L · Conflict radars
+   ANANTHA SHREE PRO ENTERPRISE — UPDATE STAGE 1
+   Device-independent multi-language system (EN / TE)
+   + Home screen mega booking button (Pitru box removed)
+   + Sahaaya full-Telugu command parser
+   All Stage 1–4 features retained.
    ===================================================== */
 
 /* ---------- Firebase init ---------- */
@@ -596,11 +620,348 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
+/* =====================================================
+   LOCALIZATION DICTIONARY
+   The UI language lives in localStorage ('appLanguage')
+   on EACH device separately. The Firebase data itself is
+   language-neutral (canonical English values), so your
+   phone can show English while your mother's phone shows
+   Telugu — both reading the same live database.
+   ===================================================== */
+const I18N = {
+  en: {
+    /* navigation */
+    nav_home:'Home', nav_log:'Log', nav_ledger:'Ledger', nav_tiffin:'Tiffin', nav_setup:'Setup',
+    /* home */
+    new_booking_big:'New Booking',
+    todays_panchanga:"Today's Panchanga",
+    todays_events:"Today's Events",
+    no_events_today:'No ceremonies booked for today.',
+    pn_note:'Computed at sunrise (Lahiri, amanta). Verify with your panchangam near tithi transitions.',
+    nakshatra:'Nakshatra', tithi_no:'Tithi No.', of15:'of 15', masa_word:'Masa',
+    /* log / ceremonies */
+    ceremonies:'Ceremonies',
+    no_ceremonies:'No ceremonies logged yet.',
+    no_ceremonies_hint:'Tap the big gold button on the Home screen, or tell Sahaaya: "కొత్త బుకింగ్".',
+    grocery_calc:'Grocery Calculator', margin_note:'· 15% protective margin',
+    headcount:'Headcount', calc_raw:'Calculate raw materials',
+    gc_item:'Item', gc_qty:'Qty (incl. 15%)', gc_cost:'Est. cost',
+    gc_set_rate:'set rate in Setup', gc_total:'Estimated cost', gc_partial:' (partial)',
+    gc_note:'Quantities = headcount × per-plate norm × 1.15 protective margin. Costs use the Live Market Rate Book.',
+    gc_tithi_ok:'Tithi check:', gc_no_restriction:'— no rice restriction.',
+    gc_warn_title:'on this date',
+    gc_warn_body:'Many guests observe a rice fast on this tithi. Rice below is already reduced by 40% — plan semiya, sabudana or fruit alternatives for observers, and confirm the count with the host.',
+    date_tbd:'Date TBD', pax:'pax',
+    pkg_name_regular:'Regular', pkg_name_muthidya:'Muthidya',
+    package_word:'package', extra_plates_x:'Extra plates ×',
+    total:'Total', advance_word:'Advance', balance_word:'Balance',
+    check_btn:'Checklist', staff_chip:'👥 Staff', grocery_chip:'🧺 Grocery',
+    wa_confirm:'💬 WhatsApp confirmation',
+    add_staff_first:'Add staff in the Setup tab first.',
+    check_0:'Advance received', check_1:'Menu finalized', check_2:'Groceries purchased',
+    check_3:'Staff assigned', check_4:'Venue confirmed',
+    /* ledger */
+    master_pnl:'Master P&L', month_lbl:'Month:', date_lbl:'Date:',
+    bookings_word:'bookings',
+    income:'INCOME', deductions:'DEDUCTIONS',
+    ceremony_gross:'Ceremony gross', catering_gross:'Catering gross', tiffin_gross:'Tiffin gross',
+    total_gross:'Total gross',
+    wages:'Wages (Labour expenses)',
+    var_groceries:'Variable groceries (Groceries + Dairy + Flowers)',
+    other_exp:'Other logged expenses (Fuel, Rent, Transport…)',
+    overheads:'Monthly overheads', concessions:'Concessions given',
+    net_profit:'True Net Profit',
+    pnl_note:'Tiffin gross counts meals marked "Given". Wages and groceries come from logged expenses — speak them to Sahaaya as they happen.',
+    conflict_radar:'Conflict Radar',
+    venue_floors:'VENUE FLOORS', staff_hdr:'STAFF',
+    floor_ground:'Ground Floor', floor_first:'First Floor',
+    st_ok:'✅ OK', st_near:'⚠️ Near capacity', st_over:'🚨 OVERBOOKED',
+    seats:'seats', events_word:'events', event_word:'event',
+    assigned:'Assigned', available:'Available',
+    all_assigned:'Everyone is assigned this day.',
+    no_conflicts:'✅ No staff double-bookings on this date.',
+    double_booked:'is double-booked',
+    radar_empty:'Add staff in Setup, then assign them to events in the Log tab to track conflicts.',
+    date_converter:'Date Converter',
+    g2v:'Gregorian → Vedic', v2g:'Vedic → Gregorian',
+    convert:'Convert', find_date:'Find date',
+    falls_on:'Falls on:',
+    v2g_two:'Two dates can occur when a tithi spans two sunrises or in an adhika masa year — confirm with your panchangam.',
+    v2g_none:'That tithi does not fall at sunrise in this year (it may be a skipped tithi, or in an adhika masa). Try the adjacent tithi or year.',
+    pitru_register:'Pitru Tithi Register',
+    pt_name_ph:'Name (e.g. Father — Ramaiah garu)',
+    add_register:'Add to register',
+    no_pitru:'No Tithis registered yet.',
+    recent_expenses:'Recent Expenses',
+    no_expenses:'No expenses yet. Tell Sahaaya: "కూరగాయలు ఖర్చు 500".',
+    /* tiffin */
+    tiffin_hub:'Tiffin Hub', add_client:'+ Add client', jump_today:'Jump to today',
+    no_tclients:'No tiffin clients yet.',
+    tap_add_client:'Tap "Add client" to start a subscription.',
+    breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner',
+    st_given:'Given', st_pending:'Pending', st_skip:'Skip',
+    per_plate:'/plate', guest_plates:'Guest plates',
+    vacation_btn:'🌴 Vacation', monthly_bill:'🧾 Monthly bill',
+    vac_note:'Meals in this range are paused and never billed.',
+    vac_day:'🌴 On vacation this day — meals paused, not billed.',
+    save:'Save', clear:'Clear', remove:'Remove',
+    /* receipt */
+    bill_month:'Bill month:', send_wa:'Send on WhatsApp',
+    rc_sub:'Tiffin Services · Monthly Bill',
+    rc_client:'Client', rc_month:'Month', rc_vac:'Vacation days excluded',
+    rc_none:'No meals marked "Given" this month yet.',
+    rc_total:'Total due', rc_thanks:'🙏 Dhanyavaadamulu — Anantha Shree',
+    /* setup */
+    app_lang:'App Language',
+    lang_note:'This choice is saved only on this phone. All phones read the same live data.',
+    staff_registry:'Staff Registry', add_registry:'Add to registry',
+    name_ph:'Name', wage_ph:'Wage ₹/day', phone_ph:'Phone (WhatsApp)',
+    no_staff:'No staff registered yet. Add your Purohits and Chefs above.',
+    per_day:'/day',
+    role_purohit:'Purohit', role_chef:'Chef', role_helper:'Helper',
+    role_server:'Server', role_cleaner:'Cleaner', role_driver:'Driver',
+    rate_book:'Live Market Rate Book',
+    rate_note:"Update today's prices — the grocery calculator and costings use these live rates.",
+    add_custom:'Add a custom item', add_btn:'Add',
+    rt_name_ph:'Item (e.g. Jaggery)', rt_unit_ph:'Unit (per kg)', rt_price_ph:'Price ₹',
+    never_updated:'never updated', updated_today:'updated today',
+    updated_pre:'updated', days_ago:'days ago', day_ago:'day ago',
+    db_backup:'Database Backup',
+    export_btn:'⬇ Export full backup (JSON)', import_btn:'⬆ Import backup (JSON)',
+    backup_note:'Export saves everything — bookings, expenses, tiffins, staff, rates and Pitru register — as one file. Import merges a backup using update(); matching IDs are overwritten, nothing else is wiped.',
+    /* booking modal */
+    bm_title:'New Booking', client_name_ph:'Client name',
+    ty_upanayana:'Upanayana', ty_wedding:'Wedding', ty_gruha:'Gruhapravesham',
+    ty_vratam:'Satyanarayana Vratam', ty_shraddha:'Shraddha / Pitru Karya',
+    ty_birthday:'Birthday', ty_corporate:'Corporate', ty_other:'Other',
+    svc_ceremony:'Ceremony + Catering', svc_catering:'Catering only',
+    pkg_regular:'Regular — ₹9,000', pkg_muthidya:'Muthidya — ₹9,500',
+    extra_plates:'Extra plates', each_note:'(+₹250 each)',
+    advance_ph:'Advance received (₹)',
+    balance_after:'Balance after advance', save_booking:'Save booking',
+    /* tiffin client modal */
+    tc_title:'New Tiffin Client', tc_name_ph:'Client / family name',
+    rate_per_meal:'Rate per meal (₹)',
+    ph_bfast:"B'fast", ph_lunch:'Lunch', ph_dinner:'Dinner',
+    save_client:'Save client',
+    /* expense categories (display only — stored values stay English) */
+    cat_Groceries:'Groceries', cat_Dairy:'Dairy', cat_Fuel:'Fuel', cat_Labour:'Labour',
+    cat_Flowers:'Flowers', cat_Rent:'Rent', cat_Transport:'Transport', cat_General:'General',
+    /* connection / voice */
+    conn_live:'Live', conn_off:'Offline', conn_wait:'Connecting…',
+    listening:'🎙️ Listening', heard:'🗣️ Heard:',
+    mic_blocked:'Microphone permission is blocked. Allow it in browser settings.',
+    mic_retry:'Sahaaya could not hear that. Tap the mic and try again.',
+    voice_unsupported:'Voice needs Chrome or Samsung Internet on this phone.',
+    voice_lang_set:'Sahaaya listens in', in_english:'English', in_telugu:'Telugu',
+    no_command:'Sahaaya heard you, but found no command in that.',
+    opened:'Opened', logged_to:'logged to',
+    booking_form_opened:'Booking form opened.',
+    /* toasts */
+    lang_set:'Language set for this phone.',
+    err_name:'Enter the name first.', err_client:'Enter the client name first.',
+    err_item:'Enter the item name first.', err_date:'Pick a date first.',
+    err_head:'Enter the headcount first.',
+    err_save:'Could not save. Check your connection.',
+    err_delete:'Could not delete.',
+    err_vac_dates:'Pick both vacation dates.',
+    err_vac_order:'Vacation end must be after the start.',
+    err_phone:'Add a phone number first.',
+    booking_saved:'Booking saved for', saved_ok:'Saved.',
+    client_added:'added to the tiffin hub.',
+    staff_added:'added to the staff registry.',
+    rate_added:'added to the rate book.',
+    pitru_added:'added to the Pitru register.',
+    vac_saved:'Vacation saved. Those days are excluded from billing.',
+    vac_cleared:'Vacation cleared.',
+    contact_filled:'Contact filled in.',
+    contact_unsupported:'Contact picker needs Chrome on Android. Type the details instead.',
+    backup_prep:'Preparing backup…',
+    backup_done:'Backup downloaded. Keep it somewhere safe.',
+    backup_fail:'Backup failed. Check your connection.',
+    import_bad_json:'That file is not valid JSON.',
+    import_no_data:'No usable data found in that file.',
+    import_ok:'Backup imported successfully.',
+    import_fail:'Import failed. Check your connection.',
+    cf_remove:'Remove', cf_remove_booking:'Remove the booking for',
+    cf_remove_pitru:'Remove this entry from the Pitru register?',
+    cf_remove_tclient:'and stop tracking their tiffins? Past logs stay in the database.',
+    cf_remove_staff:'from the staff registry?',
+    cf_remove_rate:'from the rate book?'
+  },
+  te: {
+    /* navigation */
+    nav_home:'హోమ్', nav_log:'బుకింగ్స్', nav_ledger:'ఖాతా', nav_tiffin:'టిఫిన్', nav_setup:'సెటప్',
+    /* home */
+    new_booking_big:'కొత్త బుకింగ్',
+    todays_panchanga:'నేటి పంచాంగం',
+    todays_events:'నేటి కార్యక్రమాలు',
+    no_events_today:'ఈరోజు బుకింగ్‌లు లేవు.',
+    pn_note:'సూర్యోదయ సమయంలో లెక్కించారు (లాహిరి, అమాంత). తిథి మారే సమయాల్లో మీ పంచాంగంతో సరిచూడండి.',
+    nakshatra:'నక్షత్రం', tithi_no:'తిథి సంఖ్య', of15:'/ 15', masa_word:'మాసం',
+    /* log / ceremonies */
+    ceremonies:'కార్యక్రమాలు',
+    no_ceremonies:'ఇంకా బుకింగ్‌లు లేవు.',
+    no_ceremonies_hint:'హోమ్ స్క్రీన్‌లో పెద్ద బంగారు బటన్ నొక్కండి, లేదా సహాయకి చెప్పండి: "కొత్త బుకింగ్".',
+    grocery_calc:'సరుకుల లెక్క', margin_note:'· 15% అదనపు మార్జిన్',
+    headcount:'అతిథుల సంఖ్య', calc_raw:'సరుకులు లెక్కించండి',
+    gc_item:'వస్తువు', gc_qty:'మోతాదు (15%తో)', gc_cost:'అంచనా ఖర్చు',
+    gc_set_rate:'సెటప్‌లో ధర పెట్టండి', gc_total:'మొత్తం అంచనా ఖర్చు', gc_partial:' (కొంత మాత్రమే)',
+    gc_note:'మోతాదులు = అతిథుల సంఖ్య × ఒక్కో ప్లేట్ కొలత × 1.15 మార్జిన్. ధరలు మార్కెట్ ధరల పుస్తకం నుండి.',
+    gc_tithi_ok:'తిథి తనిఖీ:', gc_no_restriction:'— అన్నం నిషేధం లేదు.',
+    gc_warn_title:'ఈ తేదీన',
+    gc_warn_body:'ఈ తిథి రోజున చాలామంది అన్నం తినరు. కింద బియ్యం మోతాదు ఇప్పటికే 40% తగ్గించాం — ఉపవాసం ఉన్నవారికి సేమియా, సగ్గుబియ్యం లేదా పండ్లు ప్లాన్ చేయండి, హోస్ట్‌తో సంఖ్య నిర్ధారించండి.',
+    date_tbd:'తేదీ ఇంకా లేదు', pax:'మంది',
+    pkg_name_regular:'రెగ్యులర్', pkg_name_muthidya:'ముత్తైదువ',
+    package_word:'ప్యాకేజీ', extra_plates_x:'అదనపు ప్లేట్లు ×',
+    total:'మొత్తం', advance_word:'అడ్వాన్స్', balance_word:'బాకీ',
+    check_btn:'చెక్‌లిస్ట్', staff_chip:'👥 సిబ్బంది', grocery_chip:'🧺 సరుకులు',
+    wa_confirm:'💬 వాట్సాప్ కన్ఫర్మేషన్',
+    add_staff_first:'ముందుగా సెటప్ ట్యాబ్‌లో సిబ్బందిని చేర్చండి.',
+    check_0:'అడ్వాన్స్ వచ్చింది', check_1:'మెనూ ఖరారు', check_2:'సరుకులు కొన్నాం',
+    check_3:'సిబ్బంది కేటాయించాం', check_4:'హాల్ ఖరారు',
+    /* ledger */
+    master_pnl:'లాభ–నష్టాల పట్టిక', month_lbl:'నెల:', date_lbl:'తేదీ:',
+    bookings_word:'బుకింగ్‌లు',
+    income:'ఆదాయం', deductions:'ఖర్చులు',
+    ceremony_gross:'కార్యక్రమాల ఆదాయం', catering_gross:'క్యాటరింగ్ ఆదాయం', tiffin_gross:'టిఫిన్ ఆదాయం',
+    total_gross:'మొత్తం ఆదాయం',
+    wages:'కూలీలు (లేబర్ ఖర్చులు)',
+    var_groceries:'సరుకులు (కిరాణా + పాలు + పూలు)',
+    other_exp:'ఇతర ఖర్చులు (ఇంధనం, అద్దె, రవాణా…)',
+    overheads:'నెలవారీ స్థిర ఖర్చులు', concessions:'ఇచ్చిన రాయితీలు',
+    net_profit:'నికర లాభం',
+    pnl_note:'"ఇచ్చాం" అని గుర్తించిన భోజనాలే టిఫిన్ ఆదాయంలో లెక్కకు వస్తాయి. కూలీలు, సరుకుల ఖర్చులు నమోదైన ఖర్చుల నుండి వస్తాయి — జరిగినప్పుడే సహాయకి చెప్పండి.',
+    conflict_radar:'కాన్ఫ్లిక్ట్ రాడార్',
+    venue_floors:'హాల్ అంతస్తులు', staff_hdr:'సిబ్బంది',
+    floor_ground:'గ్రౌండ్ ఫ్లోర్', floor_first:'ఫస్ట్ ఫ్లోర్',
+    st_ok:'✅ సరే', st_near:'⚠️ దాదాపు నిండింది', st_over:'🚨 ఎక్కువ బుకింగ్!',
+    seats:'సీట్లు', events_word:'కార్యక్రమాలు', event_word:'కార్యక్రమం',
+    assigned:'కేటాయించారు', available:'ఖాళీగా ఉన్నారు',
+    all_assigned:'ఈరోజు అందరూ కేటాయించబడ్డారు.',
+    no_conflicts:'✅ ఈ తేదీన సిబ్బంది రెండు చోట్ల బుక్ కాలేదు.',
+    double_booked:'రెండు చోట్ల బుక్ అయ్యారు',
+    radar_empty:'సెటప్‌లో సిబ్బందిని చేర్చి, బుకింగ్స్ ట్యాబ్‌లో కార్యక్రమాలకు కేటాయించండి.',
+    date_converter:'తేదీ మార్పిడి',
+    g2v:'ఇంగ్లీషు → వేద తేదీ', v2g:'వేద → ఇంగ్లీషు తేదీ',
+    convert:'మార్చండి', find_date:'తేదీ కనుగొనండి',
+    falls_on:'ఈ రోజున వస్తుంది:',
+    v2g_two:'తిథి రెండు సూర్యోదయాలకు వ్యాపిస్తే లేదా అధిక మాసం ఉంటే రెండు తేదీలు రావచ్చు — పంచాంగంతో నిర్ధారించండి.',
+    v2g_none:'ఈ సంవత్సరంలో ఆ తిథి సూర్యోదయానికి రాలేదు (తిథి క్షయం లేదా అధిక మాసం కావచ్చు). పక్క తిథి లేదా సంవత్సరం చూడండి.',
+    pitru_register:'పితృ తిథి పట్టిక',
+    pt_name_ph:'పేరు (ఉదా: నాన్న — రామయ్య గారు)',
+    add_register:'పట్టికలో చేర్చండి',
+    no_pitru:'ఇంకా తిథులు నమోదు కాలేదు.',
+    recent_expenses:'ఇటీవలి ఖర్చులు',
+    no_expenses:'ఇంకా ఖర్చులు లేవు. సహాయకి చెప్పండి: "కూరగాయలు ఖర్చు 500".',
+    /* tiffin */
+    tiffin_hub:'టిఫిన్ హబ్', add_client:'+ క్లయింట్ చేర్చండి', jump_today:'ఈరోజుకి వెళ్ళండి',
+    no_tclients:'ఇంకా టిఫిన్ క్లయింట్లు లేరు.',
+    tap_add_client:'సబ్‌స్క్రిప్షన్ మొదలుపెట్టడానికి "క్లయింట్ చేర్చండి" నొక్కండి.',
+    breakfast:'ఉదయం టిఫిన్', lunch:'మధ్యాహ్న భోజనం', dinner:'రాత్రి భోజనం',
+    st_given:'ఇచ్చాం', st_pending:'పెండింగ్', st_skip:'వద్దు',
+    per_plate:'/ప్లేట్', guest_plates:'అతిథి ప్లేట్లు',
+    vacation_btn:'🌴 సెలవులు', monthly_bill:'🧾 నెల బిల్లు',
+    vac_note:'ఈ తేదీల్లో భోజనాలు ఆగుతాయి, బిల్లు వేయబడదు.',
+    vac_day:'🌴 ఈరోజు సెలవు — భోజనం లేదు, బిల్లు లేదు.',
+    save:'సేవ్', clear:'తీసేయండి', remove:'తొలగించు',
+    /* receipt */
+    bill_month:'బిల్లు నెల:', send_wa:'వాట్సాప్‌లో పంపండి',
+    rc_sub:'టిఫిన్ సర్వీసెస్ · నెల బిల్లు',
+    rc_client:'క్లయింట్', rc_month:'నెల', rc_vac:'సెలవు రోజులు మినహాయించారు',
+    rc_none:'ఈ నెలలో ఇంకా "ఇచ్చాం" అని గుర్తించిన భోజనాలు లేవు.',
+    rc_total:'చెల్లించాల్సిన మొత్తం', rc_thanks:'🙏 ధన్యవాదములు — అనంత శ్రీ',
+    /* setup */
+    app_lang:'యాప్ భాష',
+    lang_note:'ఈ ఎంపిక ఈ ఫోన్‌లో మాత్రమే ఉంటుంది. అన్ని ఫోన్లు ఒకే డేటానే చూపిస్తాయి.',
+    staff_registry:'సిబ్బంది పట్టిక', add_registry:'పట్టికలో చేర్చండి',
+    name_ph:'పేరు', wage_ph:'కూలి ₹/రోజు', phone_ph:'ఫోన్ (వాట్సాప్)',
+    no_staff:'ఇంకా సిబ్బంది లేరు. పురోహితులు, వంటవారిని పైన చేర్చండి.',
+    per_day:'/రోజు',
+    role_purohit:'పురోహితుడు', role_chef:'వంటవారు', role_helper:'సహాయకుడు',
+    role_server:'వడ్డించేవారు', role_cleaner:'శుభ్రం చేసేవారు', role_driver:'డ్రైవర్',
+    rate_book:'మార్కెట్ ధరల పుస్తకం',
+    rate_note:'నేటి ధరలు నమోదు చేయండి — సరుకుల లెక్కలు ఈ ధరలనే వాడతాయి.',
+    add_custom:'కొత్త వస్తువు చేర్చండి', add_btn:'చేర్చండి',
+    rt_name_ph:'వస్తువు (ఉదా: బెల్లం)', rt_unit_ph:'కొలత (కిలోకి)', rt_price_ph:'ధర ₹',
+    never_updated:'ఇంకా నమోదు కాలేదు', updated_today:'ఈరోజు నమోదైంది',
+    updated_pre:'నమోదైంది', days_ago:'రోజుల క్రితం', day_ago:'రోజు క్రితం',
+    db_backup:'డేటా బ్యాకప్',
+    export_btn:'⬇ పూర్తి బ్యాకప్ డౌన్‌లోడ్ (JSON)', import_btn:'⬆ బ్యాకప్ ఇంపోర్ట్ (JSON)',
+    backup_note:'బ్యాకప్‌లో అన్నీ ఉంటాయి — బుకింగ్‌లు, ఖర్చులు, టిఫిన్లు, సిబ్బంది, ధరలు, పితృ పట్టిక. ఇంపోర్ట్ update() ద్వారా కలుపుతుంది; ఒకే ID ఉన్నవి మారతాయి, మిగతావి చెరిగిపోవు.',
+    /* booking modal */
+    bm_title:'కొత్త బుకింగ్', client_name_ph:'క్లయింట్ పేరు',
+    ty_upanayana:'ఉపనయనం', ty_wedding:'పెళ్లి', ty_gruha:'గృహప్రవేశం',
+    ty_vratam:'సత్యనారాయణ వ్రతం', ty_shraddha:'శ్రాద్ధం / పితృ కార్యం',
+    ty_birthday:'పుట్టినరోజు', ty_corporate:'కార్పొరేట్', ty_other:'ఇతరం',
+    svc_ceremony:'కార్యక్రమం + క్యాటరింగ్', svc_catering:'క్యాటరింగ్ మాత్రమే',
+    pkg_regular:'రెగ్యులర్ — ₹9,000', pkg_muthidya:'ముత్తైదువ — ₹9,500',
+    extra_plates:'అదనపు ప్లేట్లు', each_note:'(ఒక్కొక్కటి +₹250)',
+    advance_ph:'తీసుకున్న అడ్వాన్స్ (₹)',
+    balance_after:'అడ్వాన్స్ పోగా బాకీ', save_booking:'బుకింగ్ సేవ్ చేయండి',
+    /* tiffin client modal */
+    tc_title:'కొత్త టిఫిన్ క్లయింట్', tc_name_ph:'క్లయింట్ / కుటుంబం పేరు',
+    rate_per_meal:'ఒక్కో భోజనం ధర (₹)',
+    ph_bfast:'టిఫిన్', ph_lunch:'మధ్యాహ్నం', ph_dinner:'రాత్రి',
+    save_client:'క్లయింట్ సేవ్ చేయండి',
+    /* expense categories */
+    cat_Groceries:'కిరాణా', cat_Dairy:'పాలు', cat_Fuel:'ఇంధనం', cat_Labour:'కూలి',
+    cat_Flowers:'పూలు', cat_Rent:'అద్దె', cat_Transport:'రవాణా', cat_General:'ఇతర',
+    /* connection / voice */
+    conn_live:'లైవ్', conn_off:'ఆఫ్‌లైన్', conn_wait:'కలుస్తోంది…',
+    listening:'🎙️ వింటున్నా', heard:'🗣️ విన్నది:',
+    mic_blocked:'మైక్ అనుమతి బ్లాక్ అయింది. బ్రౌజర్ సెట్టింగ్స్‌లో అనుమతించండి.',
+    mic_retry:'సహాయకి వినిపించలేదు. మైక్ నొక్కి మళ్ళీ చెప్పండి.',
+    voice_unsupported:'వాయిస్ కోసం Chrome లేదా Samsung Internet కావాలి.',
+    voice_lang_set:'సహాయ ఇప్పుడు వింటుంది:', in_english:'ఇంగ్లీషు', in_telugu:'తెలుగు',
+    no_command:'సహాయ విన్నది, కానీ అందులో ఆదేశం దొరకలేదు.',
+    opened:'తెరిచాం:', logged_to:'నమోదైంది:',
+    booking_form_opened:'బుకింగ్ ఫారం తెరిచాం.',
+    /* toasts */
+    lang_set:'ఈ ఫోన్‌కి భాష సెట్ అయింది.',
+    err_name:'ముందుగా పేరు రాయండి.', err_client:'ముందుగా క్లయింట్ పేరు రాయండి.',
+    err_item:'ముందుగా వస్తువు పేరు రాయండి.', err_date:'ముందుగా తేదీ ఎంచుకోండి.',
+    err_head:'ముందుగా అతిథుల సంఖ్య రాయండి.',
+    err_save:'సేవ్ కాలేదు. నెట్‌వర్క్ చూడండి.',
+    err_delete:'తొలగించలేకపోయాం.',
+    err_vac_dates:'రెండు సెలవు తేదీలు ఎంచుకోండి.',
+    err_vac_order:'సెలవు ముగింపు మొదలు తర్వాత ఉండాలి.',
+    err_phone:'ముందుగా ఫోన్ నంబర్ చేర్చండి.',
+    booking_saved:'బుకింగ్ సేవ్ అయింది —', saved_ok:'సేవ్ అయింది.',
+    client_added:'టిఫిన్ హబ్‌లో చేరారు.',
+    staff_added:'సిబ్బంది పట్టికలో చేరారు.',
+    rate_added:'ధరల పుస్తకంలో చేరింది.',
+    pitru_added:'పితృ పట్టికలో చేరారు.',
+    vac_saved:'సెలవులు సేవ్ అయ్యాయి. ఆ రోజులు బిల్లులో రావు.',
+    vac_cleared:'సెలవులు తీసేశాం.',
+    contact_filled:'కాంటాక్ట్ నింపాం.',
+    contact_unsupported:'కాంటాక్ట్ పికర్‌కి Android Chrome కావాలి. వివరాలు టైప్ చేయండి.',
+    backup_prep:'బ్యాకప్ సిద్ధమవుతోంది…',
+    backup_done:'బ్యాకప్ డౌన్‌లోడ్ అయింది. జాగ్రత్తగా ఉంచండి.',
+    backup_fail:'బ్యాకప్ విఫలమైంది. నెట్‌వర్క్ చూడండి.',
+    import_bad_json:'ఆ ఫైల్ సరైన JSON కాదు.',
+    import_no_data:'ఆ ఫైల్‌లో వాడదగిన డేటా లేదు.',
+    import_ok:'బ్యాకప్ ఇంపోర్ట్ అయింది.',
+    import_fail:'ఇంపోర్ట్ విఫలమైంది. నెట్‌వర్క్ చూడండి.',
+    cf_remove:'తొలగించాలా —', cf_remove_booking:'ఈ బుకింగ్ తొలగించాలా —',
+    cf_remove_pitru:'ఈ పితృ తిథి ఎంట్రీ తొలగించాలా?',
+    cf_remove_tclient:'— టిఫిన్ ట్రాకింగ్ ఆపాలా? పాత లాగ్‌లు డేటాలో ఉంటాయి.',
+    cf_remove_staff:'— సిబ్బంది పట్టిక నుండి తొలగించాలా?',
+    cf_remove_rate:'— ధరల పుస్తకం నుండి తొలగించాలా?'
+  }
+};
+
 /* ---------- Global state ---------- */
 const S = {
   view: 'home',
   db:   firebase.database(),
   online: false,
+  lang: (function () {
+    /* Per-device language seed. localStorage belongs to THIS phone only,
+       so two phones can show different languages over the same data. */
+    const stored = localStorage.getItem('appLanguage');
+    return (stored === 'te' || stored === 'en') ? stored : 'en';
+  })(),
   voiceLang: 'te-IN',
   listening: false,
   rec: null,
@@ -608,24 +969,72 @@ const S = {
   tiffinDate: null,
   billClient: null,
   cache: {
-    events:    {},   // /events/{id}
-    expenses:  {},   // /expenses/{id}
-    tiffin:    {},   // /tiffin/{clientId}
-    tiffinlog: {},   // /tiffinlog/{clientId}/{YYYY-MM-DD}
-    staff:     {},   // /staff/{id}
-    rates:     {},   // /rates/{id}
-    pitru:     {},   // /pitru/{id}
-    pnl:       {},   // /pnl/{YYYY-MM}  = { overheads, concessions }
-    settings:  {}    // /settings      = { venue: { ground, first } }
+    events:    {},
+    expenses:  {},
+    tiffin:    {},
+    tiffinlog: {},
+    staff:     {},
+    rates:     {},
+    pitru:     {},
+    pnl:       {},
+    settings:  {}
   },
   listeners: []
 };
 
+/* ---------- Translation helpers ---------- */
+function t(key) {
+  const dict = I18N[S.lang] || I18N.en;
+  if (dict[key] !== undefined) return dict[key];
+  if (I18N.en[key] !== undefined) return I18N.en[key];
+  return key;
+}
+const TYPE_I18N = {
+  'Upanayana':'ty_upanayana', 'Wedding':'ty_wedding', 'Gruhapravesham':'ty_gruha',
+  'Satyanarayana Vratam':'ty_vratam', 'Shraddha / Pitru Karya':'ty_shraddha',
+  'Birthday':'ty_birthday', 'Corporate':'ty_corporate', 'Other':'ty_other'
+};
+function tType(v) { return TYPE_I18N[v] ? t(TYPE_I18N[v]) : txt(v); }
+const ROLE_I18N = {
+  'Purohit':'role_purohit', 'Chef':'role_chef', 'Helper':'role_helper',
+  'Server':'role_server', 'Cleaner':'role_cleaner', 'Driver':'role_driver'
+};
+function tRole(v) { return ROLE_I18N[v] ? t(ROLE_I18N[v]) : txt(v); }
+function tCat(v) {
+  const key = 'cat_' + txt(v);
+  return (I18N.en[key] !== undefined) ? t(key) : txt(v);
+}
+function loc() { return S.lang === 'te' ? 'te-IN' : 'en-IN'; }
+
+function setLang(lang) {
+  S.lang = (lang === 'te') ? 'te' : 'en';
+  localStorage.setItem('appLanguage', S.lang);
+  applyLang();
+  toast(t('lang_set'));
+}
+function updateLangButtons() {
+  const en = document.getElementById('lang-en');
+  const te = document.getElementById('lang-te');
+  en.className = S.lang === 'en' ? 'btn-gold' : 'btn-line';
+  te.className = S.lang === 'te' ? 'btn-gold' : 'btn-line';
+}
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
+  document.getElementById('conn-txt').textContent = S.online ? t('conn_live') : t('conn_off');
+  updateLangButtons();
+  headerDateLine();
+  renderHome(); renderLog(); renderPitruList(); renderExpRecent();
+  renderTiffin(); renderStaff(); renderRates(); renderPnl(); renderRadar();
+  updateBkTotal();
+  if (!document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
+}
+
 /* ---------- Pricing constants ---------- */
-const PKG = { regular: { label:'Regular',  price: 9000 },
-              muthidya:{ label:'Muthidya', price: 9500 } };
+const PKG = { regular: { key:'regular',  price: 9000 },
+              muthidya:{ key:'muthidya', price: 9500 } };
 const EXTRA_PLATE = 250;
-const GROCERY_MARGIN = 1.15;   // 15% protective margin
+const GROCERY_MARGIN = 1.15;
 
 /* ---------- Safe-parse helpers ---------- */
 const num = v => { const n = parseFloat(v);   return isNaN(n) ? 0 : n; };
@@ -641,22 +1050,22 @@ function save(path, obj) {
   const clean = {};
   Object.keys(obj || {}).forEach(k => { if (obj[k] !== undefined) clean[k] = obj[k]; });
   return S.db.ref(path).update(clean)
-    .catch(err => { toast('Could not save. Check your connection.', true); console.error(err); });
+    .catch(err => { toast(t('err_save'), true); console.error(err); });
 }
 function removeKey(parentPath, id) {
   return S.db.ref(parentPath).update({ [id]: null })
-    .catch(err => { toast('Could not delete.', true); console.error(err); });
+    .catch(err => { toast(t('err_delete'), true); console.error(err); });
 }
 
 /* ---------- Toast ---------- */
 let toastTimer = null;
 function toast(msg, isError) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.borderColor = isError ? 'rgba(194,84,80,.7)' : 'rgba(212,169,74,.5)';
-  t.classList.add('show');
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderColor = isError ? 'rgba(194,84,80,.7)' : 'rgba(212,169,74,.5)';
+  el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
 /* ---------- Navigation ---------- */
@@ -675,11 +1084,13 @@ document.querySelectorAll('.navtab').forEach(btn =>
 S.db.ref('.info/connected').on('value', snap => {
   S.online = snap.val() === true;
   document.getElementById('conn-dot').className = 'dot ' + (S.online ? 'on' : 'off');
-  document.getElementById('conn-txt').textContent = S.online ? 'Live' : 'Offline';
+  document.getElementById('conn-txt').textContent = S.online ? t('conn_live') : t('conn_off');
 });
 
 /* =====================================================
-   PANCHANGA ENGINE (Stage 2, unchanged)
+   PANCHANGA ENGINE
+   Sidereal (Lahiri) · Amanta scheme · evaluated at
+   ~06:00 IST sunrise, which governs the civil day.
    ===================================================== */
 const RAD = Math.PI / 180;
 const norm360 = x => ((x % 360) + 360) % 360;
@@ -726,10 +1137,10 @@ function moonLong(jd) {
 function ayanamsa(jd) { return 23.853 + ((jd - 2451545.0) / 365.25) * (50.2888 / 3600); }
 const elong = jd => norm360(moonLong(jd) - sunLong(jd));
 function lastNewMoon(jd) {
-  let t = jd - elong(jd) / 12.190749;
-  for (let i = 0; i < 5; i++) { let e = elong(t); if (e > 180) e -= 360; t -= e / 12.190749; }
-  if (t > jd + 0.001) t -= 29.530588;
-  return t;
+  let nm = jd - elong(jd) / 12.190749;
+  for (let i = 0; i < 5; i++) { let e = elong(nm); if (e > 180) e -= 360; nm -= e / 12.190749; }
+  if (nm > jd + 0.001) nm -= 29.530588;
+  return nm;
 }
 function panchangaFor(y, m, d) {
   const jd = jdAtSunrise(y, m, d);
@@ -755,17 +1166,19 @@ function panchangaFor(y, m, d) {
 }
 function buildPn30() {
   S.pn30 = [];
-  const t = new Date();
+  const today = new Date();
   for (let i = 0; i <= 30; i++) {
-    const d = new Date(t.getFullYear(), t.getMonth(), t.getDate() + i);
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
     S.pn30.push(panchangaFor(d.getFullYear(), d.getMonth() + 1, d.getDate()));
   }
 }
 
 /* =====================================================
    HOME RENDERING
+   (Pitru alert box removed from Home per the redesign;
+    the Pitru Tithi Register still lives in the Ledger.)
    ===================================================== */
-const fmtIN = d => d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+function fmtIN(d) { return d.toLocaleDateString(loc(), { weekday:'short', day:'numeric', month:'short' }); }
 
 function renderHome() {
   if (!S.pn30.length) buildPn30();
@@ -773,82 +1186,53 @@ function renderHome() {
 
   document.getElementById('pn-card').innerHTML =
     '<p class="font-display text-[26px] leading-tight engrave">' + esc(p.paksha) + ' ' + esc(p.tithiName) + '</p>' +
-    '<p class="text-gold-300 text-[17px] mt-1">' + esc(p.masa) + ' Masa · ' + esc(p.vaara) + '</p>' +
+    '<p class="text-gold-300 text-[17px] mt-1">' + esc(p.masa) + ' ' + t('masa_word') + ' · ' + esc(p.vaara) + '</p>' +
     '<div class="mt-3 grid grid-cols-2 gap-2 text-[15px]">' +
-      '<div class="bg-maroon-950/60 rounded-lg px-3 py-2"><span class="text-creamdim block text-[12px]">Nakshatra</span>' + esc(p.nakshatra) + '</div>' +
-      '<div class="bg-maroon-950/60 rounded-lg px-3 py-2"><span class="text-creamdim block text-[12px]">Tithi No.</span>' + p.tIdx + ' of 15</div>' +
+      '<div class="bg-maroon-950/60 rounded-lg px-3 py-2"><span class="text-creamdim block text-[12px]">' + t('nakshatra') + '</span>' + esc(p.nakshatra) + '</div>' +
+      '<div class="bg-maroon-950/60 rounded-lg px-3 py-2"><span class="text-creamdim block text-[12px]">' + t('tithi_no') + '</span>' + p.tIdx + ' ' + t('of15') + '</div>' +
     '</div>' +
-    '<p class="text-creamdim text-[12px] mt-3">Computed at sunrise (Lahiri, amanta). Verify with your panchangam near tithi transitions.</p>';
-
-  const box = document.getElementById('pitru-alerts');
-  const hits = [];
-  Object.values(S.cache.pitru || {}).forEach(pt => {
-    if (!pt || pt.masa === undefined) return;
-    for (const day of S.pn30) {
-      if (day.masaIdx === int(pt.masa) && day.pakshaIdx === int(pt.paksha) && day.tIdx === int(pt.tithi)) {
-        hits.push({ pt, day, diff: Math.round((day.dateObj - S.pn30[0].dateObj) / 86400000) });
-        break;
-      }
-    }
-  });
-  hits.sort((a, b) => a.diff - b.diff);
-  box.innerHTML = hits.length ? hits.map(h =>
-    '<div class="card ' + (h.diff <= 7 ? 'card-alert' : '') + ' p-4 mb-2 flex items-start gap-3">' +
-      '<div class="text-2xl leading-none pt-0.5">🪔</div>' +
-      '<div class="flex-1">' +
-        '<p class="text-cream font-semibold">' + esc(h.pt.name) + '</p>' +
-        '<p class="text-creamdim text-[14px]">' + esc(MASA_NAMES[int(h.pt.masa)]) + ' · ' +
-          esc(PAKSHA_NAMES[int(h.pt.paksha)]) + ' · ' +
-          esc(int(h.pt.tithi) === 15 ? (int(h.pt.paksha) === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[int(h.pt.tithi) - 1]) + '</p>' +
-        '<p class="text-gold-300 text-[15px] mt-1">' + fmtIN(h.day.dateObj) + ' · ' +
-          (h.diff === 0 ? '<b>Today</b>' : 'in ' + h.diff + ' day' + (h.diff > 1 ? 's' : '')) + '</p>' +
-      '</div></div>').join('')
-  : '<div class="card p-4 text-center text-creamdim text-sm">No Pitru anniversaries in the next 30 days. Add family Tithis in the Ledger tab.</div>';
+    '<p class="text-creamdim text-[12px] mt-3">' + t('pn_note') + '</p>';
 
   const evBox = document.getElementById('today-events');
   const todayISO = S.pn30[0].iso;
   const evs = Object.values(S.cache.events || {}).filter(e => e && e.date === todayISO);
   evBox.innerHTML = evs.length ? evs.map(e =>
     '<div class="card p-4 mb-2">' +
-      '<p class="text-cream font-semibold">' + esc(e.type || 'Event') + ' — ' + esc(e.client) + '</p>' +
-      '<p class="text-creamdim text-[14px]">' + int(e.guests) + ' guests · ' +
-        (e.floor === 'first' ? 'First Floor' : 'Ground Floor') + ' · Total ' + inr(evTotal(e)) + '</p>' +
+      '<p class="text-cream font-semibold">' + esc(tType(e.type)) + ' — ' + esc(e.client) + '</p>' +
+      '<p class="text-creamdim text-[14px]">' + int(e.guests) + ' ' + t('pax') + ' · ' +
+        (e.floor === 'first' ? t('floor_first') : t('floor_ground')) + ' · ' + t('total') + ' ' + inr(evTotal(e)) + '</p>' +
     '</div>').join('')
-  : '<div class="card p-4 text-center text-creamdim text-sm">No ceremonies booked for today.</div>';
+  : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_events_today') + '</div>';
 }
 
 /* =====================================================
    CEREMONIES — PRICING, BOOKING, CHECKLIST, STAFF
    ===================================================== */
-const CHECK_ITEMS = ['Advance received','Menu finalized','Groceries purchased','Staff assigned','Venue confirmed'];
-
 function evTotal(e) {
   if (e.total !== undefined) return num(e.total);
   const base = (PKG[e.package] || PKG.regular).price;
   return base + int(e.extraPlates) * EXTRA_PLATE;
 }
-
-/* ---- live total in the modal ---- */
 function stepExtra(delta) {
   const el = document.getElementById('bk-extra');
   el.value = Math.max(0, int(el.value) + delta);
   updateBkTotal();
 }
 function updateBkTotal() {
-  const pkg = PKG[txt(document.getElementById('bk-package').value)] || PKG.regular;
+  const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
+  const pkg = PKG[pkgKey] || PKG.regular;
   const extra = int(document.getElementById('bk-extra').value);
   const advance = num(document.getElementById('bk-advance').value);
   const total = pkg.price + extra * EXTRA_PLATE;
   document.getElementById('bk-total-line').textContent =
-    'Total: ' + inr(total) + '  (' + pkg.label + (extra ? ' + ' + extra + ' extra plates' : '') + ')';
+    t('total') + ': ' + inr(total) + '  (' + t('pkg_name_' + pkg.key) +
+    (extra ? ' + ' + extra + ' × ₹' + EXTRA_PLATE : '') + ')';
   document.getElementById('bk-balance-line').textContent =
-    'Balance after advance: ' + inr(Math.max(0, total - advance));
+    t('balance_after') + ': ' + inr(Math.max(0, total - advance));
 }
-
-/* ---- Pick from Contacts (Contact Picker API) ---- */
 async function pickContact() {
   if (!('contacts' in navigator) || !('select' in navigator.contacts)) {
-    toast('Contact picker needs Chrome on Android. Type the details instead.', true);
+    toast(t('contact_unsupported'), true);
     return;
   }
   try {
@@ -857,86 +1241,80 @@ async function pickContact() {
       const c = picked[0];
       if (c.name && c.name[0]) document.getElementById('bk-client').value = txt(c.name[0]);
       if (c.tel && c.tel[0])   document.getElementById('bk-phone').value  = txt(c.tel[0]);
-      toast('Contact filled in.');
+      toast(t('contact_filled'));
     }
-  } catch (e) { /* user cancelled the picker — nothing to do */ }
+  } catch (e) { /* user closed the picker; no action needed */ }
 }
-
 function openBooking() {
   document.getElementById('modal-booking').classList.remove('hidden');
   updateBkTotal();
 }
 function closeBooking() { document.getElementById('modal-booking').classList.add('hidden'); }
-
 function saveBooking() {
   const client = txt(document.getElementById('bk-client').value);
-  if (!client) { toast('Enter the client name first.', true); return; }
+  if (!client) { toast(t('err_client'), true); return; }
   const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
   const pkg = PKG[pkgKey] || PKG.regular;
   const extra = int(document.getElementById('bk-extra').value);
   const id = uid('ev');
   save('events/' + id, {
     id, client,
-    phone:      txt(document.getElementById('bk-phone').value),
-    date:       txt(document.getElementById('bk-date').value),
-    guests:     int(document.getElementById('bk-guests').value),
-    type:       txt(document.getElementById('bk-type').value),
-    service:    txt(document.getElementById('bk-service').value) || 'ceremony',
-    floor:      txt(document.getElementById('bk-floor').value) || 'ground',
-    package:    pkgKey,
-    basePrice:  pkg.price,
+    phone:       txt(document.getElementById('bk-phone').value),
+    date:        txt(document.getElementById('bk-date').value),
+    guests:      int(document.getElementById('bk-guests').value),
+    type:        txt(document.getElementById('bk-type').value),
+    service:     txt(document.getElementById('bk-service').value) || 'ceremony',
+    floor:       txt(document.getElementById('bk-floor').value) || 'ground',
+    package:     pkgKey,
+    basePrice:   pkg.price,
     extraPlates: extra,
     extraAmount: extra * EXTRA_PLATE,
-    total:      pkg.price + extra * EXTRA_PLATE,
-    advance:    num(document.getElementById('bk-advance').value),
-    created:    Date.now()
+    total:       pkg.price + extra * EXTRA_PLATE,
+    advance:     num(document.getElementById('bk-advance').value),
+    created:     Date.now()
   }).then(() => {
-    closeBooking(); toast('Booking saved for ' + client + ' — ' + inr(pkg.price + extra * EXTRA_PLATE) + '.');
+    closeBooking();
+    toast(t('booking_saved') + ' ' + client + ' — ' + inr(pkg.price + extra * EXTRA_PLATE));
     ['bk-client','bk-phone','bk-date','bk-guests','bk-advance'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('bk-extra').value = 0;
+    updateBkTotal();
   });
 }
 function delEvent(id, name) {
-  if (confirm('Remove the booking for ' + name + '?')) removeKey('events', id);
+  if (confirm(t('cf_remove_booking') + ' ' + name + '?')) removeKey('events', id);
 }
-
-/* ---- per-event checklist ---- */
 function toggleCheck(eid, i) {
   const e = S.cache.events[eid] || {};
   const cur = !!(e.check && e.check[i]);
   save('events/' + eid + '/check', { [i]: !cur });
 }
-
-/* ---- per-event staff assignment ---- */
 function toggleAssign(eid, sid) {
   const e = S.cache.events[eid] || {};
   const cur = !!(e.staff && e.staff[sid]);
   S.db.ref('events/' + eid + '/staff').update({ [sid]: cur ? null : true })
-    .catch(err => { toast('Could not update assignment.', true); console.error(err); });
+    .catch(err => { toast(t('err_save'), true); console.error(err); });
 }
-
 function togglePanel(id) { document.getElementById(id).classList.toggle('hidden'); }
-
-/* ---- WhatsApp booking confirmation ---- */
 function waEvent(eid) {
   const e = S.cache.events[eid];
   if (!e) return;
   const phone = txt(e.phone).replace(/\D/g, '');
   const waPhone = phone.length === 10 ? '91' + phone : phone;
-  if (!waPhone) { toast('This booking has no phone number.', true); return; }
+  if (!waPhone) { toast(t('err_phone'), true); return; }
   const total = evTotal(e);
-  let msg = '🪔 *Anantha Shree — Booking Confirmation*\n\n' +
-    'Namaskaram ' + e.client + ' garu,\n\n' +
-    'Function: ' + (e.type || 'Event') + '\nDate: ' + (e.date || 'TBD') +
-    '\nHeadcount: ' + int(e.guests) +
-    '\nPackage: ' + (PKG[e.package] ? PKG[e.package].label : 'Regular') + ' — ' + inr(num(e.basePrice) || PKG.regular.price);
-  if (int(e.extraPlates)) msg += '\nExtra plates: ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
-  msg += '\n\n*Total: ' + inr(total) + '*\nAdvance received: ' + inr(num(e.advance)) +
-    '\nBalance: ' + inr(Math.max(0, total - num(e.advance))) + '\n\n🙏 Dhanyavaadamulu — Anantha Shree';
+  let msg = '🪔 *Anantha Shree — Booking Confirmation*' + '\n\n' +
+    'Namaskaram ' + e.client + ' garu,' + '\n\n' +
+    'Function: ' + tType(e.type) + '\n' + 'Date: ' + (e.date || t('date_tbd')) +
+    '\n' + t('headcount') + ': ' + int(e.guests) +
+    '\n' + t('package_word') + ': ' + t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) +
+    ' — ' + inr(num(e.basePrice) || PKG.regular.price);
+  if (int(e.extraPlates)) msg += '\n' + t('extra_plates') + ': ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
+  msg += '\n\n*' + t('total') + ': ' + inr(total) + '*' +
+    '\n' + t('advance_word') + ': ' + inr(num(e.advance)) +
+    '\n' + t('balance_word') + ': ' + inr(Math.max(0, total - num(e.advance))) +
+    '\n\n' + t('rc_thanks');
   window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(msg), '_blank');
 }
-
-/* ---- pre-fill the grocery calculator from an event ---- */
 function planGrocery(eid) {
   const e = S.cache.events[eid];
   if (!e) return;
@@ -945,8 +1323,6 @@ function planGrocery(eid) {
   runGrocery();
   window.scrollTo({ top: 0 });
 }
-
-/* ---- render Log list ---- */
 function renderLog() {
   const box = document.getElementById('log-list');
   const evs = Object.values(S.cache.events || {}).filter(Boolean)
@@ -954,53 +1330,53 @@ function renderLog() {
   const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
 
   if (!evs.length) {
-    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">No ceremonies logged yet.</p>' +
-      '<p class="text-creamdim text-sm mt-2">Tap “New booking”, or tell Sahaaya: “new booking”.</p></div>';
+    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">' + t('no_ceremonies') + '</p>' +
+      '<p class="text-creamdim text-sm mt-2">' + t('no_ceremonies_hint') + '</p></div>';
     return;
   }
 
   box.innerHTML = evs.map(e => {
     const total = evTotal(e);
     const balance = Math.max(0, total - num(e.advance));
-    const done = CHECK_ITEMS.filter((_, i) => e.check && e.check[i]).length;
+    const doneCount = [0,1,2,3,4].filter(i => e.check && e.check[i]).length;
 
-    const checkChips = CHECK_ITEMS.map((label, i) =>
+    const checkChips = [0,1,2,3,4].map(i =>
       '<button class="chip ' + (e.check && e.check[i] ? 'on' : '') + '" ' +
       'onclick="toggleCheck(\'' + e.id + '\',' + i + ')">' +
-      (e.check && e.check[i] ? '✓ ' : '') + label + '</button>').join('');
+      (e.check && e.check[i] ? '✓ ' : '') + t('check_' + i) + '</button>').join('');
 
     const staffChips = staffArr.length ? staffArr.map(s =>
       '<button class="chip ' + (e.staff && e.staff[s.id] ? 'on' : '') + '" ' +
       'onclick="toggleAssign(\'' + e.id + '\',\'' + s.id + '\')">' +
-      (e.staff && e.staff[s.id] ? '✓ ' : '') + esc(s.name) + ' <span class="opacity-70">(' + esc(s.role) + ')</span></button>').join('')
-    : '<p class="text-creamdim text-[13px]">Add staff in the Setup tab first.</p>';
+      (e.staff && e.staff[s.id] ? '✓ ' : '') + esc(s.name) + ' <span class="opacity-70">(' + esc(tRole(s.role)) + ')</span></button>').join('')
+    : '<p class="text-creamdim text-[13px]">' + t('add_staff_first') + '</p>';
 
     return '<div class="card p-4 mb-4">' +
       '<div class="flex justify-between items-start">' +
         '<div>' +
-          '<p class="text-cream font-semibold text-[16px]">' + esc(e.type || 'Event') + ' — ' + esc(e.client) + '</p>' +
-          '<p class="text-creamdim text-[13px]">' + esc(e.date || 'Date TBD') + ' · ' + int(e.guests) + ' pax · ' +
-            (e.floor === 'first' ? 'First Floor' : 'Ground Floor') +
-            (e.service === 'catering' ? ' · Catering only' : '') + '</p>' +
+          '<p class="text-cream font-semibold text-[16px]">' + esc(tType(e.type)) + ' — ' + esc(e.client) + '</p>' +
+          '<p class="text-creamdim text-[13px]">' + esc(e.date || t('date_tbd')) + ' · ' + int(e.guests) + ' ' + t('pax') + ' · ' +
+            (e.floor === 'first' ? t('floor_first') : t('floor_ground')) +
+            (e.service === 'catering' ? ' · ' + t('svc_catering') : '') + '</p>' +
         '</div>' +
-        '<button class="text-creamdim text-[13px] underline" onclick="delEvent(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">Remove</button>' +
+        '<button class="text-creamdim text-[13px] underline" onclick="delEvent(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
       '</div>' +
 
       '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
         '<div class="flex justify-between"><span class="text-creamdim">' +
-          (PKG[e.package] ? PKG[e.package].label : 'Regular') + ' package</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
-        (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">Extra plates × ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '') +
-        '<div class="flex justify-between text-gold-300 font-bold mt-1"><span>Total</span><span>' + inr(total) + '</span></div>' +
-        '<div class="flex justify-between text-[13px]"><span class="text-creamdim">Advance ' + inr(num(e.advance)) + '</span>' +
-          '<span class="' + (balance > 0 ? 'text-saffron' : 'text-creamdim') + '">Balance ' + inr(balance) + '</span></div>' +
+          t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) + ' ' + t('package_word') + '</span><span>' + inr(num(e.basePrice) || PKG.regular.price) + '</span></div>' +
+        (int(e.extraPlates) ? '<div class="flex justify-between"><span class="text-creamdim">' + t('extra_plates_x') + ' ' + int(e.extraPlates) + '</span><span>' + inr(num(e.extraAmount)) + '</span></div>' : '') +
+        '<div class="flex justify-between text-gold-300 font-bold mt-1"><span>' + t('total') + '</span><span>' + inr(total) + '</span></div>' +
+        '<div class="flex justify-between text-[13px]"><span class="text-creamdim">' + t('advance_word') + ' ' + inr(num(e.advance)) + '</span>' +
+          '<span class="' + (balance > 0 ? 'text-saffron' : 'text-creamdim') + '">' + t('balance_word') + ' ' + inr(balance) + '</span></div>' +
       '</div>' +
 
       '<div class="grid grid-cols-3 gap-2 mt-3">' +
-        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evck-' + e.id + '\')">☑ ' + done + '/' + CHECK_ITEMS.length + '</button>' +
-        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evst-' + e.id + '\')">👥 Staff</button>' +
-        '<button class="btn-line text-[13px]" onclick="planGrocery(\'' + e.id + '\')">🧺 Grocery</button>' +
+        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evck-' + e.id + '\')">☑ ' + doneCount + '/5</button>' +
+        '<button class="btn-line text-[13px]" onclick="togglePanel(\'evst-' + e.id + '\')">' + t('staff_chip') + '</button>' +
+        '<button class="btn-line text-[13px]" onclick="planGrocery(\'' + e.id + '\')">' + t('grocery_chip') + '</button>' +
       '</div>' +
-      '<button class="btn-gold w-full mt-2" onclick="waEvent(\'' + e.id + '\')">💬 WhatsApp confirmation</button>' +
+      '<button class="btn-gold w-full mt-2" onclick="waEvent(\'' + e.id + '\')">' + t('wa_confirm') + '</button>' +
 
       '<div id="evck-' + e.id + '" class="hidden mt-3">' + checkChips + '</div>' +
       '<div id="evst-' + e.id + '" class="hidden mt-3">' + staffChips + '</div>' +
@@ -1012,19 +1388,25 @@ function renderLog() {
    GROCERY CALCULATOR — 15% PROTECTIVE MARGIN
    ===================================================== */
 const GROCERY_TABLE = [
-  { name:'Rice',        unit:'kg',     perPlate:0.120, rateId:'rate_rice',    isRice:true },
-  { name:'Toor Dal',    unit:'kg',     perPlate:0.030, rateId:'rate_dal' },
-  { name:'Vegetables',  unit:'kg',     perPlate:0.150, rateId:null },
-  { name:'Coconuts',    unit:'pieces', perPlate:0.050, rateId:'rate_coconut', whole:true },
-  { name:'Cooking oil', unit:'L',      perPlate:0.020, rateId:null },
-  { name:'Ghee',        unit:'kg',     perPlate:0.006, rateId:null },
-  { name:'Curd/Milk',   unit:'L',      perPlate:0.060, rateId:null }
+  { nameKey:'gi_rice',    enName:'Rice',        unit:'kg',     perPlate:0.120, rateId:'rate_rice',    isRice:true },
+  { nameKey:'gi_dal',     enName:'Toor Dal',    unit:'kg',     perPlate:0.030, rateId:'rate_dal' },
+  { nameKey:'gi_veg',     enName:'Vegetables',  unit:'kg',     perPlate:0.150, rateId:null },
+  { nameKey:'gi_coconut', enName:'Coconuts',    unit:'pcs',    perPlate:0.050, rateId:'rate_coconut', whole:true },
+  { nameKey:'gi_oil',     enName:'Cooking oil', unit:'L',      perPlate:0.020, rateId:null },
+  { nameKey:'gi_ghee',    enName:'Ghee',        unit:'kg',     perPlate:0.006, rateId:null },
+  { nameKey:'gi_curd',    enName:'Curd / Milk', unit:'L',      perPlate:0.060, rateId:null }
 ];
+/* grocery item display names live in the dictionary too */
+I18N.en.gi_rice='Rice'; I18N.en.gi_dal='Toor Dal'; I18N.en.gi_veg='Vegetables';
+I18N.en.gi_coconut='Coconuts'; I18N.en.gi_oil='Cooking oil'; I18N.en.gi_ghee='Ghee'; I18N.en.gi_curd='Curd / Milk';
+I18N.te.gi_rice='బియ్యం'; I18N.te.gi_dal='కందిపప్పు'; I18N.te.gi_veg='కూరగాయలు';
+I18N.te.gi_coconut='కొబ్బరికాయలు'; I18N.te.gi_oil='నూనె'; I18N.te.gi_ghee='నెయ్యి'; I18N.te.gi_curd='పెరుగు / పాలు';
+
 function findRate(item) {
   const stored = S.cache.rates || {};
   if (item.rateId && stored[item.rateId] && stored[item.rateId].price !== undefined)
     return num(stored[item.rateId].price);
-  const frag = item.name.toLowerCase().split(' ')[0];
+  const frag = item.enName.toLowerCase().split(' ')[0];
   const hit = Object.values(stored).find(r => r && txt(r.name).toLowerCase().includes(frag) && r.price !== undefined);
   return hit ? num(hit.price) : null;
 }
@@ -1032,23 +1414,22 @@ function runGrocery() {
   const head = int(document.getElementById('gc-head').value);
   const dateV = txt(document.getElementById('gc-date').value);
   const out = document.getElementById('gc-out');
-  if (head < 1) { toast('Enter the headcount first.', true); return; }
+  if (head < 1) { toast(t('err_head'), true); return; }
 
-  /* Ekadashi / Amavasya rice restriction check */
   let tithiWarn = '';
   let riceFactor = 1;
   if (dateV) {
-    const [y, m, d] = dateV.split('-').map(x => int(x));
-    const p = panchangaFor(y, m, d);
+    const parts = dateV.split('-').map(x => int(x));
+    const p = panchangaFor(parts[0], parts[1], parts[2]);
     if (p.tithiName === 'Ekadasi' || p.tithiName === 'Amavasya') {
       riceFactor = 0.6;
       tithiWarn =
         '<div class="card card-alert p-3 mb-3 text-[14px]">' +
-        '<p class="text-saffron font-semibold">⚠️ ' + p.tithiName + ' on this date</p>' +
-        '<p class="text-creamdim mt-1">Many guests observe a rice fast on ' + p.tithiName +
-        '. Rice below is already reduced by 40% — plan semiya, sabudana or fruit alternatives for observers, and confirm the count with the host.</p></div>';
+        '<p class="text-saffron font-semibold">⚠️ ' + esc(p.tithiName) + ' ' + t('gc_warn_title') + '</p>' +
+        '<p class="text-creamdim mt-1">' + t('gc_warn_body') + '</p></div>';
     } else {
-      tithiWarn = '<p class="text-creamdim text-[12px] mb-2">Tithi check: ' + p.paksha + ' ' + p.tithiName + ' — no rice restriction.</p>';
+      tithiWarn = '<p class="text-creamdim text-[12px] mb-2">' + t('gc_tithi_ok') + ' ' +
+        esc(p.paksha) + ' ' + esc(p.tithiName) + ' ' + t('gc_no_restriction') + '</p>';
     }
   }
 
@@ -1058,11 +1439,11 @@ function runGrocery() {
     if (item.isRice) qty *= riceFactor;
     qty = item.whole ? Math.ceil(qty) : Math.round(qty * 10) / 10;
     const rate = findRate(item);
-    let costCell = '<span class="text-creamdim text-[12px]">set rate in Setup</span>';
+    let costCell = '<span class="text-creamdim text-[12px]">' + t('gc_set_rate') + '</span>';
     if (rate !== null) { const c = qty * rate; costTotal += c; costCell = inr(c); }
     else hasAllRates = false;
     return '<div class="flex justify-between text-[15px] mb-1">' +
-      '<span>' + esc(item.name) + '</span>' +
+      '<span>' + t(item.nameKey) + '</span>' +
       '<span class="text-gold-300">' + qty + ' ' + item.unit + '</span>' +
       '<span class="w-20 text-right">' + costCell + '</span></div>';
   }).join('');
@@ -1070,18 +1451,16 @@ function runGrocery() {
   out.classList.remove('hidden');
   out.innerHTML = tithiWarn +
     '<div class="bg-maroon-950/60 rounded-lg p-3">' +
-    '<div class="flex justify-between text-[12px] text-creamdim mb-2"><span>Item</span><span>Qty (incl. 15%)</span><span>Est. cost</span></div>' +
+    '<div class="flex justify-between text-[12px] text-creamdim mb-2"><span>' + t('gc_item') + '</span><span>' + t('gc_qty') + '</span><span>' + t('gc_cost') + '</span></div>' +
     rows +
-    '<div class="rule border-t border-dashed border-gold-600/50 my-2"></div>' +
-    '<div class="flex justify-between font-bold text-gold-300"><span>Estimated cost' + (hasAllRates ? '' : ' (partial)') + '</span><span>' + inr(costTotal) + '</span></div>' +
-    '<p class="text-creamdim text-[12px] mt-2">Quantities = headcount × per-plate norm × 1.15 protective margin. Costs use the Live Market Rate Book.</p>' +
+    '<div class="border-t border-dashed border-gold-600/50 my-2"></div>' +
+    '<div class="flex justify-between font-bold text-gold-300"><span>' + t('gc_total') + (hasAllRates ? '' : t('gc_partial')) + '</span><span>' + inr(costTotal) + '</span></div>' +
+    '<p class="text-creamdim text-[12px] mt-2">' + t('gc_note') + '</p>' +
     '</div>';
 }
 
 /* =====================================================
    3-TIER MASTER P&L
-   Gross:  Ceremony + Catering + Tiffin
-   Less:   Wages · Variable groceries · Overheads · Concessions
    ===================================================== */
 function savePnlField(ym, field, val) {
   save('pnl/' + ym, { [field]: num(val) }).then(() => renderPnl());
@@ -1100,9 +1479,8 @@ function renderPnl() {
   const out = document.getElementById('pnl-out');
   if (!ym) return;
   const monthName = new Date(int(ym.slice(0,4)), int(ym.slice(5,7)) - 1, 1)
-    .toLocaleDateString('en-IN', { month:'long', year:'numeric' });
+    .toLocaleDateString(loc(), { month:'long', year:'numeric' });
 
-  /* --- Tier 1 & 2: ceremony / catering gross --- */
   let ceremonyGross = 0, cateringGross = 0, evCount = 0;
   Object.values(S.cache.events || {}).forEach(e => {
     if (!e || !txt(e.date).startsWith(ym)) return;
@@ -1111,7 +1489,6 @@ function renderPnl() {
     else ceremonyGross += evTotal(e);
   });
 
-  /* --- Tier 3: tiffin gross --- */
   let tiffinGross = 0;
   Object.keys(S.cache.tiffin || {}).forEach(cid => {
     if (S.cache.tiffin[cid]) tiffinGross += buildBill(cid, ym).total;
@@ -1119,12 +1496,11 @@ function renderPnl() {
 
   const gross = ceremonyGross + cateringGross + tiffinGross;
 
-  /* --- Deductions --- */
   const cats = expensesByCat(ym);
   const wages = num(cats['Labour']);
   const groceries = num(cats['Groceries']) + num(cats['Dairy']) + num(cats['Flowers']);
   const otherExp = Object.keys(cats).reduce((s, c) =>
-    ['Labour','Groceries','Dairy','Flowers'].includes(c) ? s : s + num(cats[c]), 0);
+    ['Labour','Groceries','Dairy','Flowers'].indexOf(c) >= 0 ? s : s + num(cats[c]), 0);
   const pnlEntry = (S.cache.pnl && S.cache.pnl[ym]) || {};
   const overheads = num(pnlEntry.overheads);
   const concessions = num(pnlEntry.concessions);
@@ -1137,35 +1513,35 @@ function renderPnl() {
 
   out.innerHTML =
     '<div class="card p-4">' +
-      '<p class="text-creamdim text-[13px] mb-2">' + monthName + ' · ' + evCount + ' bookings</p>' +
+      '<p class="text-creamdim text-[13px] mb-2">' + monthName + ' · ' + evCount + ' ' + t('bookings_word') + '</p>' +
 
-      '<p class="text-gold-300 font-semibold text-[14px] mb-1">INCOME</p>' +
-      line('Ceremony gross', ceremonyGross) +
-      line('Catering gross', cateringGross) +
-      line('Tiffin gross', tiffinGross) +
-      line('<b>Total gross</b>', gross, 'text-gold-300 border-t border-dashed border-gold-600/50 pt-1') +
+      '<p class="text-gold-300 font-semibold text-[14px] mb-1">' + t('income') + '</p>' +
+      line(t('ceremony_gross'), ceremonyGross) +
+      line(t('catering_gross'), cateringGross) +
+      line(t('tiffin_gross'), tiffinGross) +
+      line('<b>' + t('total_gross') + '</b>', gross, 'text-gold-300 border-t border-dashed border-gold-600/50 pt-1') +
 
-      '<p class="text-gold-300 font-semibold text-[14px] mt-3 mb-1">DEDUCTIONS</p>' +
-      line('Wages (Labour expenses)', wages) +
-      line('Variable groceries (Groceries + Dairy + Flowers)', groceries) +
-      (otherExp ? line('Other logged expenses (Fuel, Rent, Transport…)', otherExp) : '') +
+      '<p class="text-gold-300 font-semibold text-[14px] mt-3 mb-1">' + t('deductions') + '</p>' +
+      line(t('wages'), wages) +
+      line(t('var_groceries'), groceries) +
+      (otherExp ? line(t('other_exp'), otherExp) : '') +
 
       '<div class="flex items-center justify-between gap-2 mb-1">' +
-        '<span class="text-[15px]">Monthly overheads</span>' +
+        '<span class="text-[15px]">' + t('overheads') + '</span>' +
         '<div class="flex items-center gap-1"><span class="text-creamdim">₹</span>' +
         '<input class="inp !w-24 text-right" type="number" min="0" value="' + overheads + '" ' +
         'onchange="savePnlField(\'' + ym + '\',\'overheads\', this.value)" /></div></div>' +
       '<div class="flex items-center justify-between gap-2 mb-1">' +
-        '<span class="text-[15px]">Concessions given</span>' +
+        '<span class="text-[15px]">' + t('concessions') + '</span>' +
         '<div class="flex items-center gap-1"><span class="text-creamdim">₹</span>' +
         '<input class="inp !w-24 text-right" type="number" min="0" value="' + concessions + '" ' +
         'onchange="savePnlField(\'' + ym + '\',\'concessions\', this.value)" /></div></div>' +
 
       '<div class="rounded-lg mt-3 p-3 text-center" style="background:rgba(28,4,7,.7);border:1px solid ' + netColor + '55">' +
-        '<p class="text-creamdim text-[12px] tracking-widest uppercase">True Net Profit</p>' +
+        '<p class="text-creamdim text-[12px] tracking-widest uppercase">' + t('net_profit') + '</p>' +
         '<p class="font-display text-[30px]" style="color:' + netColor + '">' + inr(net) + '</p>' +
       '</div>' +
-      '<p class="text-creamdim text-[12px] mt-2">Tiffin gross counts meals marked “Given”. Wages and groceries come from logged expenses — speak them to Sahaaya as they happen.</p>' +
+      '<p class="text-creamdim text-[12px] mt-2">' + t('pnl_note') + '</p>' +
     '</div>';
 }
 
@@ -1173,7 +1549,6 @@ function renderPnl() {
    CONFLICT RADAR — STAFF & VENUE FLOORS
    ===================================================== */
 const FLOOR_DEFAULTS = { ground: 150, first: 100 };
-
 function setVenueCap(which, val) {
   save('settings/venue', { [which]: int(val) }).then(() => renderRadar());
 }
@@ -1188,9 +1563,8 @@ function renderRadar() {
   const caps = { ground: int(venue.ground) || FLOOR_DEFAULTS.ground,
                  first:  int(venue.first)  || FLOOR_DEFAULTS.first };
 
-  /* ---- Venue floor capacity ---- */
-  const floors = { ground: { label:'Ground Floor', guests:0, evs:[] },
-                   first:  { label:'First Floor',  guests:0, evs:[] } };
+  const floors = { ground: { labelKey:'floor_ground', guests:0, evs:[] },
+                   first:  { labelKey:'floor_first',  guests:0, evs:[] } };
   evs.forEach(e => {
     const f = e.floor === 'first' ? 'first' : 'ground';
     floors[f].guests += int(e.guests);
@@ -1200,19 +1574,19 @@ function renderRadar() {
   const floorHTML = Object.keys(floors).map(k => {
     const f = floors[k], cap = caps[k];
     const pct = cap ? Math.round(f.guests / cap * 100) : 0;
-    let status = '✅ OK', color = '#7BC47F';
-    if (pct > 100)     { status = '🚨 OVERBOOKED'; color = '#E07470'; }
-    else if (pct >= 90){ status = '⚠️ Near capacity'; color = '#E8853D'; }
+    let statusKey = 'st_ok', color = '#7BC47F';
+    if (pct > 100)      { statusKey = 'st_over'; color = '#E07470'; }
+    else if (pct >= 90) { statusKey = 'st_near'; color = '#E8853D'; }
     return '<div class="card ' + (pct > 100 ? 'card-danger' : (pct >= 90 ? 'card-alert' : '')) + ' p-4 mb-2">' +
       '<div class="flex justify-between items-center mb-1">' +
-        '<p class="text-cream font-semibold">' + f.label + '</p>' +
-        '<span class="text-[14px] font-bold" style="color:' + color + '">' + status + '</span>' +
+        '<p class="text-cream font-semibold">' + t(f.labelKey) + '</p>' +
+        '<span class="text-[14px] font-bold" style="color:' + color + '">' + t(statusKey) + '</span>' +
       '</div>' +
       '<div class="flex justify-between items-center gap-2 text-[14px] text-creamdim mb-1">' +
-        '<span>' + f.guests + ' of ' +
+        '<span>' + f.guests + ' / ' +
           '<input class="inp !w-16 !py-1 text-center inline-block" type="number" min="1" value="' + cap + '" ' +
-          'onchange="setVenueCap(\'' + k + '\', this.value)" /> seats (' + pct + '%)</span>' +
-        '<span>' + f.evs.length + ' event' + (f.evs.length === 1 ? '' : 's') + '</span>' +
+          'onchange="setVenueCap(\'' + k + '\', this.value)" /> ' + t('seats') + ' (' + pct + '%)</span>' +
+        '<span>' + f.evs.length + ' ' + (f.evs.length === 1 ? t('event_word') : t('events_word')) + '</span>' +
       '</div>' +
       '<div class="capbar"><div style="width:' + Math.min(100, pct) + '%;background:' + color + '"></div></div>' +
       (f.evs.length ? '<p class="text-creamdim text-[13px] mt-2">' +
@@ -1220,7 +1594,6 @@ function renderRadar() {
     '</div>';
   }).join('');
 
-  /* ---- Staff availability / double-booking ---- */
   const byStaff = {};
   evs.forEach(e => {
     Object.keys(e.staff || {}).forEach(sid => {
@@ -1233,34 +1606,34 @@ function renderRadar() {
     const list = byStaff[s.id] || [];
     if (list.length > 1) conflicts.push({ s, list });
     else if (list.length === 1) busy.push({ s, e: list[0] });
-    else freeNames.push(s.name + ' (' + s.role + ')');
+    else freeNames.push(esc(s.name) + ' (' + esc(tRole(s.role)) + ')');
   });
 
   let staffHTML = '';
   if (!staffArr.length) {
-    staffHTML = '<div class="card p-4 text-center text-creamdim text-sm">Add staff in Setup, then assign them to events in the Log tab to track conflicts.</div>';
+    staffHTML = '<div class="card p-4 text-center text-creamdim text-sm">' + t('radar_empty') + '</div>';
   } else {
     staffHTML =
       (conflicts.length ? conflicts.map(c =>
         '<div class="card card-danger p-4 mb-2">' +
-          '<p class="font-semibold" style="color:#E07470">🚨 ' + esc(c.s.name) + ' (' + esc(c.s.role) + ') is double-booked</p>' +
-          '<p class="text-creamdim text-[14px] mt-1">' + c.list.map(e => esc(e.client) + ' — ' + esc(e.type || 'Event')).join('  ·  ') + '</p>' +
+          '<p class="font-semibold" style="color:#E07470">🚨 ' + esc(c.s.name) + ' (' + esc(tRole(c.s.role)) + ') ' + t('double_booked') + '</p>' +
+          '<p class="text-creamdim text-[14px] mt-1">' + c.list.map(e => esc(e.client) + ' — ' + esc(tType(e.type))).join('  ·  ') + '</p>' +
         '</div>').join('') : '') +
       (busy.length ?
-        '<div class="card p-4 mb-2"><p class="text-gold-300 font-semibold text-[14px] mb-1">Assigned</p>' +
-        busy.map(b => '<p class="text-[14px] text-creamdim">' + esc(b.s.name) + ' (' + esc(b.s.role) + ') → ' + esc(b.e.client) + '</p>').join('') + '</div>' : '') +
-      '<div class="card p-4 mb-2"><p class="text-gold-300 font-semibold text-[14px] mb-1">Available (' + freeNames.length + ')</p>' +
-        '<p class="text-[14px] text-creamdim">' + (freeNames.length ? freeNames.map(esc).join(' · ') : 'Everyone is assigned this day.') + '</p></div>' +
-      (!conflicts.length ? '<p class="text-[13px] mt-1" style="color:#7BC47F">✅ No staff double-bookings on this date.</p>' : '');
+        '<div class="card p-4 mb-2"><p class="text-gold-300 font-semibold text-[14px] mb-1">' + t('assigned') + '</p>' +
+        busy.map(b => '<p class="text-[14px] text-creamdim">' + esc(b.s.name) + ' (' + esc(tRole(b.s.role)) + ') → ' + esc(b.e.client) + '</p>').join('') + '</div>' : '') +
+      '<div class="card p-4 mb-2"><p class="text-gold-300 font-semibold text-[14px] mb-1">' + t('available') + ' (' + freeNames.length + ')</p>' +
+        '<p class="text-[14px] text-creamdim">' + (freeNames.length ? freeNames.join(' · ') : t('all_assigned')) + '</p></div>' +
+      (!conflicts.length ? '<p class="text-[13px] mt-1" style="color:#7BC47F">' + t('no_conflicts') + '</p>' : '');
   }
 
   out.innerHTML =
-    '<p class="text-gold-300 font-semibold text-[14px] mb-2">VENUE FLOORS</p>' + floorHTML +
-    '<p class="text-gold-300 font-semibold text-[14px] mt-4 mb-2">STAFF</p>' + staffHTML;
+    '<p class="text-gold-300 font-semibold text-[14px] mb-2">' + t('venue_floors') + '</p>' + floorHTML +
+    '<p class="text-gold-300 font-semibold text-[14px] mt-4 mb-2">' + t('staff_hdr') + '</p>' + staffHTML;
 }
 
 /* =====================================================
-   LEDGER — CONVERTERS, PITRU, EXPENSES (Stage 2)
+   LEDGER — CONVERTERS, PITRU REGISTER, EXPENSES
    ===================================================== */
 function fillSelectors() {
   const masaOpts  = MASA_NAMES.map((n, i) => '<option value="' + i + '">' + n + '</option>').join('');
@@ -1279,13 +1652,13 @@ function fillSelectors() {
 function doG2V() {
   const v = txt(document.getElementById('g2v-date').value);
   const out = document.getElementById('g2v-out');
-  if (!v) { toast('Pick a date first.', true); return; }
-  const [y, m, d] = v.split('-').map(x => int(x));
-  const p = panchangaFor(y, m, d);
+  if (!v) { toast(t('err_date'), true); return; }
+  const parts = v.split('-').map(x => int(x));
+  const p = panchangaFor(parts[0], parts[1], parts[2]);
   out.classList.remove('hidden');
   out.innerHTML =
-    '<p class="text-gold-300 font-semibold">' + esc(p.masa) + ' Masa · ' + esc(p.paksha) + ' · ' + esc(p.tithiName) + '</p>' +
-    '<p class="text-creamdim">Nakshatra: ' + esc(p.nakshatra) + ' · ' + esc(p.vaara) + '</p>';
+    '<p class="text-gold-300 font-semibold">' + esc(p.masa) + ' ' + t('masa_word') + ' · ' + esc(p.paksha) + ' · ' + esc(p.tithiName) + '</p>' +
+    '<p class="text-creamdim">' + t('nakshatra') + ': ' + esc(p.nakshatra) + ' · ' + esc(p.vaara) + '</p>';
 }
 function doV2G() {
   const masa   = int(document.getElementById('v2g-masa').value);
@@ -1302,15 +1675,15 @@ function doV2G() {
   }
   out.classList.remove('hidden');
   out.innerHTML = matches.length
-    ? '<p class="text-gold-300 font-semibold">Falls on:</p>' + matches.map(p =>
-        '<p class="text-cream">' + p.dateObj.toLocaleDateString('en-IN',
+    ? '<p class="text-gold-300 font-semibold">' + t('falls_on') + '</p>' + matches.map(p =>
+        '<p class="text-cream">' + p.dateObj.toLocaleDateString(loc(),
           { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</p>').join('') +
-      (matches.length > 1 ? '<p class="text-creamdim text-[13px] mt-1">Two dates can occur when a tithi spans two sunrises or in an adhika masa year — confirm with your panchangam.</p>' : '')
-    : '<p class="text-creamdim">That tithi does not fall at sunrise in ' + year + ' (it may be a skipped tithi, or in an adhika masa). Try the adjacent tithi or year.</p>';
+      (matches.length > 1 ? '<p class="text-creamdim text-[13px] mt-1">' + t('v2g_two') + '</p>' : '')
+    : '<p class="text-creamdim">' + t('v2g_none') + '</p>';
 }
 function addPitru() {
   const name = txt(document.getElementById('pt-name').value);
-  if (!name) { toast('Enter a name first.', true); return; }
+  if (!name) { toast(t('err_name'), true); return; }
   const id = uid('pt');
   save('pitru/' + id, {
     id, name,
@@ -1320,11 +1693,11 @@ function addPitru() {
     created: Date.now()
   }).then(() => {
     document.getElementById('pt-name').value = '';
-    toast(name + ' added to the Pitru register.');
+    toast(name + ' — ' + t('pitru_added'));
   });
 }
 function delPitru(id) {
-  if (confirm('Remove this entry from the Pitru register?')) removeKey('pitru', id);
+  if (confirm(t('cf_remove_pitru'))) removeKey('pitru', id);
 }
 function renderPitruList() {
   const box = document.getElementById('pitru-list');
@@ -1335,9 +1708,9 @@ function renderPitruList() {
       '<p class="text-creamdim text-[14px]">' + esc(MASA_NAMES[int(pt.masa)]) + ' · ' +
         esc(PAKSHA_NAMES[int(pt.paksha)]) + ' · ' +
         esc(int(pt.tithi) === 15 ? (int(pt.paksha) === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[int(pt.tithi) - 1]) + '</p></div>' +
-      '<button class="btn-line text-[13px]" onclick="delPitru(\'' + pt.id + '\')">Remove</button>' +
+      '<button class="btn-line text-[13px]" onclick="delPitru(\'' + pt.id + '\')">' + t('remove') + '</button>' +
     '</div>').join('')
-  : '<div class="card p-4 text-center text-creamdim text-sm">No Tithis registered yet.</div>';
+  : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_pitru') + '</div>';
 }
 function renderExpRecent() {
   const box = document.getElementById('exp-recent');
@@ -1346,37 +1719,37 @@ function renderExpRecent() {
   box.innerHTML = items.length
     ? items.map(e =>
       '<div class="card p-3 mb-2 flex justify-between text-[15px]">' +
-        '<span>' + esc(e.cat) + (e.src === 'voice' ? ' 🗣️' : '') +
+        '<span>' + esc(tCat(e.cat)) + (e.src === 'voice' ? ' 🗣️' : '') +
         ' <span class="text-creamdim text-[12px]">' + esc(e.date || '') + '</span></span>' +
         '<span class="text-gold-300 font-semibold">' + inr(e.amount) + '</span>' +
       '</div>').join('')
-    : '<div class="card p-4 text-center text-creamdim text-sm">No expenses yet. Tell Sahaaya: “కూరగాయలు ఖర్చు 500”.</div>';
+    : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_expenses') + '</div>';
 }
 
 /* =====================================================
-   TIFFIN SUBSCRIPTION HUB (Stage 3)
+   TIFFIN SUBSCRIPTION HUB
    ===================================================== */
-const MEALS = [ ['b','Breakfast','rateB','gb'], ['l','Lunch','rateL','gl'], ['d','Dinner','rateD','gd'] ];
+const MEALS = [ ['b','breakfast','rateB','gb'], ['l','lunch','rateL','gl'], ['d','dinner','rateD','gd'] ];
 const STATUSES = ['given','pending','skip'];
 
 function inVacation(c, iso) {
-  const f = txt(c.vacFrom), t = txt(c.vacTo);
-  return !!(f && t && iso >= f && iso <= t);
+  const f = txt(c.vacFrom), tt = txt(c.vacTo);
+  return !!(f && tt && iso >= f && iso <= tt);
 }
 function tlog(cid, iso) {
   return (S.cache.tiffinlog[cid] && S.cache.tiffinlog[cid][iso]) || {};
 }
 function setTiffinToday() { S.tiffinDate = isoOf(new Date()); renderTiffin(); }
 function shiftTiffinDate(delta) {
-  const [y, m, d] = S.tiffinDate.split('-').map(x => int(x));
-  S.tiffinDate = isoOf(new Date(y, m - 1, d + delta));
+  const parts = S.tiffinDate.split('-').map(x => int(x));
+  S.tiffinDate = isoOf(new Date(parts[0], parts[1] - 1, parts[2] + delta));
   renderTiffin();
 }
 function openTClient()  { document.getElementById('modal-tclient').classList.remove('hidden'); }
 function closeTClient() { document.getElementById('modal-tclient').classList.add('hidden'); }
 function saveTClient() {
   const name = txt(document.getElementById('tc-name').value);
-  if (!name) { toast('Enter the client name first.', true); return; }
+  if (!name) { toast(t('err_client'), true); return; }
   const id = uid('tf');
   save('tiffin/' + id, {
     id, name,
@@ -1387,12 +1760,12 @@ function saveTClient() {
     vacFrom: '', vacTo: '',
     created: Date.now()
   }).then(() => {
-    closeTClient(); toast(name + ' added to the tiffin hub.');
+    closeTClient(); toast(name + ' — ' + t('client_added'));
     ['tc-name','tc-phone','tc-rb','tc-rl','tc-rd'].forEach(i => document.getElementById(i).value = '');
   });
 }
 function delTClient(id, name) {
-  if (confirm('Remove ' + name + ' and stop tracking their tiffins? Past logs stay in the database.')) {
+  if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_tclient'))) {
     removeKey('tiffin', id);
   }
 }
@@ -1406,31 +1779,31 @@ function bumpGuest(cid, iso, gkey, delta) {
 function saveVacation(cid) {
   const from = txt(document.getElementById('vac-from-' + cid).value);
   const to   = txt(document.getElementById('vac-to-' + cid).value);
-  if (!from || !to) { toast('Pick both vacation dates.', true); return; }
-  if (to < from)    { toast('Vacation end must be after the start.', true); return; }
+  if (!from || !to) { toast(t('err_vac_dates'), true); return; }
+  if (to < from)    { toast(t('err_vac_order'), true); return; }
   save('tiffin/' + cid, { vacFrom: from, vacTo: to })
-    .then(() => toast('Vacation saved. Those days are excluded from billing.'));
+    .then(() => toast(t('vac_saved')));
 }
 function clearVacation(cid) {
-  save('tiffin/' + cid, { vacFrom: '', vacTo: '' }).then(() => toast('Vacation cleared.'));
+  save('tiffin/' + cid, { vacFrom: '', vacTo: '' }).then(() => toast(t('vac_cleared')));
 }
 function toggleVacPanel(cid) {
   document.getElementById('vacpanel-' + cid).classList.toggle('hidden');
 }
 function renderTiffin() {
   if (!S.tiffinDate) S.tiffinDate = isoOf(new Date());
-  const [y, m, d] = S.tiffinDate.split('-').map(x => int(x));
-  const dObj = new Date(y, m - 1, d);
+  const parts = S.tiffinDate.split('-').map(x => int(x));
+  const dObj = new Date(parts[0], parts[1] - 1, parts[2]);
   document.getElementById('tf-date-label').textContent =
-    dObj.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
+    dObj.toLocaleDateString(loc(), { weekday:'long', day:'numeric', month:'long' });
 
   const box = document.getElementById('tiffin-list');
   const clients = Object.values(S.cache.tiffin || {}).filter(Boolean)
     .sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
 
   if (!clients.length) {
-    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream">No tiffin clients yet.</p>' +
-      '<p class="text-creamdim text-sm mt-2">Tap “Add client” to start a subscription.</p></div>';
+    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream">' + t('no_tclients') + '</p>' +
+      '<p class="text-creamdim text-sm mt-2">' + t('tap_add_client') + '</p></div>';
     return;
   }
 
@@ -1440,21 +1813,22 @@ function renderTiffin() {
     const log = tlog(c.id, iso);
 
     const mealRows = vac
-      ? '<div class="bg-maroon-950/60 rounded-lg p-3 text-center text-saffron text-[15px]">🌴 On vacation this day — meals paused, not billed.</div>'
-      : MEALS.map(([k, label, rk, gk]) => {
+      ? '<div class="bg-maroon-950/60 rounded-lg p-3 text-center text-saffron text-[15px]">' + t('vac_day') + '</div>'
+      : MEALS.map(mealDef => {
+          const k = mealDef[0], labelKey = mealDef[1], rk = mealDef[2], gk = mealDef[3];
           const st = txt(log[k]) || 'pending';
           const g  = int(log[gk]);
           return '<div class="mb-3">' +
             '<div class="flex justify-between items-baseline mb-1">' +
-              '<span class="text-cream text-[15px] font-semibold">' + label + '</span>' +
-              '<span class="text-creamdim text-[12px]">₹' + num(c[rk]) + '/plate</span>' +
+              '<span class="text-cream text-[15px] font-semibold">' + t(labelKey) + '</span>' +
+              '<span class="text-creamdim text-[12px]">₹' + num(c[rk]) + t('per_plate') + '</span>' +
             '</div>' +
             '<div class="seg">' + STATUSES.map(s =>
               '<button class="' + (st === s ? 'on-' + s : '') + '" ' +
               'onclick="setMeal(\'' + c.id + '\',\'' + iso + '\',\'' + k + '\',\'' + s + '\')">' +
-              s.charAt(0).toUpperCase() + s.slice(1) + '</button>').join('') + '</div>' +
+              t('st_' + s) + '</button>').join('') + '</div>' +
             '<div class="flex items-center gap-3 mt-1.5">' +
-              '<span class="text-creamdim text-[13px]">Guest plates</span>' +
+              '<span class="text-creamdim text-[13px]">' + t('guest_plates') + '</span>' +
               '<button class="stepbtn" onclick="bumpGuest(\'' + c.id + '\',\'' + iso + '\',\'' + gk + '\',-1)" aria-label="Fewer guest plates">−</button>' +
               '<span class="text-gold-300 font-bold text-[17px] w-6 text-center">' + g + '</span>' +
               '<button class="stepbtn" onclick="bumpGuest(\'' + c.id + '\',\'' + iso + '\',\'' + gk + '\',1)" aria-label="More guest plates">+</button>' +
@@ -1468,22 +1842,22 @@ function renderTiffin() {
             (c.vacFrom && c.vacTo ? ' <span class="text-saffron text-[12px]">🌴 ' + esc(c.vacFrom) + ' → ' + esc(c.vacTo) + '</span>' : '') + '</p>' +
           (c.phone ? '<p class="text-creamdim text-[13px]">' + esc(c.phone) + '</p>' : '') +
         '</div>' +
-        '<button class="text-creamdim text-[13px] underline" onclick="delTClient(\'' + c.id + '\',\'' + esc(c.name).replace(/'/g,'') + '\')">Remove</button>' +
+        '<button class="text-creamdim text-[13px] underline" onclick="delTClient(\'' + c.id + '\',\'' + esc(c.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
       '</div>' +
       mealRows +
       '<div class="grid grid-cols-2 gap-2 mt-3">' +
-        '<button class="btn-line" onclick="toggleVacPanel(\'' + c.id + '\')">🌴 Vacation</button>' +
-        '<button class="btn-gold" onclick="openReceipt(\'' + c.id + '\')">🧾 Monthly bill</button>' +
+        '<button class="btn-line" onclick="toggleVacPanel(\'' + c.id + '\')">' + t('vacation_btn') + '</button>' +
+        '<button class="btn-gold" onclick="openReceipt(\'' + c.id + '\')">' + t('monthly_bill') + '</button>' +
       '</div>' +
       '<div id="vacpanel-' + c.id + '" class="hidden mt-3 bg-maroon-950/60 rounded-lg p-3">' +
-        '<p class="text-creamdim text-[13px] mb-2">Meals in this range are paused and never billed.</p>' +
+        '<p class="text-creamdim text-[13px] mb-2">' + t('vac_note') + '</p>' +
         '<div class="grid grid-cols-2 gap-2 mb-2">' +
           '<input id="vac-from-' + c.id + '" type="date" class="inp" value="' + esc(c.vacFrom) + '" />' +
           '<input id="vac-to-'   + c.id + '" type="date" class="inp" value="' + esc(c.vacTo)   + '" />' +
         '</div>' +
         '<div class="grid grid-cols-2 gap-2">' +
-          '<button class="btn-gold" onclick="saveVacation(\'' + c.id + '\')">Save</button>' +
-          '<button class="btn-line" onclick="clearVacation(\'' + c.id + '\')">Clear</button>' +
+          '<button class="btn-gold" onclick="saveVacation(\'' + c.id + '\')">' + t('save') + '</button>' +
+          '<button class="btn-line" onclick="clearVacation(\'' + c.id + '\')">' + t('clear') + '</button>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -1491,11 +1865,12 @@ function renderTiffin() {
 }
 
 /* =====================================================
-   MONTH-END AUTOMATION + WEB RECEIPT (Stage 3)
+   MONTH-END AUTOMATION + WEB RECEIPT
    ===================================================== */
 function buildBill(cid, ym) {
   const c = S.cache.tiffin[cid] || {};
-  const [y, m] = ym.split('-').map(x => int(x));
+  const parts = ym.split('-').map(x => int(x));
+  const y = parts[0], m = parts[1];
   const daysInMonth = new Date(y, m, 0).getDate();
   const counts = { b:0, l:0, d:0, gb:0, gl:0, gd:0 };
   let vacDays = 0;
@@ -1503,7 +1878,8 @@ function buildBill(cid, ym) {
     const iso = y + '-' + String(m).padStart(2,'0') + '-' + String(day).padStart(2,'0');
     if (inVacation(c, iso)) { vacDays++; continue; }
     const log = tlog(cid, iso);
-    MEALS.forEach(([k, _, __, gk]) => {
+    MEALS.forEach(mealDef => {
+      const k = mealDef[0], gk = mealDef[3];
       if (txt(log[k]) === 'given') {
         counts[k]++;
         counts[gk] += int(log[gk]);
@@ -1511,10 +1887,11 @@ function buildBill(cid, ym) {
     });
   }
   const lines = [];
-  MEALS.forEach(([k, label, rk, gk]) => {
+  MEALS.forEach(mealDef => {
+    const k = mealDef[0], labelKey = mealDef[1], rk = mealDef[2], gk = mealDef[3];
     const rate = num(c[rk]);
-    if (counts[k] > 0) lines.push({ label: label, qty: counts[k], rate, amt: counts[k] * rate });
-    if (counts[gk] > 0) lines.push({ label: label + ' — guest plates', qty: counts[gk], rate, amt: counts[gk] * rate });
+    if (counts[k] > 0) lines.push({ label: t(labelKey), qty: counts[k], rate, amt: counts[k] * rate });
+    if (counts[gk] > 0) lines.push({ label: t(labelKey) + ' — ' + t('guest_plates'), qty: counts[gk], rate, amt: counts[gk] * rate });
   });
   const total = lines.reduce((s, l) => s + l.amt, 0);
   return { c, ym, y, m, lines, total, vacDays };
@@ -1534,47 +1911,47 @@ function refreshReceipt() {
   if (!cid || !ym) return;
   const bill = buildBill(cid, ym);
   const monthName = new Date(bill.y, bill.m - 1, 1)
-    .toLocaleDateString('en-IN', { month:'long', year:'numeric' });
+    .toLocaleDateString(loc(), { month:'long', year:'numeric' });
 
   document.getElementById('rc-body').innerHTML =
     '<div class="text-center">' +
       '<p class="font-display text-[22px] tracking-wide" style="color:#7A5410">Anantha Shree</p>' +
-      '<p class="text-[12px] tracking-widest uppercase" style="color:#A07E3B">Tiffin Services · Monthly Bill</p>' +
+      '<p class="text-[12px] tracking-widest uppercase" style="color:#A07E3B">' + t('rc_sub') + '</p>' +
     '</div>' +
     '<div class="rule my-3"></div>' +
-    '<div class="flex justify-between text-[15px]"><span>Client</span><b>' + esc(bill.c.name) + '</b></div>' +
-    '<div class="flex justify-between text-[15px]"><span>Month</span><b>' + monthName + '</b></div>' +
-    (bill.vacDays ? '<div class="flex justify-between text-[14px]" style="color:#8A6420"><span>Vacation days excluded</span><span>' + bill.vacDays + '</span></div>' : '') +
+    '<div class="flex justify-between text-[15px]"><span>' + t('rc_client') + '</span><b>' + esc(bill.c.name) + '</b></div>' +
+    '<div class="flex justify-between text-[15px]"><span>' + t('rc_month') + '</span><b>' + monthName + '</b></div>' +
+    (bill.vacDays ? '<div class="flex justify-between text-[14px]" style="color:#8A6420"><span>' + t('rc_vac') + '</span><span>' + bill.vacDays + '</span></div>' : '') +
     '<div class="rule my-3"></div>' +
     (bill.lines.length ? bill.lines.map(l =>
       '<div class="flex justify-between text-[15px] mb-1">' +
         '<span>' + esc(l.label) + ' × ' + l.qty + ' @ ₹' + l.rate + '</span>' +
         '<span>₹' + l.amt.toFixed(0) + '</span>' +
       '</div>').join('')
-    : '<p class="text-center text-[14px]" style="color:#8A6420">No meals marked “Given” this month yet.</p>') +
+    : '<p class="text-center text-[14px]" style="color:#8A6420">' + t('rc_none') + '</p>') +
     '<div class="rule my-3"></div>' +
-    '<div class="flex justify-between text-[19px] font-bold"><span>Total due</span><span>₹' + bill.total.toFixed(0) + '</span></div>' +
-    '<p class="text-center text-[12px] mt-3" style="color:#A07E3B">🙏 Dhanyavaadamulu — Anantha Shree</p>';
+    '<div class="flex justify-between text-[19px] font-bold"><span>' + t('rc_total') + '</span><span>₹' + bill.total.toFixed(0) + '</span></div>' +
+    '<p class="text-center text-[12px] mt-3" style="color:#A07E3B">' + t('rc_thanks') + '</p>';
 
   const waBtn = document.getElementById('rc-wa');
   const phone = txt(bill.c.phone).replace(/\D/g, '');
   const waPhone = phone.length === 10 ? '91' + phone : phone;
-  let msg = '🪔 *Anantha Shree — Tiffin Bill*\n' + monthName + '\nClient: ' + bill.c.name + '\n\n';
+  let msg = '🪔 *Anantha Shree — ' + t('rc_sub') + '*' + '\n' + monthName + '\n' + t('rc_client') + ': ' + bill.c.name + '\n\n';
   bill.lines.forEach(l => { msg += l.label + ' × ' + l.qty + ' @ ₹' + l.rate + ' = ₹' + l.amt.toFixed(0) + '\n'; });
-  if (bill.vacDays) msg += '(Vacation days excluded: ' + bill.vacDays + ')\n';
-  msg += '\n*Total due: ₹' + bill.total.toFixed(0) + '*\n\n🙏 Dhanyavaadamulu';
+  if (bill.vacDays) msg += '(' + t('rc_vac') + ': ' + bill.vacDays + ')' + '\n';
+  msg += '\n*' + t('rc_total') + ': ₹' + bill.total.toFixed(0) + '*' + '\n\n' + t('rc_thanks');
   waBtn.onclick = () => {
-    if (!waPhone) { toast('Add a phone number to this client first.', true); return; }
+    if (!waPhone) { toast(t('err_phone'), true); return; }
     window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(msg), '_blank');
   };
 }
 
 /* =====================================================
-   SETUP — STAFF, RATES, BACKUP (Stage 3)
+   SETUP — STAFF, RATES, BACKUP
    ===================================================== */
 function addStaff() {
   const name = txt(document.getElementById('st-name').value);
-  if (!name) { toast('Enter the staff name first.', true); return; }
+  if (!name) { toast(t('err_name'), true); return; }
   const id = uid('st');
   save('staff/' + id, {
     id, name,
@@ -1584,11 +1961,11 @@ function addStaff() {
     created: Date.now()
   }).then(() => {
     ['st-name','st-wage','st-phone'].forEach(i => document.getElementById(i).value = '');
-    toast(name + ' added to the staff registry.');
+    toast(name + ' — ' + t('staff_added'));
   });
 }
 function delStaff(id, name) {
-  if (confirm('Remove ' + name + ' from the staff registry?')) removeKey('staff', id);
+  if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_staff'))) removeKey('staff', id);
 }
 function renderStaff() {
   const box = document.getElementById('staff-list');
@@ -1600,13 +1977,13 @@ function renderStaff() {
     return '<div class="card p-4 mb-2 flex items-center justify-between gap-3">' +
       '<div class="flex-1">' +
         '<p class="text-cream font-semibold">' + esc(s.name) + '</p>' +
-        '<p class="text-creamdim text-[14px]">' + esc(s.role) + ' · ₹' + num(s.wage) + '/day' + '</p>' +
+        '<p class="text-creamdim text-[14px]">' + esc(tRole(s.role)) + ' · ₹' + num(s.wage) + t('per_day') + '</p>' +
       '</div>' +
       (wa ? '<a class="btn-line text-[13px]" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
-      '<button class="text-creamdim text-[13px] underline" onclick="delStaff(\'' + s.id + '\',\'' + esc(s.name).replace(/'/g,'') + '\')">Remove</button>' +
+      '<button class="text-creamdim text-[13px] underline" onclick="delStaff(\'' + s.id + '\',\'' + esc(s.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
     '</div>';
   }).join('')
-  : '<div class="card p-4 text-center text-creamdim text-sm">No staff registered yet. Add your Purohits and Chefs above.</div>';
+  : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_staff') + '</div>';
 }
 
 const DEFAULT_RATES = [
@@ -1616,28 +1993,29 @@ const DEFAULT_RATES = [
   { id:'rate_labour',  name:'Labour wage', unit:'per day' }
 ];
 function daysAgoLabel(ts) {
-  if (!ts) return 'never updated';
+  if (!ts) return t('never_updated');
   const days = Math.floor((Date.now() - num(ts)) / 86400000);
-  return days === 0 ? 'updated today' : 'updated ' + days + ' day' + (days > 1 ? 's' : '') + ' ago';
+  if (days === 0) return t('updated_today');
+  return t('updated_pre') + ' ' + days + ' ' + (days > 1 ? t('days_ago') : t('day_ago'));
 }
 function setRate(id, name, unit, val) {
   save('rates/' + id, { id, name, unit, price: num(val), updated: Date.now() })
-    .then(() => toast(name + ': ₹' + num(val) + ' ' + unit + '.'));
+    .then(() => toast(name + ': ₹' + num(val) + ' ' + unit));
 }
 function addRate() {
   const name = txt(document.getElementById('rt-name').value);
   const unit = txt(document.getElementById('rt-unit').value) || 'per unit';
   const price = num(document.getElementById('rt-price').value);
-  if (!name) { toast('Enter the item name first.', true); return; }
+  if (!name) { toast(t('err_item'), true); return; }
   const id = uid('rate');
   save('rates/' + id, { id, name, unit, price, updated: Date.now() })
     .then(() => {
       ['rt-name','rt-unit','rt-price'].forEach(i => document.getElementById(i).value = '');
-      toast(name + ' added to the rate book.');
+      toast(name + ' — ' + t('rate_added'));
     });
 }
 function delRate(id, name) {
-  if (confirm('Remove ' + name + ' from the rate book?')) removeKey('rates', id);
+  if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_rate'))) removeKey('rates', id);
 }
 function renderRates() {
   const box = document.getElementById('rate-list');
@@ -1664,18 +2042,18 @@ function renderRates() {
 }
 
 function exportJSON() {
-  toast('Preparing backup…');
+  toast(t('backup_prep'));
   S.db.ref('/').once('value').then(snap => {
     const data = snap.val() || {};
-    const meta = { app: 'Anantha Shree Pro Enterprise', exported: new Date().toISOString(), version: 4 };
+    const meta = { app: 'Anantha Shree Pro Enterprise', exported: new Date().toISOString(), version: 5 };
     const blob = new Blob([JSON.stringify({ meta, data }, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'ananthashree_backup_' + isoOf(new Date()) + '.json';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    toast('Backup downloaded. Keep it somewhere safe.');
-  }).catch(err => { toast('Backup failed. Check your connection.', true); console.error(err); });
+    toast(t('backup_done'));
+  }).catch(err => { toast(t('backup_fail'), true); console.error(err); });
 }
 function importJSON(input) {
   const file = input.files && input.files[0];
@@ -1685,37 +2063,43 @@ function importJSON(input) {
   reader.onload = () => {
     let parsed;
     try { parsed = JSON.parse(reader.result); }
-    catch (e) { toast('That file is not valid JSON.', true); return; }
+    catch (e) { toast(t('import_bad_json'), true); return; }
     const data = parsed && parsed.data ? parsed.data : parsed;
-    if (!data || typeof data !== 'object') { toast('No usable data found in that file.', true); return; }
+    if (!data || typeof data !== 'object') { toast(t('import_no_data'), true); return; }
     const branches = Object.keys(data).join(', ');
-    if (!confirm('Import backup?\n\nBranches found: ' + branches +
-      '\n\nRecords with matching IDs will be overwritten. Nothing else is deleted.')) return;
+    if (!confirm('Import? [' + branches + ']')) return;
     S.db.ref('/').update(data)
-      .then(() => toast('Backup imported successfully.'))
-      .catch(err => { toast('Import failed. Check your connection.', true); console.error(err); });
+      .then(() => toast(t('import_ok')))
+      .catch(err => { toast(t('import_fail'), true); console.error(err); });
   };
   reader.readAsText(file);
 }
 
 /* =====================================================
-   SAHAAYA VOICE OS (Stage 2)
+   SAHAAYA VOICE OS — FULL TELUGU COMMAND SET
+   "హోమ్ కి వెళ్ళు"       → Home
+   "బుకింగ్స్ చూపించు"    → Log (show list)
+   "కొత్త బుకింగ్"         → open the booking form
+   "ఖాతా ఓపెన్ చేయి"      → Ledger
+   "టిఫిన్ హబ్"           → Tiffin
+   "కూరగాయలు ఖర్చు 500"   → silent expense to Groceries
+   "పాలు ఖర్చు 200"        → silent expense to Dairy
    ===================================================== */
 const NAV_WORDS = {
-  home:'home', 'హోమ్':'home', 'ఇల్లు':'home', 'ముఖ్య':'home',
-  log:'log', 'లాగ్':'log', ceremony:'log', ceremonies:'log', 'కార్యక్రమం':'log',
-  ledger:'ledger', 'లెడ్జర్':'ledger', 'ఖాతా':'ledger', account:'ledger', converter:'ledger', profit:'ledger',
-  tiffin:'tiffin', 'టిఫిన్':'tiffin', 'టిఫన్':'tiffin', meal:'tiffin',
-  setup:'setup', 'సెటప్':'setup', settings:'setup', staff:'setup'
+  'హోమ్':'home', 'ఇల్లు':'home', 'ముఖ్య':'home', 'home':'home',
+  'బుకింగ్స్':'log', 'లాగ్':'log', 'కార్యక్రమ':'log', 'log':'log', 'ceremonies':'log', 'ceremony':'log',
+  'ఖాతా':'ledger', 'లెడ్జర్':'ledger', 'లాభ':'ledger', 'ledger':'ledger', 'account':'ledger', 'profit':'ledger', 'converter':'ledger',
+  'టిఫిన్':'tiffin', 'టిఫన్':'tiffin', 'tiffin':'tiffin', 'meal':'tiffin', 'హబ్':'tiffin',
+  'సెటప్':'setup', 'setup':'setup', 'settings':'setup', 'సిబ్బంది':'setup', 'staff':'setup'
 };
-const EXP_WORDS = ['ఖర్చు','ఖర్చులు','kharchu','expense','spent','spend','paid'];
-const BOOK_WORDS = ['booking','book','బుకింగ్','కొత్త బుకింగ్','new event','కొత్త కార్యక్రమం'];
+const NEW_WORDS  = ['కొత్త','new','open booking','ఓపెన్ బుకింగ్','బుకింగ్ ఓపెన్'];
+const EXP_WORDS  = ['ఖర్చు','ఖర్చులు','kharchu','expense','spent','spend','paid'];
 const CAT_MAP = [
-  [['కూరగాయ','vegetable','కిరాణా','grocery','groceries','rice','బియ్యం','పప్పు','dal'], 'Groceries'],
-  [['పాలు','milk','పెరుగు','curd','ghee','నెయ్యి'], 'Dairy'],
+  [['కూరగాయ','vegetable','కిరాణా','grocery','groceries','బియ్యం','rice','పప్పు','dal'], 'Groceries'],
+  [['పాలు','milk','పెరుగు','curd','నెయ్యి','ghee'], 'Dairy'],
   [['గ్యాస్','gas','petrol','diesel','పెట్రోల్','డీజిల్','fuel'], 'Fuel'],
-  [['కూలి','labour','labor','staff','worker','పని'], 'Labour'],
-  [['పువ్వు','flower','పూలు'], 'Flowers'],
+  [['కూలి','labour','labor','worker','పని'], 'Labour'],
+  [['పువ్వు','పూలు','flower'], 'Flowers'],
   [['అద్దె','rent'], 'Rent'],
   [['transport','auto','tempo','రవాణా'], 'Transport']
 ];
@@ -1729,16 +2113,17 @@ function ribbon(msg, hold) {
 }
 
 function parseCommand(raw) {
-  const t = txt(raw).toLowerCase();
-  if (!t) return;
+  const cmd = txt(raw).toLowerCase();
+  if (!cmd) return;
 
-  const hasExp = EXP_WORDS.some(w => t.includes(w));
-  const numMatch = t.match(/(\d+(?:\.\d+)?)/);
+  /* 1 — Background expense logging: "[category] ఖర్చు [amount]" */
+  const hasExp = EXP_WORDS.some(w => cmd.includes(w));
+  const numMatch = cmd.match(/(\d+(?:\.\d+)?)/);
   if (hasExp && numMatch) {
     const amount = num(numMatch[1]);
     let cat = 'General';
-    for (const [keys, name] of CAT_MAP) {
-      if (keys.some(k => t.includes(k))) { cat = name; break; }
+    for (const pair of CAT_MAP) {
+      if (pair[0].some(k => cmd.includes(k))) { cat = pair[1]; break; }
     }
     const id = uid('ex');
     save('expenses/' + id, {
@@ -1746,20 +2131,32 @@ function parseCommand(raw) {
       date: isoOf(new Date()),
       ts: Date.now(), src: 'voice', note: txt(raw)
     });
-    toast('₹' + amount + ' logged to ' + cat + '.');
+    toast('₹' + amount + ' ' + t('logged_to') + ' ' + tCat(cat));
     return;
   }
 
-  if (BOOK_WORDS.some(w => t.includes(w))) {
-    nav('log'); openBooking(); toast('Booking form opened.');
+  /* 2 — Booking intent: "కొత్త బుకింగ్" opens the form,
+         "బుకింగ్స్ చూపించు" (or plain "బుకింగ్స్") shows the Log list */
+  if (cmd.includes('బుకింగ్') || cmd.includes('booking')) {
+    if (NEW_WORDS.some(w => cmd.includes(w))) {
+      nav('home'); openBooking(); toast(t('booking_form_opened'));
+    } else {
+      nav('log'); toast(t('opened') + ' ' + t('nav_log'));
+    }
     return;
   }
 
+  /* 3 — Tab navigation: "హోమ్ కి వెళ్ళు", "ఖాతా ఓపెన్ చేయి", "టిఫిన్ హబ్" */
   for (const w in NAV_WORDS) {
-    if (t.includes(w)) { nav(NAV_WORDS[w]); toast('Opened ' + NAV_WORDS[w] + '.'); return; }
+    if (cmd.includes(w)) {
+      const view = NAV_WORDS[w];
+      nav(view);
+      toast(t('opened') + ' ' + t('nav_' + view));
+      return;
+    }
   }
 
-  toast('Sahaaya heard you, but found no command in that.', true);
+  toast(t('no_command'), true);
 }
 
 function initVoice() {
@@ -1770,12 +2167,11 @@ function initVoice() {
   chip.addEventListener('click', () => {
     S.voiceLang = S.voiceLang === 'te-IN' ? 'en-IN' : 'te-IN';
     chip.textContent = S.voiceLang === 'te-IN' ? 'తెలుగు' : 'English';
-    toast('Sahaaya listens in ' + (S.voiceLang === 'te-IN' ? 'Telugu' : 'English') + ' now.');
+    toast(t('voice_lang_set') + ' ' + (S.voiceLang === 'te-IN' ? t('in_telugu') : t('in_english')));
   });
 
   if (!SR) {
-    mic.addEventListener('click', () =>
-      toast('Voice needs Chrome or Samsung Internet on this phone.', true));
+    mic.addEventListener('click', () => toast(t('voice_unsupported'), true));
     return;
   }
 
@@ -1790,16 +2186,16 @@ function initVoice() {
     rec.onstart = () => {
       S.listening = true;
       mic.classList.add('listening');
-      ribbon('🎙️ Listening (' + (S.voiceLang === 'te-IN' ? 'తెలుగు' : 'English') + ')…', true);
+      ribbon(t('listening') + ' (' + (S.voiceLang === 'te-IN' ? 'తెలుగు' : 'English') + ')…', true);
     };
     rec.onresult = ev => {
       const words = txt(ev.results[0][0].transcript);
-      ribbon('🗣️ Heard: ' + words);
+      ribbon(t('heard') + ' ' + words);
       parseCommand(words);
     };
     rec.onerror = ev => {
-      if (ev.error === 'not-allowed') ribbon('Microphone permission is blocked. Allow it in browser settings.');
-      else ribbon('Sahaaya could not hear that. Tap the mic and try again.');
+      if (ev.error === 'not-allowed') ribbon(t('mic_blocked'));
+      else ribbon(t('mic_retry'));
     };
     rec.onend = () => {
       S.listening = false;
@@ -1807,7 +2203,7 @@ function initVoice() {
       const r = document.getElementById('ribbon');
       setTimeout(() => { if (!S.listening) r.classList.remove('show'); }, 4500);
     };
-    try { rec.start(); } catch (e) { toast('Could not start the microphone.', true); }
+    try { rec.start(); } catch (e) { toast(t('mic_retry'), true); }
   });
 }
 
@@ -1825,7 +2221,7 @@ function attachListeners() {
   };
   bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); });
   bind('expenses',  'expenses',  () => { renderExpRecent(); renderPnl(); });
-  bind('pitru',     'pitru',     () => { renderHome(); renderPitruList(); });
+  bind('pitru',     'pitru',     () => { renderPitruList(); });
   bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); });
   bind('tiffinlog', 'tiffinlog', () => {
     renderTiffin(); renderPnl();
@@ -1837,12 +2233,12 @@ function attachListeners() {
   bind('settings',  'settings',  () => { renderRadar(); });
 }
 
-/* ---------- Header date line ---------- */
-(function headerDate() {
+/* ---------- Header date line (locale follows app language) ---------- */
+function headerDateLine() {
   const d = new Date();
   document.getElementById('hdr-sub').textContent =
-    d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-})();
+    d.toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
 
 /* ---------- Boot ---------- */
 buildPn30();
@@ -1854,14 +2250,7 @@ fillSelectors();
   document.getElementById('cr-date').value = isoOf(now);
   document.getElementById('gc-date').value = isoOf(now);
 })();
-renderHome();
-renderPitruList();
-renderExpRecent();
-renderTiffin();
-renderStaff();
-renderRates();
-renderPnl();
-renderRadar();
+applyLang();     /* paints every static + dynamic string in the saved language */
 attachListeners();
 initVoice();
 nav('home');
