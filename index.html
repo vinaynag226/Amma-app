@@ -630,12 +630,21 @@
 </div>
 
 <!-- ==================================================== -->
+<!-- BOOKING EDIT — DOUBLE-CONFIRMATION MODAL             -->
+<!-- ==================================================== -->
+<div id="modal-bookingeditconfirm" class="hidden fixed inset-0 z-[81] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="bookingeditconfirm-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
 <!-- BOOKING MODAL                                        -->
 <!-- ==================================================== -->
 <div id="modal-booking" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card w-full max-w-md m-3 p-5">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="font-display text-gold-400 text-lg" data-i18n="bm_title">New Booking</h3>
+      <h3 id="bm-title-el" class="font-display text-gold-400 text-lg" data-i18n="bm_title">New Booking</h3>
       <button class="text-creamdim text-2xl leading-none px-2" onclick="closeBooking()" aria-label="Close">×</button>
     </div>
 
@@ -731,7 +740,7 @@
       <p id="bk-balance-line" class="text-creamdim text-[13px]"></p>
     </div>
 
-    <button class="btn-gold w-full" onclick="saveBooking()" data-i18n="save_booking">Save booking</button>
+    <button id="bk-save-btn" class="btn-gold w-full" onclick="saveBooking()" data-i18n="save_booking">Save booking</button>
   </div>
 </div>
 
@@ -1078,7 +1087,8 @@ const I18N = {
     import_restore_title:'Import Restore File',
     import_restore_note:'Restores from a file exported above, or a Cloud-JSON text block pasted into a .json file. Uses update() — matching IDs are overwritten, nothing else is wiped.',
     /* booking modal */
-    bm_title:'New Booking', client_name_ph:'Client name',
+    bm_title:'New Booking', edit_booking_title:'Edit Booking', edit_booking_btn:'Edit Details',
+    client_name_ph:'Client name',
     ty_upanayana:'Upanayana', ty_wedding:'Wedding', ty_gruha:'Gruhapravesham',
     ty_vratam:'Satyanarayana Vratam', ty_shraddha:'Shraddha / Pitru Karya',
     ty_birthday:'Birthday', ty_corporate:'Corporate', ty_other:'Other',
@@ -1093,6 +1103,9 @@ const I18N = {
     sched_preview_yearly_hdr:'Next Varshika booking:',
     sched_preview_yearly_note:'Future years will keep showing automatically on this relative in the Ledger — create that booking when it gets closer.',
     bookings_created_note:'bookings created for',
+    bked_title1:'Save these changes?', bked_body1:'This will update the saved booking for',
+    bked_body2:'Please confirm the details are correct before saving. Checklist, staff assignment, and lock status are not affected.',
+    bked_confirm_final:'Yes, save changes', booking_updated:'Booking updated.',
     pkg_regular:'Regular — ₹9,000', pkg_muthidya:'Muthidya — ₹9,500',
     extra_plates:'Extra plates', each_note:'(+₹250 each)',
     advance_ph:'Advance received (₹)',
@@ -1341,7 +1354,8 @@ const I18N = {
     import_restore_title:'రీస్టోర్ ఫైల్ ఇంపోర్ట్',
     import_restore_note:'పైన ఎక్స్‌పోర్ట్ చేసిన ఫైల్ నుండి, లేదా క్లౌడ్-JSON టెక్స్ట్‌ను .json ఫైల్‌లో అతికించి రీస్టోర్ చేయవచ్చు. update() వాడుతుంది — ఒకే ID ఉన్నవి మారతాయి, మిగతావి చెరిగిపోవు.',
     /* booking modal */
-    bm_title:'కొత్త బుకింగ్', client_name_ph:'క్లయింట్ పేరు',
+    bm_title:'కొత్త బుకింగ్', edit_booking_title:'బుకింగ్ మార్చండి', edit_booking_btn:'వివరాలు మార్చండి',
+    client_name_ph:'క్లయింట్ పేరు',
     ty_upanayana:'ఉపనయనం', ty_wedding:'పెళ్లి', ty_gruha:'గృహప్రవేశం',
     ty_vratam:'సత్యనారాయణ వ్రతం', ty_shraddha:'శ్రాద్ధం / పితృ కార్యం',
     ty_birthday:'పుట్టినరోజు', ty_corporate:'కార్పొరేట్', ty_other:'ఇతరం',
@@ -1356,6 +1370,9 @@ const I18N = {
     sched_preview_yearly_hdr:'తదుపరి వార్షిక బుకింగ్:',
     sched_preview_yearly_note:'రాబోయే సంవత్సరాలు ఈ బంధువు కార్డులో లెడ్జర్‌లో స్వయంచాలకంగా చూపిస్తూనే ఉంటాయి — దగ్గరవుతున్నప్పుడు ఆ బుకింగ్ చేయండి.',
     bookings_created_note:'బుకింగ్‌లు చేర్చబడ్డాయి —',
+    bked_title1:'ఈ మార్పులను సేవ్ చేయాలా?', bked_body1:'ఇది సేవ్ అయిన బుకింగ్‌ని నవీకరిస్తుంది —',
+    bked_body2:'సేవ్ చేసే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి. చెక్‌లిస్ట్, సిబ్బంది కేటాయింపు, లాక్ స్థితి మారవు.',
+    bked_confirm_final:'అవును, మార్పులు సేవ్ చేయండి', booking_updated:'బుకింగ్ నవీకరించబడింది.',
     pkg_regular:'రెగ్యులర్ — ₹9,000', pkg_muthidya:'ముత్తైదువ — ₹9,500',
     extra_plates:'అదనపు ప్లేట్లు', each_note:'(ఒక్కొక్కటి +₹250)',
     advance_ph:'తీసుకున్న అడ్వాన్స్ (₹)',
@@ -1474,6 +1491,8 @@ const S = {
   editingRelativeId: null,
   relativeConfirmTarget: null,
   bkSelectedRelative: null,
+  editingEventId: null,
+  bookingEditConfirmTarget: null,
   cache: {
     events:    {},
     expenses:  {},
@@ -1781,6 +1800,9 @@ function pickStaffContact() { return pickContactInto('st-name', 'st-phone'); }
 function pickCustomerContact() { return pickContactInto('cu-name', 'cu-phone'); }
 function openBooking() {
   document.getElementById('modal-booking').classList.remove('hidden');
+  S.editingEventId = null;
+  document.getElementById('bm-title-el').textContent = t('bm_title');
+  document.getElementById('bk-save-btn').textContent = t('save_booking');
   if (!document.getElementById('bk-service-ceremony').checked && !document.getElementById('bk-service-catering').checked) {
     document.getElementById('bk-service-ceremony').checked = true;
   }
@@ -1900,8 +1922,57 @@ function renderSchedulePreview(freq) {
   box.classList.remove('hidden');
 }
 
-function closeBooking() { document.getElementById('modal-booking').classList.add('hidden'); }
+function closeBooking() {
+  document.getElementById('modal-booking').classList.add('hidden');
+  S.editingEventId = null;
+}
+/* ---------- Editing an already-saved booking (must be unlocked first; double-confirmed) ---------- */
+function editBookingEvent(id) {
+  const e = S.cache.events[id];
+  if (!e) return;
+  if (e.locked !== false) { toast(t('err_locked'), true); return; }
+  S.editingEventId = id;
+  document.getElementById('modal-booking').classList.remove('hidden');
+  document.getElementById('bm-title-el').textContent = t('edit_booking_title');
+  document.getElementById('bk-save-btn').textContent = t('save_changes');
+
+  document.getElementById('bk-client').value = e.client || '';
+  document.getElementById('bk-phone').value  = e.phone || '';
+  document.getElementById('bk-date').value   = e.date || '';
+  document.getElementById('bk-guests').value = e.guests || '';
+  document.getElementById('bk-type').value   = e.type || 'Shraddha / Pitru Karya';
+  document.getElementById('bk-service-ceremony').checked = e.service !== 'catering';
+  document.getElementById('bk-service-catering').checked = e.service === 'catering';
+  onServiceToggle();
+  document.getElementById('bk-package').value = PKG[e.package] ? e.package : 'regular';
+  document.getElementById('bk-floor').value    = e.floor === 'ground' ? 'ground' : 'first';
+  document.getElementById('bk-extra').value    = int(e.extraPlates) || 0;
+  document.getElementById('bk-advance').value  = e.advance || '';
+  document.getElementById('bk-prasadam').value = e.prasadamCharge || '';
+  document.getElementById('bk-surcharge').value = e.surcharge || '';
+  document.getElementById('bk-surcharge-note').value = e.surchargeNote || '';
+
+  populateCustomerSelect();
+  onBkTypeChange(); /* shows/hides the ritual block based on type */
+  /* Editing a single already-created booking never regenerates a schedule —
+     the frequency chooser and preview only apply when first creating a booking. */
+  document.getElementById('bk-freq-block').classList.add('hidden');
+  document.getElementById('bk-schedule-preview').classList.add('hidden');
+  if (e.customerId) {
+    document.getElementById('bk-customer').value = e.customerId;
+    onBkCustomerChange();
+    if (e.relativeId && S.cache.relatives[e.relativeId]) {
+      document.getElementById('bk-relative').value = e.relativeId;
+      S.bkSelectedRelative = S.cache.relatives[e.relativeId];
+      const veda = document.getElementById('bk-veda-display');
+      veda.textContent = t('veda_lbl') + ': ' + tVeda(e.vedaShakha || S.bkSelectedRelative.vedaShakha);
+      veda.classList.remove('hidden');
+    }
+  }
+  updateBkTotal();
+}
 function saveBooking() {
+  if (S.editingEventId) { saveBookingEdit(); return; }
   const client = txt(document.getElementById('bk-client').value);
   if (!client) { toast(t('err_client'), true); return; }
   const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
@@ -1977,7 +2048,89 @@ function saveBooking() {
     resetBookingForm();
   }).catch(err => { toast(t('err_save'), true); console.error(err); });
 }
+/* Editing an existing booking always requires double-confirmation, matching every other
+   edit flow in this app (staff, Pitru, customer, relative). update() merges fields, so
+   checklist/staff/locked/created/id on the record are left untouched. */
+function saveBookingEdit() {
+  const client = txt(document.getElementById('bk-client').value);
+  if (!client) { toast(t('err_client'), true); return; }
+  const dateVal = txt(document.getElementById('bk-date').value);
+  if (!dateVal) { toast(t('err_date'), true); return; }
+  const pkgKey = txt(document.getElementById('bk-package').value) || 'regular';
+  const pkg = PKG[pkgKey] || PKG.regular;
+  const extra = int(document.getElementById('bk-extra').value);
+  const prasadam = num(document.getElementById('bk-prasadam').value);
+  const surcharge = num(document.getElementById('bk-surcharge').value);
+  const rel = S.bkSelectedRelative;
+  const ritualMeta = (rel && !document.getElementById('bk-relative').classList.contains('hidden') && txt(document.getElementById('bk-relative').value)) ? {
+    customerId: rel.customerId, relativeId: rel.id, vedaShakha: rel.vedaShakha, relation: rel.relation
+  } : {};
+  const data = Object.assign({
+    client,
+    phone:          txt(document.getElementById('bk-phone').value),
+    date:           dateVal,
+    guests:         int(document.getElementById('bk-guests').value),
+    type:           txt(document.getElementById('bk-type').value),
+    service:        document.getElementById('bk-service-catering').checked ? 'catering' : 'ceremony',
+    floor:          txt(document.getElementById('bk-floor').value) || 'first',
+    package:        pkgKey,
+    basePrice:      pkg.price,
+    extraPlates:    extra,
+    extraAmount:    extra * EXTRA_PLATE,
+    prasadamCharge: prasadam,
+    surcharge:      surcharge,
+    surchargeNote:  txt(document.getElementById('bk-surcharge-note').value),
+    total:          pkg.price + extra * EXTRA_PLATE + prasadam + surcharge,
+    advance:        num(document.getElementById('bk-advance').value)
+  }, ritualMeta);
+  openBookingEditConfirm(S.editingEventId, client, data);
+}
+function openBookingEditConfirm(id, name, data) {
+  S.bookingEditConfirmTarget = { id, name, data };
+  renderBookingEditConfirmStep(1);
+  document.getElementById('modal-bookingeditconfirm').classList.remove('hidden');
+}
+function renderBookingEditConfirmStep(step) {
+  const body = document.getElementById('bookingeditconfirm-body');
+  const tgt = S.bookingEditConfirmTarget;
+  if (!tgt) return;
+  const name = esc(tgt.name);
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + t('bked_title1') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('bked_body1') + ' <b>' + name + '</b>?</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelBookingEditConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderBookingEditConfirmStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + t('rmv_title2') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('bked_body2') + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelBookingEditConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmBookingEdit()">' + t('bked_confirm_final') + '</button>' +
+      '</div>';
+  }
+}
+function cancelBookingEditConfirm() {
+  document.getElementById('modal-bookingeditconfirm').classList.add('hidden');
+  S.bookingEditConfirmTarget = null;
+}
+function confirmBookingEdit() {
+  const tgt = S.bookingEditConfirmTarget;
+  if (!tgt) return;
+  save('events/' + tgt.id, tgt.data).then(() => {
+    toast(t('booking_updated'));
+    closeBooking();
+    resetBookingForm();
+  }).catch(err => { toast(t('err_save'), true); console.error(err); });
+  cancelBookingEditConfirm();
+}
 function resetBookingForm() {
+  S.editingEventId = null;
+  document.getElementById('bm-title-el').textContent = t('bm_title');
+  document.getElementById('bk-save-btn').textContent = t('save_booking');
   ['bk-client','bk-phone','bk-date','bk-guests','bk-advance','bk-prasadam','bk-surcharge','bk-surcharge-note'].forEach(i => document.getElementById(i).value = '');
   document.getElementById('bk-extra').value = 0;
   document.getElementById('bk-floor').value = 'first';
@@ -2260,7 +2413,8 @@ function renderLog() {
       '<div id="evck-' + e.id + '" class="hidden mt-3">' + checkChips + '</div>' +
       '<div id="evst-' + e.id + '" class="hidden mt-3">' + staffChips + '</div>' +
 
-      '<button class="btn-line w-full mt-3 !text-[13px]" style="border-color:rgba(194,84,80,.5);color:#E8A9A6" ' +
+      '<button class="btn-line w-full mt-3 !text-[13px]" onclick="editBookingEvent(\'' + e.id + '\')">✏️ ' + t('edit_booking_btn') + '</button>' +
+      '<button class="btn-line w-full mt-2 !text-[13px]" style="border-color:rgba(194,84,80,.5);color:#E8A9A6" ' +
         'onclick="openRemoveConfirm(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove_record') + '</button>' +
     '</div>';
   }).join('');
