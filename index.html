@@ -405,15 +405,11 @@
       <div id="ledger-body-pitru" class="acc-body px-4 pb-4">
         <div class="card p-4 mb-4 bg-maroon-950/40">
           <input id="pt-name" class="inp mb-2" data-ph="pt_name_ph" placeholder="Name" />
-          <div class="grid grid-cols-3 gap-2">
-            <select id="pt-masa" class="inp"></select>
-            <select id="pt-paksha" class="inp">
-              <option value="0">Shukla</option>
-              <option value="1">Krishna</option>
-            </select>
-            <select id="pt-tithi" class="inp"></select>
-          </div>
-          <button class="btn-gold w-full mt-2" onclick="addPitru()" data-i18n="add_register">Add to register</button>
+          <p class="text-creamdim text-[13px] mb-1" data-i18n="pt_death_date_lbl">Death date (Gregorian calendar)</p>
+          <input id="pt-death-date" class="inp mb-2" type="date" />
+          <p class="text-creamdim text-[11px] mb-2 leading-snug" data-i18n="pt_death_date_note">The Tithi is calculated automatically from this date, and next year's observance date is worked out for you every year.</p>
+          <button id="pt-save-btn" class="btn-gold w-full" onclick="savePitruForm()" data-i18n="add_register">Add to register</button>
+          <button id="pt-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetPitruForm()" data-i18n="cancel_edit">Cancel edit</button>
         </div>
         <div id="pitru-list"></div>
       </div>
@@ -531,6 +527,24 @@
 <div id="modal-staffconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="staffconfirm-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- CEREMONY STAFF UNASSIGN — DOUBLE-CONFIRMATION MODAL  -->
+<!-- ==================================================== -->
+<div id="modal-unassignconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="unassign-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
+<!-- PITRU EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL        -->
+<!-- ==================================================== -->
+<div id="modal-pitruconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="pitruconfirm-body"></div>
   </div>
 </div>
 
@@ -821,7 +835,11 @@ const I18N = {
     pkg_name_regular:'Regular', pkg_name_muthidya:'Muthidya',
     package_word:'package', extra_plates_x:'Extra plates ×',
     total:'Total', advance_word:'Advance', balance_word:'Balance',
-    check_btn:'Checklist', staff_chip:'👥 Staff', grocery_chip:'🧺 Grocery',
+    check_btn:'Checklist', staff_chip:'👥 Manage Staff', grocery_chip:'🧺 Grocery',
+    assigned_staff_hdr:'Assigned Staff', no_staff_assigned:'No staff assigned yet.',
+    unassign_title1:'Remove this person from the ceremony?', unassign_body1:'This will unassign',
+    unassign_body2:'This action cannot be undone from here — you can re-assign them again afterwards if needed.',
+    unassign_confirm_final:'Yes, unassign', unassign_done:'Staff member unassigned.',
     wa_confirm:'💬 WhatsApp confirmation',
     add_staff_first:'Add staff in the Setup tab first.',
     check_0:'Advance received', check_1:'Menu finalized', check_2:'Groceries purchased',
@@ -863,6 +881,11 @@ const I18N = {
     v2g_none:'That tithi does not fall at sunrise in this year (it may be a skipped tithi, or in an adhika masa). Try the adjacent tithi or year.',
     pitru_register:'Pitru Tithi Register',
     pt_name_ph:'Name (e.g. Father — Ramaiah garu)',
+    pt_death_date_lbl:'Death date (Gregorian calendar)',
+    pt_death_date_note:"The Tithi is calculated automatically from this date, and next year's observance date is worked out for you every year.",
+    err_death_date:'Pick the death date first.',
+    pt_death_date_word:'Death date:', pt_next_occurrence:'Next observance',
+    pt_next_unknown:'Could not compute — please check the date.',
     add_register:'Add to register',
     no_pitru:'No Tithis registered yet.',
     anniv_note:'Scans every past ceremony and surfaces anyone whose next annual anniversary falls within 30 days — tap to send a ready-made WhatsApp or SMS greeting.',
@@ -986,6 +1009,12 @@ const I18N = {
     staff_updated:'Staff details updated.', staff_removed:'Staff removed from the registry.',
     rate_added:'added to the rate book.',
     pitru_added:'added to the Pitru register.',
+    pitru_updated:'Pitru register entry updated.', pitru_removed:'Removed from the Pitru register.',
+    pt_edit_title1:'Save these changes?', pt_edit_body1:'This will update the Pitru register entry for',
+    pt_edit_title2:'Confirm update', pt_edit_body2:'Please confirm the death date is correct before saving — this recalculates the annual Tithi.',
+    pt_save_confirm_final:'Yes, save changes',
+    pt_rmv_title1:'Remove this Pitru entry?', pt_rmv_body1:'This will permanently remove the register entry for',
+    pt_rmv_body2:'This action cannot be undone.',
     vac_saved:'Vacation saved. Those days are excluded from billing.',
     vac_cleared:'Vacation cleared.',
     contact_filled:'Contact filled in.',
@@ -1030,7 +1059,11 @@ const I18N = {
     pkg_name_regular:'రెగ్యులర్', pkg_name_muthidya:'ముత్తైదువ',
     package_word:'ప్యాకేజీ', extra_plates_x:'అదనపు ప్లేట్లు ×',
     total:'మొత్తం', advance_word:'అడ్వాన్స్', balance_word:'బాకీ',
-    check_btn:'చెక్‌లిస్ట్', staff_chip:'👥 సిబ్బంది', grocery_chip:'🧺 సరుకులు',
+    check_btn:'చెక్‌లిస్ట్', staff_chip:'👥 సిబ్బంది నిర్వహణ', grocery_chip:'🧺 సరుకులు',
+    assigned_staff_hdr:'కేటాయించిన సిబ్బంది', no_staff_assigned:'ఇంకా సిబ్బందిని కేటాయించలేదు.',
+    unassign_title1:'ఈ వ్యక్తిని కార్యక్రమం నుండి తీసివేయాలా?', unassign_body1:'ఇది కేటాయింపు తీసివేస్తుంది —',
+    unassign_body2:'ఈ చర్యను ఇక్కడి నుండి వెనక్కి తీసుకోలేము — అవసరమైతే తర్వాత మళ్ళీ కేటాయించవచ్చు.',
+    unassign_confirm_final:'అవును, తీసివేయండి', unassign_done:'సిబ్బంది కేటాయింపు తీసివేయబడింది.',
     wa_confirm:'💬 వాట్సాప్ కన్ఫర్మేషన్',
     add_staff_first:'ముందుగా సెటప్ ట్యాబ్‌లో సిబ్బందిని చేర్చండి.',
     check_0:'అడ్వాన్స్ వచ్చింది', check_1:'మెనూ ఖరారు', check_2:'సరుకులు కొన్నాం',
@@ -1072,6 +1105,11 @@ const I18N = {
     v2g_none:'ఈ సంవత్సరంలో ఆ తిథి సూర్యోదయానికి రాలేదు (తిథి క్షయం లేదా అధిక మాసం కావచ్చు). పక్క తిథి లేదా సంవత్సరం చూడండి.',
     pitru_register:'పితృ తిథి పట్టిక',
     pt_name_ph:'పేరు (ఉదా: నాన్న — రామయ్య గారు)',
+    pt_death_date_lbl:'మరణించిన తేదీ (ఆంగ్ల క్యాలెండర్)',
+    pt_death_date_note:'ఈ తేదీ నుండి తిథి స్వయంచాలకంగా లెక్కించబడుతుంది, ప్రతి సంవత్సరం రాబోయే తిథి తేదీ కూడా మీ కోసం లెక్కించబడుతుంది.',
+    err_death_date:'ముందుగా మరణించిన తేదీ ఎంచుకోండి.',
+    pt_death_date_word:'మరణించిన తేదీ:', pt_next_occurrence:'రాబోయే వార్షిక తిథి',
+    pt_next_unknown:'లెక్కించలేకపోయాం — తేదీ సరిచూడండి.',
     add_register:'పట్టికలో చేర్చండి',
     no_pitru:'ఇంకా తిథులు నమోదు కాలేదు.',
     anniv_note:'ప్రతి పాత కార్యక్రమాన్ని పరిశీలించి, 30 రోజుల్లో వార్షికోత్సవం ఉన్నవారిని చూపిస్తుంది — వాట్సాప్ లేదా SMS గ్రీటింగ్ పంపడానికి నొక్కండి.',
@@ -1196,6 +1234,12 @@ const I18N = {
     staff_updated:'సిబ్బంది వివరాలు నవీకరించబడ్డాయి.', staff_removed:'సిబ్బంది పట్టిక నుండి తొలగించారు.',
     rate_added:'ధరల పుస్తకంలో చేరింది.',
     pitru_added:'పితృ పట్టికలో చేరారు.',
+    pitru_updated:'పితృ పట్టిక ఎంట్రీ నవీకరించబడింది.', pitru_removed:'పితృ పట్టిక నుండి తొలగించారు.',
+    pt_edit_title1:'ఈ మార్పులను సేవ్ చేయాలా?', pt_edit_body1:'ఇది పితృ పట్టికలో ఎంట్రీని నవీకరిస్తుంది —',
+    pt_edit_title2:'నవీకరణను నిర్ధారించండి', pt_edit_body2:'సేవ్ చేసే ముందు మరణించిన తేదీ సరిగ్గా ఉందో నిర్ధారించండి — ఇది వార్షిక తిథిని మళ్ళీ లెక్కిస్తుంది.',
+    pt_save_confirm_final:'అవును, మార్పులు సేవ్ చేయండి',
+    pt_rmv_title1:'ఈ పితృ ఎంట్రీని తొలగించాలా?', pt_rmv_body1:'ఇది పితృ పట్టిక ఎంట్రీని శాశ్వతంగా తొలగిస్తుంది —',
+    pt_rmv_body2:'ఈ చర్యను వెనక్కి తీసుకోలేము.',
     vac_saved:'సెలవులు సేవ్ అయ్యాయి. ఆ రోజులు బిల్లులో రావు.',
     vac_cleared:'సెలవులు తీసేశాం.',
     contact_filled:'కాంటాక్ట్ నింపాం.',
@@ -1237,6 +1281,9 @@ const S = {
   rateCatOpen: {},
   editingStaffId: null,
   staffConfirmTarget: null,
+  unassignTarget: null,
+  editingPitruId: null,
+  pitruConfirmTarget: null,
   cache: {
     events:    {},
     expenses:  {},
@@ -1631,8 +1678,55 @@ function toggleAssign(eid, sid) {
   const e = S.cache.events[eid] || {};
   if (e.locked !== false) { toast(t('err_locked'), true); return; }
   const cur = !!(e.staff && e.staff[sid]);
-  S.db.ref('events/' + eid + '/staff').update({ [sid]: cur ? null : true })
+  if (!cur) {
+    /* Assigning a staff member to the ceremony — single tap, no confirmation. */
+    S.db.ref('events/' + eid + '/staff').update({ [sid]: true })
+      .catch(err => { toast(t('err_save'), true); console.error(err); });
+  } else {
+    /* Removing an already-assigned staff member — requires double-confirmation. */
+    const s = S.cache.staff[sid];
+    openUnassignConfirm(eid, sid, s ? s.name : '');
+  }
+}
+function openUnassignConfirm(eid, sid, name) {
+  S.unassignTarget = { eid, sid, name };
+  renderUnassignStep(1);
+  document.getElementById('modal-unassignconfirm').classList.remove('hidden');
+}
+function renderUnassignStep(step) {
+  const body = document.getElementById('unassign-body');
+  const tgt = S.unassignTarget;
+  if (!tgt) return;
+  const name = esc(tgt.name);
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + t('unassign_title1') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('unassign_body1') + ' <b>' + name + '</b>?</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelUnassign()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderUnassignStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + t('rmv_title2') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + t('unassign_body2') + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelUnassign()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmUnassign()">' + t('unassign_confirm_final') + '</button>' +
+      '</div>';
+  }
+}
+function cancelUnassign() {
+  document.getElementById('modal-unassignconfirm').classList.add('hidden');
+  S.unassignTarget = null;
+}
+function confirmUnassign() {
+  const tgt = S.unassignTarget;
+  if (!tgt) return;
+  S.db.ref('events/' + tgt.eid + '/staff').update({ [tgt.sid]: null })
+    .then(() => toast(t('unassign_done')))
     .catch(err => { toast(t('err_save'), true); console.error(err); });
+  cancelUnassign();
 }
 function togglePanel(id) { document.getElementById(id).classList.toggle('hidden'); }
 /* ---------- Generic smooth-slide accordion (Ledger panels + sub-panels) ---------- */
@@ -1692,6 +1786,46 @@ function planGrocery(eid) {
   runGrocery();
   window.scrollTo({ top: 0 });
 }
+/* ---------- Role-grouped staff display: canonical order, "Other" catch-all for legacy roles ---------- */
+const STAFF_ROLE_ORDER = ['Purohit', 'Chef', 'Helper', 'Brahmin'];
+function orderRoleKeys(keys) {
+  return keys.sort((a, b) => {
+    const ia = STAFF_ROLE_ORDER.indexOf(a), ib = STAFF_ROLE_ORDER.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+}
+/* Only ever shows staff actually assigned to this ceremony — grouped and counted by role. */
+function assignedStaffSummary(e, staffArr) {
+  const assignedIds = Object.keys(e.staff || {}).filter(sid => e.staff[sid]);
+  if (!assignedIds.length) return '<p class="text-creamdim text-[13px]">' + t('no_staff_assigned') + '</p>';
+  const groups = {};
+  assignedIds.forEach(sid => {
+    const s = staffArr.find(x => x.id === sid);
+    if (!s) return; /* staff record since deleted from registry — silently omit */
+    const roleKey = s.role || 'Other';
+    (groups[roleKey] = groups[roleKey] || []).push(s.name);
+  });
+  return orderRoleKeys(Object.keys(groups)).map(roleKey =>
+    '<div class="flex justify-between items-start text-[14px] mb-1 gap-2">' +
+      '<span class="text-creamdim shrink-0">' + esc(tRole(roleKey)) + ' (' + groups[roleKey].length + ')</span>' +
+      '<span class="text-cream text-right">' + esc(groups[roleKey].join(', ')) + '</span>' +
+    '</div>'
+  ).join('');
+}
+/* The "manage" picker — every registered staff member, grouped by role, tap to assign/unassign. */
+function staffManagePanel(e, staffArr, dim) {
+  if (!staffArr.length) return '<p class="text-creamdim text-[13px]">' + t('add_staff_first') + '</p>';
+  const byRole = {};
+  staffArr.forEach(s => { (byRole[s.role] = byRole[s.role] || []).push(s); });
+  return orderRoleKeys(Object.keys(byRole)).map(roleKey =>
+    '<p class="text-creamdim text-[12px] font-semibold mt-2 mb-1">' + esc(tRole(roleKey)) + '</p>' +
+    byRole[roleKey].map(s =>
+      '<button class="chip ' + (e.staff && e.staff[s.id] ? 'on' : '') + dim + '" ' +
+      'onclick="toggleAssign(\'' + e.id + '\',\'' + s.id + '\')">' +
+      (e.staff && e.staff[s.id] ? '✓ ' : '') + esc(s.name) + '</button>'
+    ).join('')
+  ).join('');
+}
 function renderLog() {
   const box = document.getElementById('log-list');
   const todayISO = isoOf(new Date());
@@ -1719,11 +1853,7 @@ function renderLog() {
       'onclick="toggleCheck(\'' + e.id + '\',' + i + ')">' +
       (e.check && e.check[i] ? '✓ ' : '') + t('check_' + i) + '</button>').join('');
 
-    const staffChips = staffArr.length ? staffArr.map(s =>
-      '<button class="chip ' + (e.staff && e.staff[s.id] ? 'on' : '') + dim + '" ' +
-      'onclick="toggleAssign(\'' + e.id + '\',\'' + s.id + '\')">' +
-      (e.staff && e.staff[s.id] ? '✓ ' : '') + esc(s.name) + ' <span class="opacity-70">(' + esc(tRole(s.role)) + ')</span></button>').join('')
-    : '<p class="text-creamdim text-[13px]">' + t('add_staff_first') + '</p>';
+    const staffChips = staffManagePanel(e, staffArr, dim);
 
     return '<div class="card p-4 mb-4' + (isLocked ? ' card-alert' : '') + '">' +
       '<div class="flex justify-between items-start">' +
@@ -1736,6 +1866,11 @@ function renderLog() {
         '<button class="text-[12px] ' + (isLocked ? 'text-creamdim' : 'text-gold-300') + ' underline shrink-0 ml-2 whitespace-nowrap" onclick="toggleLock(\'' + e.id + '\')">' +
           (isLocked ? t('lock_locked') : t('lock_unlocked')) +
         '</button>' +
+      '</div>' +
+
+      '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
+        '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('assigned_staff_hdr') + '</p>' +
+        assignedStaffSummary(e, staffArr) +
       '</div>' +
 
       '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
@@ -2040,9 +2175,7 @@ function fillSelectors() {
     return '<option value="' + n + '">' + label + '</option>';
   }).join('');
   document.getElementById('v2g-masa').innerHTML = masaOpts;
-  document.getElementById('pt-masa').innerHTML  = masaOpts;
   document.getElementById('v2g-tithi').innerHTML = tithiOpts;
-  document.getElementById('pt-tithi').innerHTML  = tithiOpts;
   document.getElementById('v2g-year').value = new Date().getFullYear();
   document.getElementById('g2v-date').value = new Date().toISOString().slice(0, 10);
 }
@@ -2078,35 +2211,129 @@ function doV2G() {
       (matches.length > 1 ? '<p class="text-creamdim text-[13px] mt-1">' + t('v2g_two') + '</p>' : '')
     : '<p class="text-creamdim">' + t('v2g_none') + '</p>';
 }
-function addPitru() {
+function savePitruForm() {
   const name = txt(document.getElementById('pt-name').value);
   if (!name) { toast(t('err_name'), true); return; }
-  const id = uid('pt');
-  save('pitru/' + id, {
-    id, name,
-    masa:   int(document.getElementById('pt-masa').value),
-    paksha: int(document.getElementById('pt-paksha').value),
-    tithi:  int(document.getElementById('pt-tithi').value) || 1,
-    created: Date.now()
-  }).then(() => {
-    document.getElementById('pt-name').value = '';
-    toast(name + ' — ' + t('pitru_added'));
-  });
+  const deathDate = txt(document.getElementById('pt-death-date').value);
+  if (!deathDate) { toast(t('err_death_date'), true); return; }
+  const parts = deathDate.split('-').map(x => int(x));
+  const p = panchangaFor(parts[0], parts[1], parts[2]);
+  const data = { name, deathDate, masa: p.masaIdx, paksha: p.pakshaIdx, tithi: p.tIdx };
+  if (S.editingPitruId) {
+    /* Editing an existing entry — requires double-confirmation since it's a permanent record. */
+    openPitruConfirm('edit', S.editingPitruId, data);
+  } else {
+    const id = uid('pt');
+    save('pitru/' + id, Object.assign({ id, created: Date.now() }, data)).then(() => {
+      resetPitruForm();
+      toast(name + ' — ' + t('pitru_added'));
+    });
+  }
 }
-function delPitru(id) {
-  if (confirm(t('cf_remove_pitru'))) removeKey('pitru', id);
+function editPitru(id) {
+  const pt = S.cache.pitru[id];
+  if (!pt) return;
+  S.editingPitruId = id;
+  document.getElementById('pt-name').value = pt.name || '';
+  document.getElementById('pt-death-date').value = pt.deathDate || '';
+  document.getElementById('pt-save-btn').textContent = t('save_changes');
+  document.getElementById('pt-cancel-edit').classList.remove('hidden');
+  document.getElementById('pt-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function resetPitruForm() {
+  S.editingPitruId = null;
+  document.getElementById('pt-name').value = '';
+  document.getElementById('pt-death-date').value = '';
+  document.getElementById('pt-save-btn').textContent = t('add_register');
+  document.getElementById('pt-cancel-edit').classList.add('hidden');
+}
+function delPitru(id, name) {
+  openPitruConfirm('remove', id, { name });
+}
+/* ---------- Pitru edit/remove: double-confirmation modal (permanent-record safeguard) ---------- */
+function openPitruConfirm(action, id, data) {
+  S.pitruConfirmTarget = { action, id, data };
+  renderPitruConfirmStep(1);
+  document.getElementById('modal-pitruconfirm').classList.remove('hidden');
+}
+function renderPitruConfirmStep(step) {
+  const body = document.getElementById('pitruconfirm-body');
+  const tgt = S.pitruConfirmTarget;
+  if (!tgt) return;
+  const isRemove = tgt.action === 'remove';
+  const name = esc(tgt.data.name);
+  if (step === 1) {
+    body.innerHTML =
+      '<p class="text-cream font-semibold text-[17px] mb-2">' + (isRemove ? t('pt_rmv_title1') : t('pt_edit_title1')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('pt_rmv_body1') : t('pt_edit_body1')) + ' <b>' + name + '</b>?</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelPitruConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="renderPitruConfirmStep(2)">' + t('continue_word') + '</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<p class="text-saffron font-bold text-[17px] mb-2">' + (isRemove ? t('rmv_title2') : t('pt_edit_title2')) + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('pt_rmv_body2') : t('pt_edit_body2')) + '</p>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button class="btn-line" onclick="cancelPitruConfirm()">' + t('cancel') + '</button>' +
+        '<button class="btn-gold" onclick="confirmPitruAction()">' + (isRemove ? t('rmv_confirm_final') : t('pt_save_confirm_final')) + '</button>' +
+      '</div>';
+  }
+}
+function cancelPitruConfirm() {
+  document.getElementById('modal-pitruconfirm').classList.add('hidden');
+  S.pitruConfirmTarget = null;
+}
+function confirmPitruAction() {
+  const tgt = S.pitruConfirmTarget;
+  if (!tgt) return;
+  if (tgt.action === 'remove') {
+    removeKey('pitru', tgt.id);
+    toast(t('pitru_removed'));
+    if (S.editingPitruId === tgt.id) resetPitruForm();
+  } else {
+    save('pitru/' + tgt.id, tgt.data).then(() => {
+      toast(t('pitru_updated'));
+      resetPitruForm();
+    });
+  }
+  cancelPitruConfirm();
+}
+/* Scans forward from today (up to ~400 days) for the next Gregorian date matching this
+   Masa/Paksha/Tithi combination — i.e. next year's annual observance of this Tithi. */
+function nextPitruOccurrence(masaIdx, pakshaIdx, tIdx) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 400; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+    const p = panchangaFor(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    if (p.masaIdx === masaIdx && p.pakshaIdx === pakshaIdx && p.tIdx === tIdx) return p;
+  }
+  return null;
 }
 function renderPitruList() {
   const box = document.getElementById('pitru-list');
   const items = Object.values(S.cache.pitru || {}).filter(Boolean);
-  box.innerHTML = items.length ? items.map(pt =>
-    '<div class="card p-4 mb-2 flex items-center justify-between gap-3">' +
-      '<div><p class="text-cream font-semibold">' + esc(pt.name) + '</p>' +
-      '<p class="text-creamdim text-[14px]">' + esc(MASA_NAMES[int(pt.masa)]) + ' · ' +
-        esc(PAKSHA_NAMES[int(pt.paksha)]) + ' · ' +
-        esc(int(pt.tithi) === 15 ? (int(pt.paksha) === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[int(pt.tithi) - 1]) + '</p></div>' +
-      '<button class="btn-line text-[13px]" onclick="delPitru(\'' + pt.id + '\')">' + t('remove') + '</button>' +
-    '</div>').join('')
+  box.innerHTML = items.length ? items.map(pt => {
+    const masaIdx = int(pt.masa), pakshaIdx = int(pt.paksha), tIdx = int(pt.tithi) || 1;
+    const tithiLabel = tIdx === 15 ? (pakshaIdx === 0 ? 'Purnima' : 'Amavasya') : TITHI_NAMES[tIdx - 1];
+    const next = nextPitruOccurrence(masaIdx, pakshaIdx, tIdx);
+    const nextLabel = next
+      ? next.dateObj.toLocaleDateString(loc(), { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+      : t('pt_next_unknown');
+    return '<div class="card p-4 mb-2">' +
+      '<p class="text-cream font-semibold">' + esc(pt.name) + '</p>' +
+      (pt.deathDate ? '<p class="text-creamdim text-[12px] mt-0.5">' + t('pt_death_date_word') + ' ' + esc(pt.deathDate) + '</p>' : '') +
+      '<p class="text-creamdim text-[14px] mt-1">' + esc(MASA_NAMES[masaIdx]) + ' · ' + esc(PAKSHA_NAMES[pakshaIdx]) + ' · ' + esc(tithiLabel) + '</p>' +
+      '<div class="bg-maroon-950/50 rounded-lg p-2 mt-2">' +
+        '<p class="text-gold-300 text-[12px] font-semibold">' + t('pt_next_occurrence') + '</p>' +
+        '<p class="text-cream text-[14px]">' + esc(nextLabel) + '</p>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 gap-2 mt-3">' +
+        '<button class="btn-line text-[13px]" onclick="editPitru(\'' + pt.id + '\')">' + t('edit_word') + '</button>' +
+        '<button class="btn-line text-[13px]" onclick="delPitru(\'' + pt.id + '\',\'' + esc(pt.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('')
   : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_pitru') + '</div>';
 }
 function renderExpRecent() {
