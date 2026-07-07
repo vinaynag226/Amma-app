@@ -1085,6 +1085,10 @@ const I18N = {
     unassign_body2:'This action cannot be undone from here — you can re-assign them again afterwards if needed.',
     unassign_confirm_final:'Yes, unassign', unassign_done:'Staff member unassigned.',
     wa_confirm:'💬 WhatsApp confirmation',
+    menu_request_btn:'📋 Request Menu Choice',
+    menu_request_title:'Menu Selection',
+    menu_request_intro:'For your upcoming event, please reply with your preferred dishes from each category below,',
+    menu_request_or_standard:'or simply reply "Standard menu" for our usual spread.',
     add_staff_first:'Add staff in the Setup tab first.',
     check_0:'Advance received', check_1:'Menu finalized', check_2:'Groceries purchased',
     check_3:'Staff assigned', check_4:'Venue confirmed',
@@ -1393,6 +1397,10 @@ const I18N = {
     unassign_body2:'ఈ చర్యను ఇక్కడి నుండి వెనక్కి తీసుకోలేము — అవసరమైతే తర్వాత మళ్ళీ కేటాయించవచ్చు.',
     unassign_confirm_final:'అవును, తీసివేయండి', unassign_done:'సిబ్బంది కేటాయింపు తీసివేయబడింది.',
     wa_confirm:'💬 వాట్సాప్ కన్ఫర్మేషన్',
+    menu_request_btn:'📋 మెనూ ఎంపిక అడగండి',
+    menu_request_title:'మెనూ ఎంపిక',
+    menu_request_intro:'మీ రాబోయే వేడుక కోసం, దయచేసి కింద ఇచ్చిన ప్రతి విభాగం నుండి మీకు నచ్చిన వంటకాలతో రిప్లై ఇవ్వండి,',
+    menu_request_or_standard:'లేదా కేవలం "ప్రామాణిక మెనూ" అని రిప్లై ఇవ్వండి — మేము మామూలుగా ఇచ్చేది వస్తుంది.',
     add_staff_first:'ముందుగా సెటప్ ట్యాబ్‌లో సిబ్బందిని చేర్చండి.',
     check_0:'అడ్వాన్స్ వచ్చింది', check_1:'మెనూ ఖరారు', check_2:'సరుకులు కొన్నాం',
     check_3:'సిబ్బంది కేటాయించాం', check_4:'హాల్ ఖరారు',
@@ -2889,6 +2897,27 @@ function waEvent(eid) {
     '\n\n' + t('rc_thanks');
   window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(msg), '_blank');
 }
+/* Simple menu-request message for catering orders — lists each category with a few
+   sample dishes and asks the customer to reply with their picks, or say "Standard menu". */
+function waCateringMenuRequest(eid) {
+  const e = S.cache.events[eid];
+  if (!e) return;
+  const phone = txt(e.phone).replace(/\D/g, '');
+  const waPhone = phone.length === 10 ? '91' + phone : phone;
+  if (!waPhone) { toast(t('err_phone'), true); return; }
+  const items = allCateringItems();
+  let msg = '🍽️ *Anantha Shree — ' + t('menu_request_title') + '*' + '\n\n' +
+    'Namaskaram ' + e.client + ' garu,' + '\n\n' +
+    t('menu_request_intro') + '\n' +
+    t('menu_request_or_standard') + '\n\n';
+  CATERING_CATEGORIES.forEach(catDef => {
+    const catItems = items.filter(it => (it.cat || 'starters') === catDef.id).slice(0, 6);
+    if (!catItems.length) return;
+    msg += catDef.icon + ' *' + t(catDef.labelKey) + '*: ' + catItems.map(it => it.name).join(' / ') + '\n';
+  });
+  msg += '\n' + t('rc_thanks');
+  window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(msg), '_blank');
+}
 function planGrocery(eid) {
   const e = S.cache.events[eid];
   if (!e) return;
@@ -3053,6 +3082,7 @@ function renderLog() {
           '<button class="btn-line text-[13px]" onclick="planGrocery(\'' + e.id + '\')">' + t('grocery_chip') + '</button>' +
         '</div>' +
         '<button class="btn-gold w-full mt-2" onclick="waEvent(\'' + e.id + '\')">' + t('wa_confirm') + '</button>' +
+        (e.service === 'catering' ? '<button class="btn-line w-full mt-2 !text-[13px]" onclick="waCateringMenuRequest(\'' + e.id + '\')">' + t('menu_request_btn') + '</button>' : '') +
 
         '<div id="evck-' + e.id + '" class="hidden mt-3">' + checkChips + '</div>' +
         '<div id="evst-' + e.id + '" class="hidden mt-3">' + staffChips + '</div>' +
