@@ -6,11 +6,21 @@
 <title>Anantha Shree Pro Enterprise</title>
 
 <!-- ============ PWA META ============ -->
+<link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#2A070B" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Anantha Shree" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').catch(err => console.error('SW registration failed:', err));
+    });
+  }
+</script>
 
 <!-- ============ FONTS ============ -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -88,6 +98,7 @@
     padding: 10px 12px; font-size: 16px;
   }
   .inp:focus { outline: 2px solid #E2BE6C; outline-offset: 1px; }
+  .inp::placeholder { color: #9C8362; opacity: 1; }
   select.inp { appearance: none; }
   .btn-gold {
     background: linear-gradient(180deg, #E2BE6C, #B08A2E); color: #2A070B;
@@ -1132,6 +1143,11 @@ const I18N = {
     check_btn:'Checklist', staff_chip:'👥 Manage Staff', grocery_chip:'🧺 Grocery',
     assigned_staff_hdr:'Assigned Staff', no_staff_assigned:'No staff assigned yet.',
     staff_exp_lbl:'Actual staff expense', staff_exp_ph:'0', staff_exp_saved:'Staff expense saved.',
+    mat_exp_hdr:'Material Expense', mat_exp_total_lbl:'Actual total',
+    mat_exp_breakdown_show:'▸ Detailed breakdown', mat_exp_breakdown_hide:'▾ Hide breakdown',
+    mat_exp_from_breakdown_note:'Computed from the breakdown below.',
+    mat_exp_partial_note:'(some materials have no rate set — total may be incomplete)',
+    mat_exp_saved:'Material expense saved.',
     unassign_title1:'Remove this person from the ceremony?', unassign_body1:'This will unassign',
     unassign_body2:'This action cannot be undone from here — you can re-assign them again afterwards if needed.',
     unassign_confirm_final:'Yes, unassign', unassign_done:'Staff member unassigned.',
@@ -1479,6 +1495,11 @@ const I18N = {
     check_btn:'చెక్‌లిస్ట్', staff_chip:'👥 సిబ్బంది నిర్వహణ', grocery_chip:'🧺 సరుకులు',
     assigned_staff_hdr:'కేటాయించిన సిబ్బంది', no_staff_assigned:'ఇంకా సిబ్బందిని కేటాయించలేదు.',
     staff_exp_lbl:'నిజమైన సిబ్బంది ఖర్చు', staff_exp_ph:'0', staff_exp_saved:'సిబ్బంది ఖర్చు సేవ్ అయింది.',
+    mat_exp_hdr:'సరుకుల ఖర్చు', mat_exp_total_lbl:'నిజమైన మొత్తం',
+    mat_exp_breakdown_show:'▸ వివరాలు చూపించు', mat_exp_breakdown_hide:'▾ వివరాలు దాచు',
+    mat_exp_from_breakdown_note:'కింద ఇచ్చిన వివరాల నుండి లెక్కించబడింది.',
+    mat_exp_partial_note:'(కొన్ని సరుకులకు ధర సెట్ చేయలేదు — మొత్తం అసంపూర్ణం కావచ్చు)',
+    mat_exp_saved:'సరుకుల ఖర్చు సేవ్ అయింది.',
     unassign_title1:'ఈ వ్యక్తిని కార్యక్రమం నుండి తీసివేయాలా?', unassign_body1:'ఇది కేటాయింపు తీసివేస్తుంది —',
     unassign_body2:'ఈ చర్యను ఇక్కడి నుండి వెనక్కి తీసుకోలేము — అవసరమైతే తర్వాత మళ్ళీ కేటాయించవచ్చు.',
     unassign_confirm_final:'అవును, తీసివేయండి', unassign_done:'సిబ్బంది కేటాయింపు తీసివేయబడింది.',
@@ -2941,6 +2962,95 @@ function setStaffExpense(eid, val) {
   save('events/' + eid, { staffExpenseActual: num(val) })
     .then(() => toast(t('staff_exp_saved')));
 }
+/* =====================================================
+   PER-BOOKING ACTUAL MATERIAL EXPENSE
+   Quick total by default (one ₹ field, like staff expense), with
+   an optional detailed per-material breakdown for when Vinay
+   wants precision. When the breakdown has any entries, IT becomes
+   the source of truth for the total (computed as qty × current
+   Rate Book price per material) and the quick-total field locks
+   to show that computed number, so there's never two conflicting
+   numbers. Clearing every breakdown entry hands control back to
+   the manual quick-total field. Feeds into the P&L "Groceries"
+   total (see perBookingMaterialExpenseSum), same pattern as wages.
+   ===================================================== */
+function computeMaterialBreakdownTotal(qtyMap) {
+  let total = 0, hasAllRates = true, count = 0;
+  allGroceryItems().forEach(item => {
+    if (!qtyMap || qtyMap[item.id] === undefined) return;
+    count++;
+    const rate = findRate(item);
+    if (rate !== null) total += num(qtyMap[item.id]) * rate;
+    else hasAllRates = false;
+  });
+  return { total, hasAllRates, count };
+}
+function buildMaterialExpenseBox(e, dim) {
+  const qtyMap = e.materialActualQty || {};
+  const hasBreakdown = Object.keys(qtyMap).length > 0;
+  const breakdown = computeMaterialBreakdownTotal(qtyMap);
+  const isPanelOpen = !!(S.matBreakdownOpen && S.matBreakdownOpen[e.id]);
+
+  const rows = allGroceryItems().map(item => {
+    const qty = qtyMap[item.id] !== undefined ? num(qtyMap[item.id]) : '';
+    return '<div class="flex items-center justify-between gap-2 mb-1 text-[13px]">' +
+      '<span class="text-creamdim flex-1 min-w-0 truncate">' + esc(item.name) + '</span>' +
+      '<input class="inp !w-16 text-right' + dim + '" type="number" min="0" step="0.1" value="' + qty + '" ' +
+        'onchange="setMaterialActualQty(\'' + e.id + '\',\'' + item.id + '\', this.value)" placeholder="0" />' +
+      '<span class="text-creamdim text-[11px] w-10 shrink-0">' + esc(item.unit) + '</span>' +
+    '</div>';
+  }).join('');
+
+  return '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
+    '<div class="flex items-center justify-between gap-2">' +
+      '<span class="text-gold-300 font-semibold text-[13px]">' + t('mat_exp_hdr') + '</span>' +
+      '<button id="matbtn-' + e.id + '" class="text-gold-300 text-[11px] underline" onclick="toggleMatBreakdown(\'' + e.id + '\')">' +
+        (isPanelOpen ? t('mat_exp_breakdown_hide') : t('mat_exp_breakdown_show')) + '</button>' +
+    '</div>' +
+    '<div class="flex items-center justify-between gap-2 mt-2">' +
+      '<span class="text-creamdim text-[13px]">' + t('mat_exp_total_lbl') + '</span>' +
+      '<div class="flex items-center gap-1"><span class="text-gold-300">₹</span>' +
+        '<input class="inp !w-24 text-right' + dim + (hasBreakdown ? ' opacity-60' : '') + '" type="number" min="0" ' +
+          (hasBreakdown ? 'readonly' : '') + ' value="' + (e.materialExpenseActual !== undefined ? num(e.materialExpenseActual) : '') + '" ' +
+          'onchange="setMaterialExpenseTotal(\'' + e.id + '\', this.value)" placeholder="' + t('staff_exp_ph') + '" /></div>' +
+    '</div>' +
+    (hasBreakdown ? '<p class="text-creamdim text-[11px] mt-1">' + t('mat_exp_from_breakdown_note') +
+      (!breakdown.hasAllRates ? ' ' + t('mat_exp_partial_note') : '') + '</p>' : '') +
+    '<div id="matbreak-' + e.id + '" class="' + (isPanelOpen ? '' : 'hidden') + ' mt-2 pt-2 border-t border-gold-600/20">' +
+      (rows || '<p class="text-creamdim text-[12px]">' + t('gm_empty') + '</p>') +
+    '</div>' +
+  '</div>';
+}
+function toggleMatBreakdown(eid) {
+  S.matBreakdownOpen = S.matBreakdownOpen || {};
+  S.matBreakdownOpen[eid] = !S.matBreakdownOpen[eid];
+  const panel = document.getElementById('matbreak-' + eid);
+  const btn = document.getElementById('matbtn-' + eid);
+  if (panel) panel.classList.toggle('hidden', !S.matBreakdownOpen[eid]);
+  if (btn) btn.textContent = S.matBreakdownOpen[eid] ? t('mat_exp_breakdown_hide') : t('mat_exp_breakdown_show');
+}
+function setMaterialExpenseTotal(eid, val) {
+  const e = S.cache.events[eid] || {};
+  if (e.locked !== false) { toast(t('err_locked'), true); return; }
+  if (e.materialActualQty && Object.keys(e.materialActualQty).length) return; /* breakdown owns the number */
+  save('events/' + eid, { materialExpenseActual: num(val) })
+    .then(() => toast(t('mat_exp_saved')));
+}
+function setMaterialActualQty(eid, materialId, val) {
+  const e = S.cache.events[eid] || {};
+  if (e.locked !== false) { toast(t('err_locked'), true); return; }
+  const qty = num(val);
+  const currentQty = Object.assign({}, e.materialActualQty || {});
+  if (qty > 0) currentQty[materialId] = qty; else delete currentQty[materialId];
+
+  const breakdown = computeMaterialBreakdownTotal(currentQty);
+  const updates = {};
+  updates['events/' + eid + '/materialActualQty/' + materialId] = qty > 0 ? qty : null;
+  updates['events/' + eid + '/materialExpenseActual'] = breakdown.total;
+  S.db.ref('/').update(updates)
+    .then(() => toast(t('mat_exp_saved')))
+    .catch(err => { toast(t('err_save'), true); console.error(err); });
+}
 function toggleAssign(eid, sid) {
   const e = S.cache.events[eid] || {};
   if (e.locked !== false) { toast(t('err_locked'), true); return; }
@@ -3205,6 +3315,8 @@ function buildLogCardHTML(e, staffArr) {
                 'onchange="setStaffExpense(\'' + e.id + '\', this.value)" placeholder="' + t('staff_exp_ph') + '" /></div>' +
           '</div>' +
         '</div>' +
+
+        buildMaterialExpenseBox(e, dim) +
 
         (e.menu ? '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
           '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('menu_lbl') + '</p>' +
@@ -3534,6 +3646,14 @@ function perBookingStaffExpenseSum(ym) {
     .filter(e => txt(e.date).startsWith(ym))
     .reduce((s, e) => s + num(e.staffExpenseActual), 0);
 }
+/* Sum of manually-logged ACTUAL per-booking material expenses for the month — distinct
+   from (and added on top of) the general 'Groceries'/'Dairy'/'Flowers' categories in the
+   Expense Log, which cover material costs not tied to a specific ceremony. */
+function perBookingMaterialExpenseSum(ym) {
+  return Object.values(S.cache.events || {}).filter(Boolean)
+    .filter(e => txt(e.date).startsWith(ym))
+    .reduce((s, e) => s + num(e.materialExpenseActual), 0);
+}
 function renderPnl() {
   const ym = txt(document.getElementById('pnl-month').value);
   const out = document.getElementById('pnl-out');
@@ -3560,7 +3680,9 @@ function renderPnl() {
   const wagesGeneral = num(cats['Labour']);
   const wagesPerBooking = perBookingStaffExpenseSum(ym);
   const wages = wagesGeneral + wagesPerBooking;
-  const groceries = num(cats['Groceries']) + num(cats['Dairy']) + num(cats['Flowers']);
+  const groceriesGeneral = num(cats['Groceries']) + num(cats['Dairy']) + num(cats['Flowers']);
+  const groceriesPerBooking = perBookingMaterialExpenseSum(ym);
+  const groceries = groceriesGeneral + groceriesPerBooking;
   const otherExp = Object.keys(cats).reduce((s, c) =>
     ['Labour','Groceries','Dairy','Flowers'].indexOf(c) >= 0 ? s : s + num(cats[c]), 0);
   const pnlEntry = (S.cache.pnl && S.cache.pnl[ym]) || {};
@@ -3603,6 +3725,7 @@ function renderPnl() {
       line(t('wages'), wages) +
       (wagesPerBooking ? '<p class="text-creamdim text-[11px] -mt-1 mb-1 pl-1">' + t('wages_breakdown_note') + ' ' + inr(wagesGeneral) + ' + ' + t('wages_perbooking_note') + ' ' + inr(wagesPerBooking) + '</p>' : '') +
       line(t('var_groceries'), groceries) +
+      (groceriesPerBooking ? '<p class="text-creamdim text-[11px] -mt-1 mb-1 pl-1">' + t('wages_breakdown_note') + ' ' + inr(groceriesGeneral) + ' + ' + t('wages_perbooking_note') + ' ' + inr(groceriesPerBooking) + '</p>' : '') +
       (otherExp ? line(t('other_exp'), otherExp) : '') +
 
       '<div class="flex items-center justify-between gap-2 mb-1">' +
