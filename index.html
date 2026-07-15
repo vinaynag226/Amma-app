@@ -113,14 +113,23 @@
   }
   .chip.on { background: linear-gradient(180deg,#3F6B3F,#2C4E2C); color: #DFF3DF; border-color: #6FA06F; }
 
+  /* ---------- Staff-assign chips (New Booking "Manage Staff" picker) ----------
+     Higher-contrast, bolder variant scoped ONLY to the staff picker chips —
+     flagged as hard to read for an elderly/low-vision user. Does not affect
+     the generic .chip class used elsewhere (checklist chips, etc). */
+  .chip-staff {
+    color: #F5EBC9; font-weight: 700;
+    background: rgba(28,4,7,.78); border-color: rgba(212,169,74,.6);
+  }
+  .chip-staff.on { color: #EFFBEF; font-weight: 700; }
+
   /* ---------- Meal segmented toggles ---------- */
-  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
   .seg button {
     padding: 9px 0; font-size: 14px; font-weight: 600; border-radius: 9px;
     border: 1px solid rgba(212,169,74,.28); color: #CBB894; background: rgba(28,4,7,.6);
   }
   .seg button.on-given   { background: linear-gradient(180deg,#3F6B3F,#2C4E2C); color: #DFF3DF; border-color: #6FA06F; }
-  .seg button.on-pending { background: linear-gradient(180deg,#6B5A1A,#4E4212); color: #F3EBC9; border-color: #B08A2E; }
   .seg button.on-skip    { background: linear-gradient(180deg,#6B2020,#4E1616); color: #F3D5D5; border-color: #C25450; }
 
   .stepbtn {
@@ -281,6 +290,9 @@
       <span data-i18n="new_booking_big">New Booking</span>
     </button>
 
+    <!-- Tomorrow's Ceremony Staff-Call Reminder banner (hidden when nothing is booked tomorrow) -->
+    <div id="tomorrow-banner" class="hidden"></div>
+
     <h2 class="font-display text-gold-400 text-lg tracking-wide mb-3" data-i18n="todays_panchanga">Today's Panchanga</h2>
     <div id="pn-card" class="card p-5">
       <p class="text-creamdim text-sm">…</p>
@@ -293,14 +305,18 @@
 
   <!-- 2 ▸ LOG (Ceremonies & Catering) -->
   <section id="view-log" data-view="log" class="hidden">
-    <div class="grid grid-cols-2 gap-2 mb-3">
+    <div class="grid grid-cols-3 gap-2 mb-3">
       <label id="lbl-log-ceremonies" class="chip on w-full text-center cursor-pointer !m-0 py-2.5">
         <input type="radio" name="log-tab" id="log-tab-ceremonies" value="ceremony" class="hidden" onchange="onLogTabChange()" checked />
-        <span data-i18n="log_tab_ceremonies">🕉 Ceremonies</span>
+        <span class="text-[13px]" data-i18n="log_tab_ceremonies">🕉 Ceremonies</span>
       </label>
       <label id="lbl-log-catering" class="chip w-full text-center cursor-pointer !m-0 py-2.5">
         <input type="radio" name="log-tab" id="log-tab-catering" value="catering" class="hidden" onchange="onLogTabChange()" />
-        <span data-i18n="log_tab_catering">🍽 Catering Orders</span>
+        <span class="text-[13px]" data-i18n="log_tab_catering">🍽 Catering Orders</span>
+      </label>
+      <label id="lbl-log-past" class="chip w-full text-center cursor-pointer !m-0 py-2.5">
+        <input type="radio" name="log-tab" id="log-tab-past" value="past" class="hidden" onchange="onLogTabChange()" />
+        <span class="text-[13px]" data-i18n="log_tab_past">📜 Past</span>
       </label>
     </div>
 
@@ -318,6 +334,10 @@
           <span data-i18n="grocery_calc">Grocery Calculator</span>
           <span class="text-creamdim font-normal text-[12px]" data-i18n="margin_note">· 15% protective margin</span>
         </p>
+        <button class="text-gold-300 text-[13px] underline mb-3" onclick="toggleGroceryMaterials()" data-i18n="gm_edit_toggle">✏️ Edit Materials List</button>
+        <div id="gc-materials-panel" class="hidden mb-3">
+          <div id="gc-materials-list"></div>
+        </div>
         <div class="grid grid-cols-2 gap-2 mb-2">
           <input id="gc-head" class="inp" type="number" min="1" data-ph="headcount" placeholder="Headcount" />
           <input id="gc-date" class="inp" type="date" />
@@ -479,6 +499,8 @@
       <button class="stepbtn" onclick="shiftTiffinDate(1)" aria-label="Next day">›</button>
     </div>
 
+    <button class="btn-gold w-full mb-4" onclick="bulkMarkAllGiven()" data-i18n="bulk_given_btn">✅ Mark all as Given (this day)</button>
+
     <div id="tiffin-list"></div>
   </section>
 
@@ -511,9 +533,10 @@
       <div id="setup-body-staff" class="acc-body px-4 pb-4" style="max-height:none" data-open="1">
         <div class="card p-4 mb-3 bg-maroon-950/40">
           <div class="flex gap-2 mb-2">
-            <input id="st-name" class="inp flex-1" data-ph="name_ph" placeholder="Name" />
+            <input id="st-name" class="inp flex-1" list="st-name-list" autocomplete="off" data-ph="name_ph" placeholder="Name" />
             <button class="btn-line shrink-0" onclick="pickStaffContact()" title="Pick from Contacts">📇</button>
           </div>
+          <datalist id="st-name-list"></datalist>
           <div class="grid grid-cols-2 gap-2 mb-2">
             <select id="st-role" class="inp">
               <option value="Purohit" data-i18n="role_purohit">Purohit</option>
@@ -607,6 +630,21 @@
       </div>
     </div>
 
+    <!-- ================= PANEL 7 — HISTORICAL CUSTOMER/RELATIVE SCAN ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-hscan','setup-arrow-hscan')" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="hscan_panel_title">🔍 Historical Customer/Relative Scan</span>
+        <span id="setup-arrow-hscan" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-hscan" class="acc-body px-4 pb-4">
+        <div class="card p-4 mb-3 bg-maroon-950/40">
+          <p class="text-creamdim text-[12px] mb-3 leading-snug" data-i18n="hscan_note">Scans every ceremony booking made before the Customer/Relative registry existed, and automatically creates Customer entries (name + phone) plus, for Shraddha / Pitru Karya bookings, Relative entries with upcoming Masika/Varshika reminders. Safe to run more than once — already-linked bookings are always skipped. The deceased relative's real name was never captured in the old data, so those get a placeholder name flagged for you to verify below.</p>
+          <button class="btn-gold w-full" onclick="confirmHistoricalScan()" data-i18n="hscan_btn">🔍 Scan Historical Bookings</button>
+        </div>
+        <div id="hscan-log"></div>
+      </div>
+    </div>
+
   </section>
 
 </main>
@@ -614,7 +652,7 @@
 <!-- ==================================================== -->
 <!-- ADD-CUSTOM-RATE — DOUBLE-CONFIRMATION MODAL          -->
 <!-- ==================================================== -->
-<div id="modal-addrateconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-addrateconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="rar-body"></div>
   </div>
@@ -623,7 +661,7 @@
 <!-- ==================================================== -->
 <!-- ADD-CUSTOM-CATERING-ITEM — DOUBLE-CONFIRMATION MODAL -->
 <!-- ==================================================== -->
-<div id="modal-addcateringconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-addcateringconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="acr-body"></div>
   </div>
@@ -632,7 +670,7 @@
 <!-- ==================================================== -->
 <!-- STAFF EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL        -->
 <!-- ==================================================== -->
-<div id="modal-staffconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-staffconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="staffconfirm-body"></div>
   </div>
@@ -641,7 +679,7 @@
 <!-- ==================================================== -->
 <!-- CEREMONY STAFF UNASSIGN — DOUBLE-CONFIRMATION MODAL  -->
 <!-- ==================================================== -->
-<div id="modal-unassignconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-unassignconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="unassign-body"></div>
   </div>
@@ -650,7 +688,7 @@
 <!-- ==================================================== -->
 <!-- PITRU EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL        -->
 <!-- ==================================================== -->
-<div id="modal-pitruconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-pitruconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="pitruconfirm-body"></div>
   </div>
@@ -659,7 +697,7 @@
 <!-- ==================================================== -->
 <!-- CUSTOMER EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL     -->
 <!-- ==================================================== -->
-<div id="modal-customerconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-customerconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="customerconfirm-body"></div>
   </div>
@@ -707,7 +745,7 @@
 <!-- ==================================================== -->
 <!-- RELATIVE EDIT/REMOVE — DOUBLE-CONFIRMATION MODAL     -->
 <!-- ==================================================== -->
-<div id="modal-relativeconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-relativeconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="relativeconfirm-body"></div>
   </div>
@@ -716,7 +754,7 @@
 <!-- ==================================================== -->
 <!-- BOOKING EDIT — DOUBLE-CONFIRMATION MODAL             -->
 <!-- ==================================================== -->
-<div id="modal-bookingeditconfirm" class="hidden fixed inset-0 z-[81] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-bookingeditconfirm" class="hidden fixed inset-0 z-[81] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="bookingeditconfirm-body"></div>
   </div>
@@ -725,7 +763,7 @@
 <!-- ==================================================== -->
 <!-- FLOOR CONFLICT — SIMPLE CONFIRMATION MODAL           -->
 <!-- ==================================================== -->
-<div id="modal-floorconflict" class="hidden fixed inset-0 z-[82] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-floorconflict" class="hidden fixed inset-0 z-[82] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-alert w-full max-w-md m-3 p-5">
     <div id="floorconflict-body"></div>
   </div>
@@ -742,9 +780,10 @@
     </div>
 
     <div class="flex gap-2 mb-2">
-      <input id="bk-client" class="inp flex-1" data-ph="client_name_ph" placeholder="Client name" />
+      <input id="bk-client" class="inp flex-1" list="bk-client-list" autocomplete="off" data-ph="client_name_ph" placeholder="Client name" oninput="onBkClientInput()" />
       <button class="btn-line shrink-0" onclick="pickContact()" title="Pick from Contacts">📇</button>
     </div>
+    <datalist id="bk-client-list"></datalist>
     <input id="bk-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
 
     <div class="grid grid-cols-2 gap-2 mb-2">
@@ -878,7 +917,7 @@
 <!-- ==================================================== -->
 <!-- REMOVE RECORD — DOUBLE-CONFIRMATION MODAL            -->
 <!-- ==================================================== -->
-<div id="modal-removeconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-removeconfirm" class="hidden fixed inset-0 z-[80] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card card-danger w-full max-w-md m-3 p-5">
     <div id="rmv-body"></div>
   </div>
@@ -887,7 +926,7 @@
 <!-- ==================================================== -->
 <!-- TIFFIN CLIENT MODAL                                  -->
 <!-- ==================================================== -->
-<div id="modal-tclient" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center">
+<div id="modal-tclient" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
   <div class="card w-full max-w-md m-3 p-5">
     <div class="flex items-center justify-between mb-3">
       <h3 class="font-display text-gold-400 text-lg" data-i18n="tc_title">New Tiffin Client</h3>
@@ -1062,6 +1101,8 @@ const I18N = {
     todays_panchanga:"Today's Panchanga",
     todays_events:"Today's Events",
     no_events_today:'No ceremonies booked for today.',
+    tomorrow_banner_title:"Tomorrow's Ceremonies — Call Staff",
+    tomorrow_no_staff:'No staff assigned yet.',
     pn_note:'Computed at sunrise (Lahiri, amanta). Verify with your panchangam near tithi transitions.',
     nakshatra:'Nakshatra', tithi_no:'Tithi No.', of15:'of 15', masa_word:'Masa',
     /* log / ceremonies */
@@ -1074,6 +1115,13 @@ const I18N = {
     gc_item:'Item', gc_qty:'Qty (incl. 15%)', gc_cost:'Est. cost',
     gc_set_rate:'set rate in Setup', gc_total:'Estimated cost', gc_partial:' (partial)',
     gc_note:'Quantities = headcount × per-plate norm × 1.15 protective margin. Costs use the Live Market Rate Book.',
+    gm_edit_toggle:'✏️ Edit Materials List',
+    gm_name_ph:'Material name', gm_unit_ph:'Unit (kg/L/pcs)', gm_perplate_ph:'Per-plate qty',
+    gm_perplate_lbl:'Per plate:', gm_per_plate_suffix:' / plate',
+    gm_whole_lbl:'Whole units (round up)', gm_rice_lbl:'Rice (fasting-day reduction)',
+    gm_add_title:'Add material', gm_empty:'No materials yet — add one below.',
+    gm_empty_calc:'No materials set up yet. Tap "Edit Materials List" above to add some.',
+    gm_err_qty:'Enter a per-plate quantity greater than 0.',
     gc_tithi_ok:'Tithi check:', gc_no_restriction:'— no rice restriction.',
     gc_warn_title:'on this date',
     gc_warn_body:'Many guests observe a rice fast on this tithi. Rice below is already reduced by 40% — plan semiya, sabudana or fruit alternatives for observers, and confirm the count with the host.',
@@ -1083,6 +1131,7 @@ const I18N = {
     total:'Total', advance_word:'Advance', balance_word:'Balance',
     check_btn:'Checklist', staff_chip:'👥 Manage Staff', grocery_chip:'🧺 Grocery',
     assigned_staff_hdr:'Assigned Staff', no_staff_assigned:'No staff assigned yet.',
+    staff_exp_lbl:'Actual staff expense', staff_exp_ph:'0', staff_exp_saved:'Staff expense saved.',
     unassign_title1:'Remove this person from the ceremony?', unassign_body1:'This will unassign',
     unassign_body2:'This action cannot be undone from here — you can re-assign them again afterwards if needed.',
     unassign_confirm_final:'Yes, unassign', unassign_done:'Staff member unassigned.',
@@ -1108,6 +1157,7 @@ const I18N = {
     exp_pool_ceremony:'Ceremony Daily Expenses', exp_pool_ceremony_sub:'Recurring day-to-day ceremony costs — staff wages + cooking groceries.',
     exp_pool_catering:'Catering Occasional Expenses', exp_pool_catering_sub:'Ad-hoc catering-business costs — fuel, rent, transport, misc.',
     wages:'Wages (Labour expenses)',
+    wages_breakdown_note:'General log:', wages_perbooking_note:'Per-booking actual:',
     var_groceries:'Variable groceries (Groceries + Dairy + Flowers)',
     other_exp:'Other logged expenses (Fuel, Rent, Transport…)',
     overheads:'Monthly overheads', concessions:'Concessions given',
@@ -1182,11 +1232,18 @@ const I18N = {
     no_tclients:'No tiffin clients yet.',
     tap_add_client:'Tap "Add client" to start a subscription.',
     breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner',
-    st_given:'Given', st_pending:'Pending', st_skip:'Skip',
+    st_given:'Given', st_skip:'Skip',
     per_plate:'/plate', guest_plates:'Guest plates',
     vacation_btn:'🌴 Vacation', monthly_bill:'🧾 Monthly bill',
     vac_note:'Meals in this range are paused and never billed.',
     vac_day:'🌴 On vacation this day — meals paused, not billed.',
+    pause_btn:'⏸ Pause', resume_btn:'▶ Resume',
+    paused_tag:'Paused', paused_day:'⏸ Subscription paused — meals not logged, not billed.',
+    paused_msg:'Subscription paused.', resumed_msg:'Subscription resumed.',
+    bulk_given_btn:'✅ Mark all as Given (this day)',
+    cf_bulk_given:'Mark every active client\'s meals as Given for this day? This overwrites any existing marks for the day.',
+    bulk_given_none:'No active clients to mark for this day.',
+    bulk_given_done:'All meals marked as Given for this day.',
     save:'Save', clear:'Clear', remove:'Remove',
     /* receipt */
     bill_month:'Bill month:', send_wa:'Send on WhatsApp',
@@ -1231,6 +1288,19 @@ const I18N = {
     cloud_backup_copied:'Copied to clipboard.', cloud_backup_copy_fail:'Could not copy. Select and copy manually.',
     import_restore_title:'Import Restore File',
     import_restore_note:'Restores from a file exported above, or a Cloud-JSON text block pasted into a .json file. Uses update() — matching IDs are overwritten, nothing else is wiped.',
+    hscan_panel_title:'🔍 Historical Customer/Relative Scan',
+    hscan_note:'Scans every ceremony booking made before the Customer/Relative registry existed, and automatically creates Customer entries (name + phone) plus, for Shraddha / Pitru Karya bookings, Relative entries with upcoming Masika/Varshika reminders. Safe to run more than once — already-linked bookings are always skipped. The deceased relative\'s real name was never captured in the old data, so those get a placeholder name flagged for you to verify below.',
+    hscan_btn:'🔍 Scan Historical Bookings',
+    hscan_confirm:'Scan all historical bookings and automatically create Customer/Relative entries from them? This writes new records — review the log afterward to check for anything that needs correcting.',
+    hscan_none:'No historical bookings found to scan — every booking is already linked to a customer.',
+    hscan_none_new:'Scan complete — no new entries were needed.',
+    hscan_done_suffix:'new entries created. Review the log below.',
+    hscan_note_customer:'Auto-detected from historical bookings — please verify.',
+    hscan_note_relative:'Deceased relative\'s name was not in the old data — placeholder used. Please verify the name, relation, and date.',
+    hscan_relative_suffix:'(auto-detected — verify)',
+    hscan_log_title:'Auto-detected entries',
+    hscan_tag_customer:'Customer', hscan_tag_relative:'Relative',
+    hscan_source_bookings:'source booking(s)',
     /* booking modal */
     bm_title:'New Booking', edit_booking_title:'Edit Booking', edit_booking_btn:'Edit Details',
     client_name_ph:'Client name',
@@ -1240,6 +1310,9 @@ const I18N = {
     svc_ceremony:'Ceremony + Catering', svc_catering:'Catering only',
     svc_ceremony_only:'Ceremony Only', svc_catering_only:'Catering Only',
     log_tab_ceremonies:'🕉 Ceremonies', log_tab_catering:'🍽 Catering Orders',
+    log_tab_past:'📜 Past',
+    no_past_bookings:'No finished bookings yet.',
+    no_past_bookings_hint:'Past ceremonies and catering orders will show up here, grouped by month, once their date has passed.',
     no_catering:'No catering orders yet.',
     cater_occasion_ph:'Occasion (e.g. Birthday, Get-together)', cater_perplate_ph:'Price per plate (₹)',
     cater_menu_standard:'Standard menu', cater_menu_custom:"Customer's own menu",
@@ -1364,7 +1437,8 @@ const I18N = {
     cf_remove_pitru:'Remove this entry from the Pitru register?',
     cf_remove_tclient:'and stop tracking their tiffins? Past logs stay in the database.',
     cf_remove_staff:'from the staff registry?',
-    cf_remove_rate:'from the rate book?'
+    cf_remove_rate:'from the rate book?',
+    cf_remove_grocery_item:'from the materials list?'
   },
   te: {
     /* navigation */
@@ -1374,6 +1448,8 @@ const I18N = {
     todays_panchanga:'నేటి పంచాంగం',
     todays_events:'నేటి కార్యక్రమాలు',
     no_events_today:'ఈరోజు బుకింగ్‌లు లేవు.',
+    tomorrow_banner_title:'రేపటి కార్యక్రమాలు — సిబ్బందికి కాల్ చేయండి',
+    tomorrow_no_staff:'ఇంకా సిబ్బంది కేటాయించలేదు.',
     pn_note:'సూర్యోదయ సమయంలో లెక్కించారు (లాహిరి, అమాంత). తిథి మారే సమయాల్లో మీ పంచాంగంతో సరిచూడండి.',
     nakshatra:'నక్షత్రం', tithi_no:'తిథి సంఖ్య', of15:'/ 15', masa_word:'మాసం',
     /* log / ceremonies */
@@ -1386,6 +1462,13 @@ const I18N = {
     gc_item:'వస్తువు', gc_qty:'మోతాదు (15%తో)', gc_cost:'అంచనా ఖర్చు',
     gc_set_rate:'సెటప్‌లో ధర పెట్టండి', gc_total:'మొత్తం అంచనా ఖర్చు', gc_partial:' (కొంత మాత్రమే)',
     gc_note:'మోతాదులు = అతిథుల సంఖ్య × ఒక్కో ప్లేట్ కొలత × 1.15 మార్జిన్. ధరలు మార్కెట్ ధరల పుస్తకం నుండి.',
+    gm_edit_toggle:'✏️ సరుకుల జాబితా మార్చండి',
+    gm_name_ph:'సరుకు పేరు', gm_unit_ph:'యూనిట్ (kg/L/pcs)', gm_perplate_ph:'ఒక్కో ప్లేటుకి పరిమాణం',
+    gm_perplate_lbl:'ఒక్కో ప్లేటుకి:', gm_per_plate_suffix:' / ప్లేట్',
+    gm_whole_lbl:'పూర్తి యూనిట్లు (రౌండ్ అప్)', gm_rice_lbl:'బియ్యం (ఉపవాస రోజు తగ్గింపు)',
+    gm_add_title:'సరుకు జోడించండి', gm_empty:'ఇంకా సరుకులు లేవు — కింద ఒకటి జోడించండి.',
+    gm_empty_calc:'ఇంకా సరుకులు అమర్చలేదు. పైన "సరుకుల జాబితా మార్చండి" నొక్కి జోడించండి.',
+    gm_err_qty:'0 కంటే ఎక్కువ ప్లేటు పరిమాణం నమోదు చేయండి.',
     gc_tithi_ok:'తిథి తనిఖీ:', gc_no_restriction:'— అన్నం నిషేధం లేదు.',
     gc_warn_title:'ఈ తేదీన',
     gc_warn_body:'ఈ తిథి రోజున చాలామంది అన్నం తినరు. కింద బియ్యం మోతాదు ఇప్పటికే 40% తగ్గించాం — ఉపవాసం ఉన్నవారికి సేమియా, సగ్గుబియ్యం లేదా పండ్లు ప్లాన్ చేయండి, హోస్ట్‌తో సంఖ్య నిర్ధారించండి.',
@@ -1395,6 +1478,7 @@ const I18N = {
     total:'మొత్తం', advance_word:'అడ్వాన్స్', balance_word:'బాకీ',
     check_btn:'చెక్‌లిస్ట్', staff_chip:'👥 సిబ్బంది నిర్వహణ', grocery_chip:'🧺 సరుకులు',
     assigned_staff_hdr:'కేటాయించిన సిబ్బంది', no_staff_assigned:'ఇంకా సిబ్బందిని కేటాయించలేదు.',
+    staff_exp_lbl:'నిజమైన సిబ్బంది ఖర్చు', staff_exp_ph:'0', staff_exp_saved:'సిబ్బంది ఖర్చు సేవ్ అయింది.',
     unassign_title1:'ఈ వ్యక్తిని కార్యక్రమం నుండి తీసివేయాలా?', unassign_body1:'ఇది కేటాయింపు తీసివేస్తుంది —',
     unassign_body2:'ఈ చర్యను ఇక్కడి నుండి వెనక్కి తీసుకోలేము — అవసరమైతే తర్వాత మళ్ళీ కేటాయించవచ్చు.',
     unassign_confirm_final:'అవును, తీసివేయండి', unassign_done:'సిబ్బంది కేటాయింపు తీసివేయబడింది.',
@@ -1420,6 +1504,7 @@ const I18N = {
     exp_pool_ceremony:'కార్యక్రమాల రోజువారీ ఖర్చులు', exp_pool_ceremony_sub:'నిత్యం జరిగే కార్యక్రమ ఖర్చులు — సిబ్బంది కూలీలు + వంట సరుకులు.',
     exp_pool_catering:'క్యాటరింగ్ అప్పుడప్పుడు ఖర్చులు', exp_pool_catering_sub:'అప్పుడప్పుడు వచ్చే క్యాటరింగ్ వ్యాపార ఖర్చులు — ఇంధనం, అద్దె, రవాణా, ఇతరం.',
     wages:'కూలీలు (లేబర్ ఖర్చులు)',
+    wages_breakdown_note:'సాధారణ లాగ్:', wages_perbooking_note:'బుకింగ్ వారీగా:',
     var_groceries:'సరుకులు (కిరాణా + పాలు + పూలు)',
     other_exp:'ఇతర ఖర్చులు (ఇంధనం, అద్దె, రవాణా…)',
     overheads:'నెలవారీ స్థిర ఖర్చులు', concessions:'ఇచ్చిన రాయితీలు',
@@ -1494,11 +1579,18 @@ const I18N = {
     no_tclients:'ఇంకా టిఫిన్ క్లయింట్లు లేరు.',
     tap_add_client:'సబ్‌స్క్రిప్షన్ మొదలుపెట్టడానికి "క్లయింట్ చేర్చండి" నొక్కండి.',
     breakfast:'ఉదయం టిఫిన్', lunch:'మధ్యాహ్న భోజనం', dinner:'రాత్రి భోజనం',
-    st_given:'ఇచ్చాం', st_pending:'పెండింగ్', st_skip:'వద్దు',
+    st_given:'ఇచ్చాం', st_skip:'వద్దు',
     per_plate:'/ప్లేట్', guest_plates:'అతిథి ప్లేట్లు',
     vacation_btn:'🌴 సెలవులు', monthly_bill:'🧾 నెల బిల్లు',
     vac_note:'ఈ తేదీల్లో భోజనాలు ఆగుతాయి, బిల్లు వేయబడదు.',
     vac_day:'🌴 ఈరోజు సెలవు — భోజనం లేదు, బిల్లు లేదు.',
+    pause_btn:'⏸ ఆపు', resume_btn:'▶ కొనసాగించు',
+    paused_tag:'ఆపివేయబడింది', paused_day:'⏸ సబ్‌స్క్రిప్షన్ ఆపివేయబడింది — భోజనం నమోదు లేదు, బిల్లు లేదు.',
+    paused_msg:'సబ్‌స్క్రిప్షన్ ఆపివేయబడింది.', resumed_msg:'సబ్‌స్క్రిప్షన్ తిరిగి ప్రారంభమైంది.',
+    bulk_given_btn:'✅ అందరికీ ఇచ్చినట్లు గుర్తించు (ఈ రోజు)',
+    cf_bulk_given:'ఈ రోజుకి అన్ని యాక్టివ్ క్లయింట్ల భోజనాలను ఇచ్చినట్లు గుర్తించాలా? ఇది ఈ రోజు ఉన్న గుర్తులను తిరగరాస్తుంది.',
+    bulk_given_none:'ఈ రోజుకి గుర్తించడానికి యాక్టివ్ క్లయింట్లు లేరు.',
+    bulk_given_done:'ఈ రోజుకి అన్ని భోజనాలు ఇచ్చినట్లు గుర్తించాం.',
     save:'సేవ్', clear:'తీసేయండి', remove:'తొలగించు',
     /* receipt */
     bill_month:'బిల్లు నెల:', send_wa:'వాట్సాప్‌లో పంపండి',
@@ -1543,6 +1635,19 @@ const I18N = {
     cloud_backup_copied:'క్లిప్‌బోర్డ్‌కి కాపీ అయింది.', cloud_backup_copy_fail:'కాపీ కాలేదు. మాన్యువల్‌గా సెలెక్ట్ చేసి కాపీ చేయండి.',
     import_restore_title:'రీస్టోర్ ఫైల్ ఇంపోర్ట్',
     import_restore_note:'పైన ఎక్స్‌పోర్ట్ చేసిన ఫైల్ నుండి, లేదా క్లౌడ్-JSON టెక్స్ట్‌ను .json ఫైల్‌లో అతికించి రీస్టోర్ చేయవచ్చు. update() వాడుతుంది — ఒకే ID ఉన్నవి మారతాయి, మిగతావి చెరిగిపోవు.',
+    hscan_panel_title:'🔍 పాత బుకింగ్‌ల నుండి కస్టమర్/బంధువు స్కాన్',
+    hscan_note:'కస్టమర్/బంధువు రిజిస్ట్రీ రాకముందు జరిగిన ప్రతి కార్యక్రమ బుకింగ్‌ను స్కాన్ చేసి, కస్టమర్ ఎంట్రీలు (పేరు + ఫోన్) మరియు శ్రాద్ధ / పితృ కార్య బుకింగ్‌లకు మాసిక/వార్షిక రిమైండర్లతో బంధువు ఎంట్రీలు ఆటోమేటిక్‌గా సృష్టిస్తుంది. ఇది మళ్ళీ నడిపినా సురక్షితం — ఇప్పటికే లింక్ అయిన బుకింగ్‌లను ఎప్పుడూ దాటవేస్తుంది. చనిపోయిన బంధువు అసలు పేరు పాత డేటాలో లేదు కాబట్టి, వాటికి ఒక ప్లేస్‌హోల్డర్ పేరు పెడతాము — దాన్ని కింద సరిచూడండి.',
+    hscan_btn:'🔍 పాత బుకింగ్‌లను స్కాన్ చేయండి',
+    hscan_confirm:'అన్ని పాత బుకింగ్‌లను స్కాన్ చేసి, వాటి నుండి కస్టమర్/బంధువు ఎంట్రీలను ఆటోమేటిక్‌గా సృష్టించాలా? ఇది కొత్త రికార్డులను రాస్తుంది — తర్వాత లాగ్‌ను చూసి సరిచూసుకోండి.',
+    hscan_none:'స్కాన్ చేయడానికి పాత బుకింగ్‌లు లేవు — ప్రతి బుకింగ్ ఇప్పటికే ఒక కస్టమర్‌తో లింక్ అయి ఉంది.',
+    hscan_none_new:'స్కాన్ పూర్తయింది — కొత్త ఎంట్రీలు అవసరం లేదు.',
+    hscan_done_suffix:'కొత్త ఎంట్రీలు సృష్టించబడ్డాయి. కింద లాగ్‌ను సరిచూడండి.',
+    hscan_note_customer:'పాత బుకింగ్‌ల నుండి ఆటోమేటిక్‌గా గుర్తించబడింది — దయచేసి సరిచూడండి.',
+    hscan_note_relative:'చనిపోయిన బంధువు పేరు పాత డేటాలో లేదు — ప్లేస్‌హోల్డర్ వాడాము. పేరు, సంబంధం, తేదీ సరిచూడండి.',
+    hscan_relative_suffix:'(ఆటోమేటిక్‌గా గుర్తించబడింది — సరిచూడండి)',
+    hscan_log_title:'ఆటోమేటిక్‌గా గుర్తించిన ఎంట్రీలు',
+    hscan_tag_customer:'కస్టమర్', hscan_tag_relative:'బంధువు',
+    hscan_source_bookings:'మూల బుకింగ్(లు)',
     /* booking modal */
     bm_title:'కొత్త బుకింగ్', edit_booking_title:'బుకింగ్ మార్చండి', edit_booking_btn:'వివరాలు మార్చండి',
     client_name_ph:'క్లయింట్ పేరు',
@@ -1552,6 +1657,9 @@ const I18N = {
     svc_ceremony:'కార్యక్రమం + క్యాటరింగ్', svc_catering:'క్యాటరింగ్ మాత్రమే',
     svc_ceremony_only:'కార్యక్రమం మాత్రమే', svc_catering_only:'క్యాటరింగ్ మాత్రమే',
     log_tab_ceremonies:'🕉 కార్యక్రమాలు', log_tab_catering:'🍽 క్యాటరింగ్ ఆర్డర్లు',
+    log_tab_past:'📜 పాత',
+    no_past_bookings:'ఇంకా పూర్తయిన బుకింగ్‌లు లేవు.',
+    no_past_bookings_hint:'పాత కార్యక్రమాలు మరియు క్యాటరింగ్ ఆర్డర్లు, తేదీ గడిచిన తర్వాత, నెల వారీగా ఇక్కడ కనిపిస్తాయి.',
     no_catering:'ఇంకా క్యాటరింగ్ ఆర్డర్లు లేవు.',
     cater_occasion_ph:'సందర్భం (ఉదా: పుట్టినరోజు, గెట్-టుగెదర్)', cater_perplate_ph:'ఒక్కో ప్లేటు ధర (₹)',
     cater_menu_standard:'ప్రామాణిక మెనూ', cater_menu_custom:'కస్టమర్ సొంత మెనూ',
@@ -1677,7 +1785,8 @@ const I18N = {
     cf_remove_pitru:'ఈ పితృ తిథి ఎంట్రీ తొలగించాలా?',
     cf_remove_tclient:'— టిఫిన్ ట్రాకింగ్ ఆపాలా? పాత లాగ్‌లు డేటాలో ఉంటాయి.',
     cf_remove_staff:'— సిబ్బంది పట్టిక నుండి తొలగించాలా?',
-    cf_remove_rate:'— ధరల పుస్తకం నుండి తొలగించాలా?'
+    cf_remove_rate:'— ధరల పుస్తకం నుండి తొలగించాలా?',
+    cf_remove_grocery_item:'— సరుకుల జాబితా నుండి తొలగించాలా?'
   }
 };
 
@@ -1731,6 +1840,8 @@ const S = {
     customers: {},
     relatives: {},
     cateringItems: {},
+    groceryItems: {},
+    historicalScanLog: {},
     pnl:       {},
     settings:  {}
   },
@@ -1972,6 +2083,53 @@ function renderHome() {
         (e.floor === 'first' ? t('floor_first') : t('floor_ground')) + ' · ' + t('total') + ' ' + inr(evTotal(e)) + '</p>' +
     '</div>').join('')
   : '<div class="card p-4 text-center text-creamdim text-sm">' + t('no_events_today') + '</div>';
+
+  renderTomorrowBanner();
+}
+/* Tomorrow's Ceremony Staff-Call Reminder — surfaces every ceremony booked for
+   tomorrow along with its assigned staff, so today is the day to call and remind
+   them. Recomputed every renderHome() call (init + any events-cache change).
+   Ceremony-only (catering orders excluded), hidden entirely when nothing is
+   booked tomorrow. */
+function renderTomorrowBanner() {
+  const box = document.getElementById('tomorrow-banner');
+  if (!box) return;
+  const tomorrowISO = isoOf(new Date(Date.now() + 86400000));
+  const evs = Object.values(S.cache.events || {}).filter(Boolean)
+    .filter(e => (e.service !== 'catering'))
+    .filter(e => txt(e.date) === tomorrowISO)
+    .sort((a, b) => txt(a.client).localeCompare(txt(b.client)));
+
+  if (!evs.length) { box.innerHTML = ''; box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+
+  const staffById = {};
+  Object.values(S.cache.staff || {}).filter(Boolean).forEach(s => { staffById[s.id] = s; });
+
+  box.innerHTML =
+    '<div class="card p-4 mb-6 border border-gold-400/40">' +
+      '<p class="font-display text-gold-300 text-[16px] mb-2">📞 ' + t('tomorrow_banner_title') + '</p>' +
+      evs.map(e => {
+        const staffIds = e.staff ? Object.keys(e.staff).filter(sid => e.staff[sid]) : [];
+        const staffRows = staffIds.length ? staffIds.map(sid => {
+          const s = staffById[sid];
+          if (!s) return '';
+          const ph = txt(s.phone).replace(/\D/g, '');
+          const wa = ph ? (ph.length === 10 ? '91' + ph : ph) : '';
+          return '<div class="flex items-center justify-between gap-2 mt-1">' +
+              '<span class="text-cream text-[14px]">' + esc(s.name) + '</span>' +
+              '<span class="flex gap-2 shrink-0">' +
+                (wa ? '<a class="btn-line text-[12px]" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬</a>' : '') +
+                (ph ? '<a class="btn-line text-[12px]" href="tel:' + ph + '">📞</a>' : '') +
+              '</span>' +
+            '</div>';
+        }).join('') : '<p class="text-creamdim text-[13px] mt-1">' + t('tomorrow_no_staff') + '</p>';
+        return '<div class="bg-maroon-950/60 rounded-lg px-3 py-2 mt-2">' +
+            '<p class="text-cream font-semibold text-[14px]">' + esc(tType(e.type)) + ' — ' + esc(e.client) + '</p>' +
+            staffRows +
+          '</div>';
+      }).join('') +
+    '</div>';
 }
 
 /* =====================================================
@@ -2774,6 +2932,15 @@ function toggleCheck(eid, i) {
   const cur = !!(e.check && e.check[i]);
   save('events/' + eid + '/check', { [i]: !cur });
 }
+/* Per-booking ACTUAL staff expense — distinct from the general monthly Expense Log.
+   Lets true cost be tracked per ceremony rather than relying on a default wage
+   estimate. Feeds into the P&L wages total (see perBookingStaffExpenseSum). */
+function setStaffExpense(eid, val) {
+  const e = S.cache.events[eid] || {};
+  if (e.locked !== false) { toast(t('err_locked'), true); return; }
+  save('events/' + eid, { staffExpenseActual: num(val) })
+    .then(() => toast(t('staff_exp_saved')));
+}
 function toggleAssign(eid, sid) {
   const e = S.cache.events[eid] || {};
   if (e.locked !== false) { toast(t('err_locked'), true); return; }
@@ -2962,7 +3129,7 @@ function staffManagePanel(e, staffArr, dim) {
   return orderRoleKeys(Object.keys(byRole)).map(roleKey =>
     '<p class="text-creamdim text-[12px] font-semibold mt-2 mb-1">' + esc(tRole(roleKey)) + '</p>' +
     byRole[roleKey].map(s =>
-      '<button class="chip ' + (e.staff && e.staff[s.id] ? 'on' : '') + dim + '" ' +
+      '<button class="chip chip-staff ' + (e.staff && e.staff[s.id] ? 'on' : '') + dim + '" ' +
       'onclick="toggleAssign(\'' + e.id + '\',\'' + s.id + '\')">' +
       (e.staff && e.staff[s.id] ? '✓ ' : '') + esc(s.name) + '</button>'
     ).join('')
@@ -2979,29 +3146,10 @@ function onLogTabChange() {
   const tab = document.querySelector('input[name="log-tab"]:checked').value;
   document.getElementById('lbl-log-ceremonies').classList.toggle('on', tab === 'ceremony');
   document.getElementById('lbl-log-catering').classList.toggle('on', tab === 'catering');
+  document.getElementById('lbl-log-past').classList.toggle('on', tab === 'past');
   renderLog();
 }
-function renderLog() {
-  const box = document.getElementById('log-list');
-  const todayISO = isoOf(new Date());
-  const tabEl = document.querySelector('input[name="log-tab"]:checked');
-  const activeTab = tabEl ? tabEl.value : 'ceremony';
-  /* Strictly: chronological list of active upcoming bookings at the top of the Log view,
-     filtered to whichever tab (Ceremonies / Catering Orders) is currently selected. */
-  const evs = Object.values(S.cache.events || {}).filter(Boolean)
-    .filter(e => (e.service === 'catering' ? 'catering' : 'ceremony') === activeTab)
-    .filter(e => !txt(e.date) || txt(e.date) >= todayISO)
-    .sort((a, b) => txt(a.date).localeCompare(txt(b.date)));
-  const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
-
-  if (!evs.length) {
-    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">' +
-      (activeTab === 'catering' ? t('no_catering') : t('no_ceremonies')) + '</p>' +
-      '<p class="text-creamdim text-sm mt-2">' + t('no_ceremonies_hint') + '</p></div>';
-    return;
-  }
-
-  box.innerHTML = evs.map(e => {
+function buildLogCardHTML(e, staffArr) {
     const total = evTotal(e);
     const balance = Math.max(0, total - num(e.advance));
     const doneCount = [0,1,2,3,4].filter(i => e.check && e.check[i]).length;
@@ -3050,6 +3198,12 @@ function renderLog() {
         '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
           '<p class="text-gold-300 font-semibold text-[13px] mb-1">' + t('assigned_staff_hdr') + '</p>' +
           assignedStaffSummary(e, staffArr) +
+          '<div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-gold-600/20">' +
+            '<span class="text-creamdim text-[13px]">' + t('staff_exp_lbl') + '</span>' +
+            '<div class="flex items-center gap-1"><span class="text-gold-300">₹</span>' +
+              '<input class="inp !w-24 text-right' + dim + '" type="number" min="0" value="' + (e.staffExpenseActual !== undefined ? num(e.staffExpenseActual) : '') + '" ' +
+                'onchange="setStaffExpense(\'' + e.id + '\', this.value)" placeholder="' + t('staff_exp_ph') + '" /></div>' +
+          '</div>' +
         '</div>' +
 
         (e.menu ? '<div class="bg-maroon-950/40 rounded-lg p-3 mt-3">' +
@@ -3094,32 +3248,210 @@ function renderLog() {
           'onclick="openRemoveConfirm(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove_record') + '</button>' +
       '</div>' +
     '</div>';
+}
+function renderLog() {
+  const box = document.getElementById('log-list');
+  const todayISO = isoOf(new Date());
+  const tabEl = document.querySelector('input[name="log-tab"]:checked');
+  const activeTab = tabEl ? tabEl.value : 'ceremony';
+
+  if (activeTab === 'past') { renderPastLog(); return; }
+
+  /* Strictly: chronological list of active upcoming bookings at the top of the Log view,
+     filtered to whichever tab (Ceremonies / Catering Orders) is currently selected. */
+  const evs = Object.values(S.cache.events || {}).filter(Boolean)
+    .filter(e => (e.service === 'catering' ? 'catering' : 'ceremony') === activeTab)
+    .filter(e => !txt(e.date) || txt(e.date) >= todayISO)
+    .sort((a, b) => txt(a.date).localeCompare(txt(b.date)));
+  const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
+
+  if (!evs.length) {
+    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">' +
+      (activeTab === 'catering' ? t('no_catering') : t('no_ceremonies')) + '</p>' +
+      '<p class="text-creamdim text-sm mt-2">' + t('no_ceremonies_hint') + '</p></div>';
+    return;
+  }
+
+  box.innerHTML = evs.map(e => buildLogCardHTML(e, staffArr)).join('');
+}
+/* =====================================================
+   PAST / FINISHED BOOKINGS ARCHIVE — browse history, grouped
+   by year → month (newest first). Distinct from the Anniversary
+   Reminder Radar (which surfaces forward-looking reminders);
+   this is purely for looking back. Reuses the same rich card
+   as the live Log so a past booking can still be corrected
+   (e.g. logging staff expense after the fact) if needed.
+   ===================================================== */
+function renderPastLog() {
+  const box = document.getElementById('log-list');
+  const todayISO = isoOf(new Date());
+  const staffArr = Object.values(S.cache.staff || {}).filter(Boolean);
+  const past = Object.values(S.cache.events || {}).filter(Boolean)
+    .filter(e => txt(e.date) && txt(e.date) < todayISO)
+    .sort((a, b) => txt(b.date).localeCompare(txt(a.date)));
+
+  if (!past.length) {
+    box.innerHTML = '<div class="card p-5 text-center"><p class="text-cream text-base">' + t('no_past_bookings') + '</p>' +
+      '<p class="text-creamdim text-sm mt-2">' + t('no_past_bookings_hint') + '</p></div>';
+    return;
+  }
+
+  const groups = {};
+  const order = [];
+  past.forEach(e => {
+    const ym = txt(e.date).slice(0, 7); /* YYYY-MM */
+    if (!groups[ym]) { groups[ym] = []; order.push(ym); }
+    groups[ym].push(e);
+  });
+
+  S.pastMonthOpen = S.pastMonthOpen || {};
+  box.innerHTML = order.map((ym, idx) => {
+    const parts = ym.split('-').map(x => int(x));
+    const monthLabel = new Date(parts[0], parts[1] - 1, 1).toLocaleDateString(loc(), { month:'long', year:'numeric' });
+    /* Most recent month open by default, the rest collapsed. */
+    if (!(ym in S.pastMonthOpen)) S.pastMonthOpen[ym] = idx === 0;
+    const isOpen = !!S.pastMonthOpen[ym];
+    const evsInMonth = groups[ym];
+    return '<div class="card mb-3 overflow-hidden">' +
+      '<button class="w-full flex items-center justify-between text-left p-4" onclick="togglePastMonth(\'' + ym + '\')" aria-expanded="' + isOpen + '">' +
+        '<span class="text-gold-300 font-semibold">📜 ' + monthLabel +
+          ' <span class="text-creamdim text-[12px] font-normal">(' + evsInMonth.length + ')</span></span>' +
+        '<span id="past-arrow-' + ym + '" class="text-gold-400 text-lg transition-transform" style="transform:' + (isOpen ? 'rotate(90deg)' : 'rotate(0deg)') + '">▸</span>' +
+      '</button>' +
+      '<div id="past-body-' + ym + '" class="' + (isOpen ? '' : 'hidden') + ' px-4 pb-4">' +
+        evsInMonth.map(e => buildLogCardHTML(e, staffArr)).join('') +
+      '</div>' +
+    '</div>';
   }).join('');
+}
+function togglePastMonth(ym) {
+  S.pastMonthOpen = S.pastMonthOpen || {};
+  S.pastMonthOpen[ym] = !S.pastMonthOpen[ym];
+  const body = document.getElementById('past-body-' + ym);
+  const arrow = document.getElementById('past-arrow-' + ym);
+  if (body) body.classList.toggle('hidden', !S.pastMonthOpen[ym]);
+  if (arrow) arrow.style.transform = S.pastMonthOpen[ym] ? 'rotate(90deg)' : 'rotate(0deg)';
 }
 
 /* =====================================================
    GROCERY CALCULATOR — 15% PROTECTIVE MARGIN
    ===================================================== */
-const GROCERY_TABLE = [
-  { nameKey:'gi_rice',    enName:'Rice',        unit:'kg',     perPlate:0.120, rateId:'rate_rice',    isRice:true },
-  { nameKey:'gi_dal',     enName:'Toor Dal',    unit:'kg',     perPlate:0.030, rateId:'rate_dal' },
-  { nameKey:'gi_veg',     enName:'Vegetables',  unit:'kg',     perPlate:0.150, rateId:null },
-  { nameKey:'gi_coconut', enName:'Coconuts',    unit:'pcs',    perPlate:0.050, rateId:'rate_coconut', whole:true },
-  { nameKey:'gi_oil',     enName:'Cooking oil', unit:'L',      perPlate:0.020, rateId:null },
-  { nameKey:'gi_ghee',    enName:'Ghee',        unit:'kg',     perPlate:0.006, rateId:null },
-  { nameKey:'gi_curd',    enName:'Curd / Milk', unit:'L',      perPlate:0.060, rateId:null }
+/* =====================================================
+   GROCERY CALCULATOR — MATERIALS (fully editable)
+   Materials live in Firebase (groceryItems/{id}), not a fixed
+   in-code list. Seeded once from the original 7-item defaults
+   on first run (guarded by settings/groceryItemsSeeded so a
+   later empty list — because the user deleted everything —
+   never gets silently re-seeded). Each item: name, unit,
+   perPlate qty, optional 'whole' (round up to whole units,
+   e.g. coconuts) and 'isRice' (gets the fasting-day reduction),
+   optional rateId to link a specific Rate Book entry.
+   ===================================================== */
+const GROCERY_SEED_ITEMS = [
+  { name:'Rice',        unit:'kg',  perPlate:0.120, rateId:'rate_rice',    isRice:true },
+  { name:'Toor Dal',    unit:'kg',  perPlate:0.030, rateId:'rate_dal' },
+  { name:'Vegetables',  unit:'kg',  perPlate:0.150 },
+  { name:'Coconuts',    unit:'pcs', perPlate:0.050, rateId:'rate_coconut', whole:true },
+  { name:'Cooking oil', unit:'L',   perPlate:0.020 },
+  { name:'Ghee',        unit:'kg',  perPlate:0.006 },
+  { name:'Curd / Milk', unit:'L',   perPlate:0.060 }
 ];
-/* grocery item display names live in the dictionary too */
-I18N.en.gi_rice='Rice'; I18N.en.gi_dal='Toor Dal'; I18N.en.gi_veg='Vegetables';
-I18N.en.gi_coconut='Coconuts'; I18N.en.gi_oil='Cooking oil'; I18N.en.gi_ghee='Ghee'; I18N.en.gi_curd='Curd / Milk';
-I18N.te.gi_rice='బియ్యం'; I18N.te.gi_dal='కందిపప్పు'; I18N.te.gi_veg='కూరగాయలు';
-I18N.te.gi_coconut='కొబ్బరికాయలు'; I18N.te.gi_oil='నూనె'; I18N.te.gi_ghee='నెయ్యి'; I18N.te.gi_curd='పెరుగు / పాలు';
-
+function seedGroceryItemsIfNeeded() {
+  if (S._groceryItemsSeeding) return;
+  const already = S.cache.settings && S.cache.settings.groceryItemsSeeded;
+  const hasItems = Object.keys(S.cache.groceryItems || {}).length > 0;
+  if (already || hasItems) return;
+  S._groceryItemsSeeding = true;
+  const updates = {};
+  GROCERY_SEED_ITEMS.forEach((it, i) => {
+    const id = uid('gi');
+    updates['groceryItems/' + id] = Object.assign({ id, order: i, updated: Date.now() }, it);
+  });
+  updates['settings/groceryItemsSeeded'] = true;
+  S.db.ref('/').update(updates).catch(err => console.error(err));
+}
+function allGroceryItems() {
+  return Object.values(S.cache.groceryItems || {}).filter(Boolean)
+    .sort((a, b) => (a.order !== undefined ? a.order : 0) - (b.order !== undefined ? b.order : 0));
+}
+function addGroceryItem() {
+  const name = txt(document.getElementById('gm-new-name').value);
+  const unit = txt(document.getElementById('gm-new-unit').value) || 'kg';
+  const perPlate = num(document.getElementById('gm-new-perplate').value);
+  if (!name) { toast(t('err_item'), true); return; }
+  if (perPlate <= 0) { toast(t('gm_err_qty'), true); return; }
+  const id = uid('gi');
+  const order = allGroceryItems().length;
+  save('groceryItems/' + id, { id, name, unit, perPlate, order, updated: Date.now() })
+    .then(() => {
+      toast(name + ' — ' + t('rate_added'));
+      ['gm-new-name','gm-new-unit','gm-new-perplate'].forEach(i => document.getElementById(i).value = '');
+    });
+}
+function updateGroceryItemField(id, field, value) {
+  const upd = { id };
+  if (field === 'perPlate') upd.perPlate = num(value);
+  else if (field === 'whole' || field === 'isRice') upd[field] = !!value;
+  else upd[field] = txt(value);
+  save('groceryItems/' + id, upd);
+}
+function delGroceryItem(id, name) {
+  if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_grocery_item'))) removeKey('groceryItems', id);
+}
+function toggleGroceryMaterials() {
+  const panel = document.getElementById('gc-materials-panel');
+  if (!panel) return;
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden');
+  if (opening) renderGroceryMaterials();
+}
+function renderGroceryMaterials() {
+  const box = document.getElementById('gc-materials-list');
+  if (!box) return;
+  const items = allGroceryItems();
+  box.innerHTML =
+    (items.length ? items.map(it =>
+      '<div class="card p-3 mb-2">' +
+        '<div class="flex gap-2 mb-2">' +
+          '<input class="inp flex-1" value="' + esc(it.name) + '" placeholder="' + t('gm_name_ph') + '" ' +
+            'onchange="updateGroceryItemField(\'' + it.id + '\',\'name\',this.value)" />' +
+          '<input class="inp !w-20" value="' + esc(it.unit) + '" placeholder="' + t('gm_unit_ph') + '" ' +
+            'onchange="updateGroceryItemField(\'' + it.id + '\',\'unit\',this.value)" />' +
+        '</div>' +
+        '<div class="flex items-center gap-2 mb-2">' +
+          '<span class="text-creamdim text-[12px]">' + t('gm_perplate_lbl') + '</span>' +
+          '<input class="inp !w-24" type="number" min="0" step="0.001" value="' + num(it.perPlate) + '" ' +
+            'onchange="updateGroceryItemField(\'' + it.id + '\',\'perPlate\',this.value)" />' +
+          '<span class="text-creamdim text-[12px]">' + esc(it.unit) + t('gm_per_plate_suffix') + '</span>' +
+        '</div>' +
+        '<div class="flex items-center gap-3 flex-wrap">' +
+          '<label class="flex items-center gap-1 text-[12px] text-creamdim">' +
+            '<input type="checkbox" ' + (it.whole ? 'checked' : '') + ' onchange="updateGroceryItemField(\'' + it.id + '\',\'whole\',this.checked)" /> ' + t('gm_whole_lbl') +
+          '</label>' +
+          '<label class="flex items-center gap-1 text-[12px] text-creamdim">' +
+            '<input type="checkbox" ' + (it.isRice ? 'checked' : '') + ' onchange="updateGroceryItemField(\'' + it.id + '\',\'isRice\',this.checked)" /> ' + t('gm_rice_lbl') +
+          '</label>' +
+          '<button class="text-creamdim text-[12px] underline ml-auto" onclick="delGroceryItem(\'' + it.id + '\',\'' + esc(it.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
+        '</div>' +
+      '</div>'
+    ).join('') : '<p class="text-creamdim text-[13px] mb-2">' + t('gm_empty') + '</p>') +
+    '<div class="bg-maroon-950/50 rounded-lg p-3 mt-2">' +
+      '<p class="text-gold-300 font-semibold mb-2 text-[14px]">' + t('gm_add_title') + '</p>' +
+      '<div class="grid grid-cols-2 gap-2 mb-2">' +
+        '<input id="gm-new-name" class="inp" placeholder="' + t('gm_name_ph') + '" />' +
+        '<input id="gm-new-unit" class="inp" placeholder="' + t('gm_unit_ph') + '" />' +
+      '</div>' +
+      '<div class="flex gap-2">' +
+        '<input id="gm-new-perplate" class="inp flex-1" type="number" min="0" step="0.001" placeholder="' + t('gm_perplate_ph') + '" />' +
+        '<button class="btn-gold shrink-0" onclick="addGroceryItem()">' + t('add_btn') + '</button>' +
+      '</div>' +
+    '</div>';
+}
 function findRate(item) {
   const stored = S.cache.rates || {};
   if (item.rateId && stored[item.rateId] && stored[item.rateId].price !== undefined)
     return num(stored[item.rateId].price);
-  const frag = item.enName.toLowerCase().split(' ')[0];
+  const frag = txt(item.name).toLowerCase().split(' ')[0];
   const hit = Object.values(stored).find(r => r && txt(r.name).toLowerCase().includes(frag) && r.price !== undefined);
   return hit ? num(hit.price) : null;
 }
@@ -3146,9 +3478,16 @@ function runGrocery() {
     }
   }
 
+  const materials = allGroceryItems();
+  if (!materials.length) {
+    out.classList.remove('hidden');
+    out.innerHTML = '<div class="card p-4 text-center text-creamdim text-sm">' + t('gm_empty_calc') + '</div>';
+    return;
+  }
+
   let costTotal = 0, hasAllRates = true;
-  const rows = GROCERY_TABLE.map(item => {
-    let qty = head * item.perPlate * GROCERY_MARGIN;
+  const rows = materials.map(item => {
+    let qty = head * num(item.perPlate) * GROCERY_MARGIN;
     if (item.isRice) qty *= riceFactor;
     qty = item.whole ? Math.ceil(qty) : Math.round(qty * 10) / 10;
     const rate = findRate(item);
@@ -3156,8 +3495,8 @@ function runGrocery() {
     if (rate !== null) { const c = qty * rate; costTotal += c; costCell = inr(c); }
     else hasAllRates = false;
     return '<div class="flex justify-between text-[15px] mb-1">' +
-      '<span>' + t(item.nameKey) + '</span>' +
-      '<span class="text-gold-300">' + qty + ' ' + item.unit + '</span>' +
+      '<span>' + esc(item.name) + '</span>' +
+      '<span class="text-gold-300">' + qty + ' ' + esc(item.unit) + '</span>' +
       '<span class="w-20 text-right">' + costCell + '</span></div>';
   }).join('');
 
@@ -3187,6 +3526,14 @@ function expensesByCat(ym) {
   });
   return sums;
 }
+/* Sum of manually-logged ACTUAL per-booking staff expenses for the month — distinct
+   from (and added on top of) the general 'Labour' category in the Expense Log, which
+   covers staff costs not tied to a specific ceremony. */
+function perBookingStaffExpenseSum(ym) {
+  return Object.values(S.cache.events || {}).filter(Boolean)
+    .filter(e => txt(e.date).startsWith(ym))
+    .reduce((s, e) => s + num(e.staffExpenseActual), 0);
+}
 function renderPnl() {
   const ym = txt(document.getElementById('pnl-month').value);
   const out = document.getElementById('pnl-out');
@@ -3210,7 +3557,9 @@ function renderPnl() {
   const gross = ceremonyGross + cateringGross + tiffinGross;
 
   const cats = expensesByCat(ym);
-  const wages = num(cats['Labour']);
+  const wagesGeneral = num(cats['Labour']);
+  const wagesPerBooking = perBookingStaffExpenseSum(ym);
+  const wages = wagesGeneral + wagesPerBooking;
   const groceries = num(cats['Groceries']) + num(cats['Dairy']) + num(cats['Flowers']);
   const otherExp = Object.keys(cats).reduce((s, c) =>
     ['Labour','Groceries','Dairy','Flowers'].indexOf(c) >= 0 ? s : s + num(cats[c]), 0);
@@ -3252,6 +3601,7 @@ function renderPnl() {
 
       '<p class="text-gold-300 font-semibold text-[14px] mt-3 mb-1">' + t('deductions') + '</p>' +
       line(t('wages'), wages) +
+      (wagesPerBooking ? '<p class="text-creamdim text-[11px] -mt-1 mb-1 pl-1">' + t('wages_breakdown_note') + ' ' + inr(wagesGeneral) + ' + ' + t('wages_perbooking_note') + ' ' + inr(wagesPerBooking) + '</p>' : '') +
       line(t('var_groceries'), groceries) +
       (otherExp ? line(t('other_exp'), otherExp) : '') +
 
@@ -3690,6 +4040,140 @@ function relativeCardHTML(rel) {
     '</div>' +
   '</div>';
 }
+/* =====================================================
+   HISTORICAL CUSTOMER/RELATIVE AUTO-DETECTION
+   Scans ceremony bookings made before the Customer/Relative
+   registry existed (events with no customerId yet) and builds:
+   - a Customer entry per distinct client name+phone, matched
+     against existing customers first so nothing is duplicated
+   - a Relative entry for each customer's Shraddha / Pitru Karya
+     history, using the earliest such booking's date as a
+     best-guess reference point for the masa/paksha/tithi cycle
+   Fully automatic, no per-entry confirmation — but every write
+   is also logged to historicalScanLog so it's easy to review
+   and correct anything that came out wrong. The deceased
+   relative's real name is never in the old data, so those get
+   an explicit "(auto-detected — verify)" placeholder name.
+   Idempotent: already-linked events are always skipped, so
+   running this again only picks up genuinely new legacy data.
+   ===================================================== */
+function confirmHistoricalScan() {
+  if (confirm(t('hscan_confirm'))) scanHistoricalBookings();
+}
+function scanHistoricalBookings() {
+  const legacyEvents = Object.values(S.cache.events || {}).filter(Boolean)
+    .filter(e => e.service !== 'catering')
+    .filter(e => !e.customerId && txt(e.client));
+
+  if (!legacyEvents.length) { toast(t('hscan_none')); return; }
+
+  const customerKey = (name, phone) => {
+    const digits = txt(phone).replace(/\D/g, '');
+    return digits || ('name:' + txt(name).toLowerCase());
+  };
+  const customerByKey = {};
+  Object.values(S.cache.customers || {}).filter(Boolean)
+    .forEach(c => { customerByKey[customerKey(c.name, c.phone)] = c; });
+
+  const groups = {};
+  legacyEvents.forEach(e => {
+    const key = customerKey(e.client, e.phone);
+    (groups[key] = groups[key] || []).push(e);
+  });
+
+  const updates = {};
+  const logEntries = [];
+  const now = Date.now();
+
+  Object.keys(groups).forEach(key => {
+    const groupEvents = groups[key];
+    const first = groupEvents[0];
+    let customerId;
+    const existing = customerByKey[key];
+
+    if (existing) {
+      customerId = existing.id;
+    } else {
+      customerId = uid('cu');
+      updates['customers/' + customerId] = {
+        id: customerId, name: first.client, phone: txt(first.phone),
+        created: now, autoDetected: true
+      };
+      customerByKey[key] = { id: customerId, name: first.client, phone: first.phone };
+      logEntries.push({
+        id: uid('hlog'), type: 'customer', name: first.client, createdId: customerId,
+        sourceEventIds: groupEvents.map(e => e.id), timestamp: now,
+        note: t('hscan_note_customer')
+      });
+    }
+
+    groupEvents.forEach(e => { updates['events/' + e.id + '/customerId'] = customerId; });
+
+    const ritualEvents = groupEvents
+      .filter(e => txt(e.type) === 'Shraddha / Pitru Karya' && !e.relativeId && txt(e.date))
+      .sort((a, b) => txt(a.date).localeCompare(txt(b.date)));
+
+    if (ritualEvents.length) {
+      const earliest = ritualEvents[0];
+      const parts = txt(earliest.date).split('-').map(x => int(x));
+      const p = panchangaFor(parts[0], parts[1], parts[2]);
+      const relId = uid('rel');
+      const relName = first.client + ' ' + t('hscan_relative_suffix');
+      updates['relatives/' + relId] = {
+        id: relId, customerId, name: relName, relation: 'Other', vedaShakha: 'Other',
+        deathDate: earliest.date, wantsVaikuntha: false,
+        masa: p.masaIdx, paksha: p.pakshaIdx, tithi: p.tIdx,
+        created: now, autoDetected: true
+      };
+      ritualEvents.forEach(e => { updates['events/' + e.id + '/relativeId'] = relId; });
+      logEntries.push({
+        id: uid('hlog'), type: 'relative', name: relName, createdId: relId,
+        sourceEventIds: ritualEvents.map(e => e.id), timestamp: now,
+        note: t('hscan_note_relative')
+      });
+    }
+  });
+
+  if (!logEntries.length) { toast(t('hscan_none_new')); return; }
+  logEntries.forEach(entry => { updates['historicalScanLog/' + entry.id] = entry; });
+
+  S.db.ref('/').update(updates)
+    .then(() => toast(logEntries.length + ' ' + t('hscan_done_suffix')))
+    .catch(err => { toast(t('err_save'), true); console.error(err); });
+}
+function renderHistoricalScanLog() {
+  const box = document.getElementById('hscan-log');
+  if (!box) return;
+  const entries = Object.values(S.cache.historicalScanLog || {}).filter(Boolean)
+    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  if (!entries.length) { box.innerHTML = ''; return; }
+  box.innerHTML =
+    '<p class="text-gold-300 font-semibold text-[13px] mb-2">' + t('hscan_log_title') + ' (' + entries.length + ')</p>' +
+    entries.map(entry => {
+      const isCustomer = entry.type === 'customer';
+      const editFn = isCustomer ? 'jumpToEditCustomer' : 'editRelative';
+      return '<div class="card p-3 mb-2">' +
+        '<div class="flex items-center justify-between gap-2">' +
+          '<div class="flex-1 min-w-0">' +
+            '<p class="text-cream font-semibold text-[14px] truncate">' + (isCustomer ? '👤 ' : '🪔 ') + esc(entry.name) + '</p>' +
+            '<p class="text-creamdim text-[12px]">' + (isCustomer ? t('hscan_tag_customer') : t('hscan_tag_relative')) + ' · ' +
+              (entry.sourceEventIds ? entry.sourceEventIds.length : 0) + ' ' + t('hscan_source_bookings') + '</p>' +
+          '</div>' +
+          '<button class="btn-line text-[12px] shrink-0" onclick="' + editFn + '(\'' + entry.createdId + '\')">' + t('edit_word') + '</button>' +
+        '</div>' +
+        (entry.note ? '<p class="text-saffron text-[11px] mt-1">' + esc(entry.note) + '</p>' : '') +
+      '</div>';
+    }).join('');
+}
+/* Customer editing lives inline in the Ledger tab's collapsed Pitru registry panel,
+   not a modal — so jumping there from elsewhere needs to switch tab and open the
+   accordion first, then let editCustomer() scroll the form into view. */
+function jumpToEditCustomer(id) {
+  nav('ledger');
+  const body = document.getElementById('ledger-body-pitru');
+  if (body && body.dataset.open !== '1') toggleAccordion('ledger-body-pitru', 'ledger-arrow-pitru');
+  setTimeout(() => editCustomer(id), 60);
+}
 function renderCustomerRegistry() {
   const box = document.getElementById('customer-registry-list');
   if (!box) return;
@@ -3709,7 +4193,7 @@ function renderCustomerRegistry() {
       '<div class="flex items-center justify-between gap-2 p-3">' +
         '<button class="flex-1 min-w-0 text-left flex items-center gap-2" onclick="toggleAccordion(\'cust-body-' + cu.id + '\',\'cust-arrow-' + cu.id + '\')">' +
           '<span id="cust-arrow-' + cu.id + '" class="acc-arrow text-gold-400 shrink-0">▸</span>' +
-          '<span class="text-cream font-semibold truncate">' + esc(cu.name) + '</span>' +
+          '<span class="text-cream font-semibold truncate min-w-0">' + esc(cu.name) + '</span>' +
           (cu.phone ? '<span class="text-creamdim text-[12px] shrink-0">· ' + esc(cu.phone) + '</span>' : '') +
         '</button>' +
         '<button class="text-gold-300 text-[12px] underline shrink-0" onclick="editCustomer(\'' + cu.id + '\')">' + t('edit_word') + '</button>' +
@@ -3946,7 +4430,7 @@ function renderAnniversaryRadar() {
    TIFFIN SUBSCRIPTION HUB
    ===================================================== */
 const MEALS = [ ['b','breakfast','rateB','gb'], ['l','lunch','rateL','gl'], ['d','dinner','rateD','gd'] ];
-const STATUSES = ['given','pending','skip'];
+const STATUSES = ['given','skip'];
 const MEAL_PLAN_I18N = { breakfast:'plan_breakfast', lunch:'plan_lunch', dinner:'plan_dinner', all:'plan_all' };
 function mealsForClient(c) {
   const plan = txt(c.mealPlan) || 'all';
@@ -4017,6 +4501,22 @@ function bumpGuest(cid, iso, gkey, delta) {
   const cur = int(tlog(cid, iso)[gkey]);
   save('tiffinlog/' + cid + '/' + iso, { [gkey]: Math.max(0, cur + delta) });
 }
+/* Bulk "mark all as Given" for whichever day is currently shown on the Tiffin page —
+   sets every active client's meals (per their meal plan) to Given in one tap, instead
+   of tapping each customer individually. Skips clients on vacation or paused that day. */
+function bulkMarkAllGiven() {
+  const iso = S.tiffinDate;
+  if (!confirm(t('cf_bulk_given'))) return;
+  const clients = Object.values(S.cache.tiffin || {}).filter(Boolean)
+    .filter(c => !inVacation(c, iso) && !c.paused);
+  if (!clients.length) { toast(t('bulk_given_none'), true); return; }
+  const jobs = clients.map(c => {
+    const upd = {};
+    mealsForClient(c).forEach(mealDef => { upd[mealDef[0]] = 'given'; });
+    return save('tiffinlog/' + c.id + '/' + iso, upd);
+  });
+  Promise.all(jobs).then(() => toast(t('bulk_given_done')));
+}
 function saveVacation(cid) {
   const from = txt(document.getElementById('vac-from-' + cid).value);
   const to   = txt(document.getElementById('vac-to-' + cid).value);
@@ -4030,6 +4530,16 @@ function clearVacation(cid) {
 }
 function toggleVacPanel(cid) {
   document.getElementById('vacpanel-' + cid).classList.toggle('hidden');
+}
+/* Quick indefinite pause/resume for a subscription — one tap, no dates needed.
+   Distinct from the date-range Vacation feature (for planned trips with a known
+   return date): Pause is for "stop for now, resume whenever". */
+function toggleTClientPause(cid) {
+  const c = S.cache.tiffin[cid];
+  if (!c) return;
+  const next = !c.paused;
+  save('tiffin/' + cid, { paused: next })
+    .then(() => toast(esc(c.name) + ' — ' + (next ? t('paused_msg') : t('resumed_msg'))));
 }
 function renderTiffin() {
   if (!S.tiffinDate) S.tiffinDate = isoOf(new Date());
@@ -4053,11 +4563,13 @@ function renderTiffin() {
     const vac = inVacation(c, iso);
     const log = tlog(c.id, iso);
 
-    const mealRows = vac
+    const mealRows = c.paused
+      ? '<div class="bg-maroon-950/60 rounded-lg p-3 text-center text-saffron text-[15px]">' + t('paused_day') + '</div>'
+      : vac
       ? '<div class="bg-maroon-950/60 rounded-lg p-3 text-center text-saffron text-[15px]">' + t('vac_day') + '</div>'
       : mealsForClient(c).map(mealDef => {
           const k = mealDef[0], labelKey = mealDef[1], rk = mealDef[2], gk = mealDef[3];
-          const st = txt(log[k]) || 'pending';
+          const st = txt(log[k]);
           const g  = int(log[gk]);
           return '<div class="mb-3">' +
             '<div class="flex justify-between items-baseline mb-1">' +
@@ -4080,6 +4592,7 @@ function renderTiffin() {
       '<div class="flex justify-between items-start mb-3">' +
         '<div>' +
           '<p class="text-cream font-semibold text-[17px]">' + esc(c.name) +
+            (c.paused ? ' <span class="text-saffron text-[12px]">⏸ ' + t('paused_tag') + '</span>' : '') +
             (c.vacFrom && c.vacTo ? ' <span class="text-saffron text-[12px]">🌴 ' + esc(c.vacFrom) + ' → ' + esc(c.vacTo) + '</span>' : '') + '</p>' +
           (c.phone ? '<p class="text-creamdim text-[13px]">' + esc(c.phone) + '</p>' : '') +
           '<p class="text-creamdim text-[12px] mt-0.5">' +
@@ -4090,9 +4603,10 @@ function renderTiffin() {
         '<button class="text-creamdim text-[13px] underline" onclick="delTClient(\'' + c.id + '\',\'' + esc(c.name).replace(/'/g,'') + '\')">' + t('remove') + '</button>' +
       '</div>' +
       mealRows +
-      '<div class="grid grid-cols-2 gap-2 mt-3">' +
-        '<button class="btn-line" onclick="toggleVacPanel(\'' + c.id + '\')">' + t('vacation_btn') + '</button>' +
-        '<button class="btn-gold" onclick="openReceipt(\'' + c.id + '\')">' + t('monthly_bill') + '</button>' +
+      '<div class="grid grid-cols-3 gap-2 mt-3">' +
+        '<button class="btn-line text-[13px]" onclick="toggleVacPanel(\'' + c.id + '\')">' + t('vacation_btn') + '</button>' +
+        '<button class="btn-line text-[13px]" onclick="toggleTClientPause(\'' + c.id + '\')">' + (c.paused ? t('resume_btn') : t('pause_btn')) + '</button>' +
+        '<button class="btn-gold text-[13px]" onclick="openReceipt(\'' + c.id + '\')">' + t('monthly_bill') + '</button>' +
       '</div>' +
       '<div id="vacpanel-' + c.id + '" class="hidden mt-3 bg-maroon-950/60 rounded-lg p-3">' +
         '<p class="text-creamdim text-[13px] mb-2">' + t('vac_note') + '</p>' +
@@ -4294,7 +4808,7 @@ function renderStaff() {
     const ph = txt(s.phone).replace(/\D/g, '');
     const wa = ph ? (ph.length === 10 ? '91' + ph : ph) : '';
     return '<div class="card p-4 mb-2 flex items-center justify-between gap-2 flex-wrap">' +
-      '<div class="flex-1 min-w-[120px]">' +
+      '<div class="flex-1 min-w-[7.5rem]">' +
         '<p class="text-cream font-semibold">' + esc(s.name) + '</p>' +
         '<p class="text-creamdim text-[14px]">' + esc(tRole(s.role)) + ' · ₹' + num(s.wage) + t('per_day') + '</p>' +
       '</div>' +
@@ -4339,6 +4853,36 @@ function buildCustomerContactList() {
   Object.values(S.cache.events || {}).filter(Boolean).forEach(e => addContact(e.client, e.phone, 'booking'));
   Object.values(S.cache.tiffin || {}).filter(Boolean).forEach(c => addContact(c.name, c.phone, 'tiffin'));
   return Object.values(map).sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
+}
+/* =====================================================
+   AUTOCOMPLETE — as-you-type name suggestions via native
+   <datalist>, so previously-entered people don't need to be
+   retyped. Client list draws on every known source (Customer
+   Registry, past bookings, Tiffin clients); staff list draws
+   on the Staff Registry. Refreshed whenever the underlying
+   cache updates (see bind() calls) and once on boot.
+   ===================================================== */
+function refreshClientDatalist() {
+  const dl = document.getElementById('bk-client-list');
+  if (!dl) return;
+  dl.innerHTML = buildCustomerContactList().map(c => '<option value="' + esc(c.name) + '"></option>').join('');
+}
+function refreshStaffNameDatalist() {
+  const dl = document.getElementById('st-name-list');
+  if (!dl) return;
+  const names = Array.from(new Set(
+    Object.values(S.cache.staff || {}).filter(Boolean).map(s => txt(s.name)).filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b));
+  dl.innerHTML = names.map(n => '<option value="' + esc(n) + '"></option>').join('');
+}
+/* When the typed client name exactly matches a known contact and the phone field is
+   still empty, auto-fill the phone too — but never overwrite a phone already typed. */
+function onBkClientInput() {
+  const nameVal = txt(document.getElementById('bk-client').value);
+  const phoneField = document.getElementById('bk-phone');
+  if (!nameVal || !phoneField || txt(phoneField.value)) return;
+  const match = buildCustomerContactList().find(c => c.name.toLowerCase() === nameVal.toLowerCase());
+  if (match && match.phone) phoneField.value = match.phone;
 }
 function renderContactsList(tab) {
   const box = document.getElementById('contacts-list');
@@ -4636,6 +5180,28 @@ function setRate(id, name, unit, val) {
 function delRate(id, name) {
   if (confirm(t('cf_remove') + ' ' + name + ' ' + t('cf_remove_rate'))) removeKey('rates', id);
 }
+/* Rate Book reordering — move-up/move-down, persisted per-item as an 'order' field
+   under rates/{id}. Default items start ordered by their DEFAULT_RATES array position;
+   custom items start ordered by creation time; either can be moved thereafter. Only
+   the 'order' field is written so price/name/unit already stored are never touched. */
+function moveRateItem(catId, id, direction) {
+  const stored = S.cache.rates || {};
+  const rows = DEFAULT_RATES.map((d, i) => Object.assign({ order: i }, d, stored[d.id] || {}));
+  Object.values(stored).forEach(r => {
+    if (r && !DEFAULT_RATES.some(d => d.id === r.id)) {
+      rows.push(Object.assign({ cat: 'other', order: (r.order !== undefined ? r.order : (r.created || r.updated || 0)) }, r));
+    }
+  });
+  const items = rows.filter(r => (r.cat || 'other') === catId)
+    .sort((a, b) => (a.order !== undefined ? a.order : 0) - (b.order !== undefined ? b.order : 0));
+  const idx = items.findIndex(r => r.id === id);
+  if (idx === -1) return;
+  const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= items.length) return;
+  const a = items[idx], b = items[swapIdx];
+  save('rates/' + a.id, { id: a.id, order: b.order });
+  save('rates/' + b.id, { id: b.id, order: a.order });
+}
 function toggleRateCategory(catId) {
   S.rateCatOpen = S.rateCatOpen || {};
   S.rateCatOpen[catId] = !S.rateCatOpen[catId];
@@ -4697,20 +5263,29 @@ function confirmAddRate() {
 function renderRates() {
   const box = document.getElementById('rate-list');
   const stored = S.cache.rates || {};
-  const rows = DEFAULT_RATES.map(d => Object.assign({}, d, stored[d.id] || {}));
+  const rows = DEFAULT_RATES.map((d, i) => Object.assign({ order: i }, d, stored[d.id] || {}));
   Object.values(stored).forEach(r => {
-    if (r && !DEFAULT_RATES.some(d => d.id === r.id)) rows.push(Object.assign({ cat: 'other' }, r));
+    if (r && !DEFAULT_RATES.some(d => d.id === r.id)) {
+      rows.push(Object.assign({ cat: 'other', order: (r.created || r.updated || 0) }, r));
+    }
   });
 
   box.innerHTML = RATE_CATEGORIES.map(catDef => {
-    const items = rows.filter(r => (r.cat || 'other') === catDef.id);
+    const items = rows.filter(r => (r.cat || 'other') === catDef.id)
+      .sort((a, b) => (a.order !== undefined ? a.order : 0) - (b.order !== undefined ? b.order : 0));
     const isOpen = !!(S.rateCatOpen && S.rateCatOpen[catDef.id]);
 
-    const itemRows = items.map(r => {
+    const itemRows = items.map((r, idx) => {
       const isDefault = DEFAULT_RATES.some(d => d.id === r.id);
-      return '<div class="card p-3 mb-2 flex items-center gap-3">' +
-        '<div class="flex-1">' +
-          '<p class="text-cream font-semibold text-[15px]">' + esc(r.name) + '</p>' +
+      return '<div class="card p-3 mb-2 flex items-center gap-2">' +
+        '<div class="flex flex-col shrink-0">' +
+          '<button class="text-gold-300 text-[14px] leading-none px-1 py-0.5' + (idx === 0 ? ' opacity-25 pointer-events-none' : '') + '" ' +
+            'onclick="moveRateItem(\'' + catDef.id + '\',\'' + r.id + '\',\'up\')" aria-label="Move up">▲</button>' +
+          '<button class="text-gold-300 text-[14px] leading-none px-1 py-0.5' + (idx === items.length - 1 ? ' opacity-25 pointer-events-none' : '') + '" ' +
+            'onclick="moveRateItem(\'' + catDef.id + '\',\'' + r.id + '\',\'down\')" aria-label="Move down">▼</button>' +
+        '</div>' +
+        '<div class="flex-1 min-w-0">' +
+          '<p class="text-cream font-semibold text-[15px] truncate">' + esc(r.name) + '</p>' +
           '<p class="text-creamdim text-[12px]">' + esc(r.unit) + ' · ' + daysAgoLabel(r.updated) + '</p>' +
         '</div>' +
         '<div class="flex items-center gap-1">' +
@@ -4954,21 +5529,23 @@ function attachListeners() {
     });
     S.listeners.push({ ref, fn });
   };
-  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); renderContactsCurrentTab(); });
+  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); renderContactsCurrentTab(); refreshClientDatalist(); });
   bind('expenses',  'expenses',  () => { renderExpRecent(); renderPnl(); });
   bind('pitru',     'pitru',     () => { renderPitruList(); });
-  bind('customers', 'customers', () => { renderCustomerRegistry(); renderContactsCurrentTab(); });
+  bind('customers', 'customers', () => { renderCustomerRegistry(); renderContactsCurrentTab(); refreshClientDatalist(); });
   bind('relatives', 'relatives', () => { renderCustomerRegistry(); });
   bind('cateringItems', 'cateringItems', () => { renderCateringMenu(); });
-  bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); renderContactsCurrentTab(); });
+  bind('groceryItems', 'groceryItems', () => { renderGroceryMaterials(); seedGroceryItemsIfNeeded(); });
+  bind('historicalScanLog', 'historicalScanLog', () => { renderHistoricalScanLog(); });
+  bind('tiffin',    'tiffin',    () => { renderTiffin(); renderPnl(); renderContactsCurrentTab(); refreshClientDatalist(); });
   bind('tiffinlog', 'tiffinlog', () => {
     renderTiffin(); renderPnl();
     if (S.billClient && !document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
   });
-  bind('staff',     'staff',     () => { renderStaff(); renderLog(); renderRadar(); renderContactsCurrentTab(); });
+  bind('staff',     'staff',     () => { renderStaff(); renderLog(); renderRadar(); renderContactsCurrentTab(); refreshStaffNameDatalist(); });
   bind('rates',     'rates',     () => { renderRates(); });
   bind('pnl',       'pnl',       () => { renderPnl(); });
-  bind('settings',  'settings',  () => { renderRadar(); });
+  bind('settings',  'settings',  () => { renderRadar(); seedGroceryItemsIfNeeded(); });
 }
 
 /* ---------- Header date line (locale follows app language) ---------- */
