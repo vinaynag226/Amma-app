@@ -454,6 +454,7 @@
           <input id="cu-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
           <button id="cu-save-btn" class="btn-gold w-full" onclick="saveCustomerForm()" data-i18n="add_customer_btn">+ Add Customer</button>
           <button id="cu-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetCustomerForm()" data-i18n="cancel_edit">Cancel edit</button>
+          <button class="btn-line w-full mt-2" onclick="bulkAddCustomersFromContacts()" data-i18n="bulk_contacts_btn">📇 Add Multiple from Contacts</button>
         </div>
 
         <div id="customer-registry-list"></div>
@@ -560,6 +561,8 @@
           <input id="st-phone" class="inp mb-2" type="tel" data-ph="phone_ph" placeholder="Phone (WhatsApp)" />
           <button id="st-save-btn" class="btn-gold w-full" onclick="saveStaffForm()" data-i18n="add_registry">Add to registry</button>
           <button id="st-cancel-edit" class="btn-line w-full mt-2 hidden" onclick="resetStaffForm()" data-i18n="cancel_edit">Cancel edit</button>
+          <button class="btn-line w-full mt-2" onclick="bulkAddStaffFromContacts()" data-i18n="bulk_contacts_btn">📇 Add Multiple from Contacts</button>
+          <p class="text-creamdim text-[11px] mt-1 leading-snug">Applies the Role and Wage selected above to everyone you pick — edit any of them individually afterward if needed.</p>
         </div>
         <div id="staff-list"></div>
       </div>
@@ -823,6 +826,31 @@
       </select>
       <p id="bk-veda-display" class="text-creamdim text-[12px] mb-2 hidden"></p>
 
+      <!-- Quick inline "Add New Customer" — used when starting a booking for a customer who
+           isn't registered yet. Keeps only what's needed to book today (name + Veda Shakha);
+           death date is optional here since Monthly/Yearly/Vaikuntha auto-scheduling needs it,
+           but a one-time booking today doesn't. Add the death date later in Ledger to unlock
+           auto-scheduling for this relative. -->
+      <div id="bk-newcust-block" class="hidden bg-maroon-950/50 rounded-lg p-3 mb-2">
+        <p class="text-gold-300 font-semibold text-[13px] mb-2">+ Add New Customer</p>
+        <div class="flex gap-2 mb-2">
+          <input id="bk-newcust-name" class="inp flex-1" placeholder="Customer name" />
+          <button class="btn-line shrink-0" onclick="pickContactInto('bk-newcust-name','bk-newcust-phone')" title="Pick from Contacts">📇</button>
+        </div>
+        <input id="bk-newcust-phone" class="inp mb-2" type="tel" placeholder="Phone (optional)" />
+        <input id="bk-newcust-relname" class="inp mb-2" placeholder="Relative's name (leave blank to use customer name)" />
+        <p class="text-creamdim text-[12px] mb-1">Veda Shakha</p>
+        <select id="bk-newcust-veda" class="inp mb-2">
+          <option value="Rigveda">Rigveda</option>
+          <option value="Yajurveda" selected>Yajurveda</option>
+          <option value="Samaveda">Samaveda</option>
+          <option value="Atharvaveda">Atharvaveda</option>
+          <option value="Other">Other</option>
+        </select>
+        <p class="text-creamdim text-[11px] mb-2 leading-snug">No death date set here, so this booking will be one-time only. Add the death date later in Ledger → Customer &amp; Relative Registry to enable Monthly/Yearly/Vaikuntha auto-scheduling for this person.</p>
+        <button class="btn-line w-full text-[13px]" onclick="createInlineCustomer()">+ Create &amp; Link to this Booking</button>
+      </div>
+
       <div id="bk-freq-block" class="hidden mb-2">
         <p class="text-creamdim text-[12px] mb-1" data-i18n="freq_lbl">Which ceremony is this?</p>
         <div class="grid grid-cols-2 gap-2">
@@ -843,6 +871,7 @@
             <span data-i18n="freq_vaikuntha">Vaikuntha Samaradhana</span>
           </label>
         </div>
+        <p id="bk-freq-incomplete-note" class="hidden text-creamdim text-[11px] mt-2 leading-snug">Monthly/Yearly/Vaikuntha aren't available yet — this relative has no death date on record. Add it in Ledger → Customer &amp; Relative Registry to unlock auto-scheduling.</p>
       </div>
       <div id="bk-schedule-preview" class="hidden bg-maroon-950/60 rounded-lg p-3 mb-2 text-[13px]"></div>
 
@@ -1447,6 +1476,11 @@ const I18N = {
     vac_cleared:'Vacation cleared.',
     contact_filled:'Contact filled in.',
     contact_unsupported:'Contact picker needs Chrome on Android. Type the details instead.',
+    bulk_contacts_btn:'📇 Add Multiple from Contacts',
+    bulk_customers_added:'customers added from contacts',
+    bulk_staff_added:'staff added from contacts',
+    bulk_skipped_dup:'already existed, skipped',
+    bulk_contacts_none_new:'No new contacts to add — all were already in the registry.',
     backup_prep:'Preparing backup…',
     backup_done:'Backup downloaded. Keep it somewhere safe.',
     backup_fail:'Backup failed. Check your connection.',
@@ -1800,6 +1834,11 @@ const I18N = {
     vac_cleared:'సెలవులు తీసేశాం.',
     contact_filled:'కాంటాక్ట్ నింపాం.',
     contact_unsupported:'కాంటాక్ట్ పికర్‌కి Android Chrome కావాలి. వివరాలు టైప్ చేయండి.',
+    bulk_contacts_btn:'📇 కాంటాక్ట్స్ నుండి చాలామందిని చేర్చండి',
+    bulk_customers_added:'కస్టమర్లు కాంటాక్ట్స్ నుండి చేర్చబడ్డారు',
+    bulk_staff_added:'సిబ్బంది కాంటాక్ట్స్ నుండి చేర్చబడ్డారు',
+    bulk_skipped_dup:'ఇప్పటికే ఉన్నారు, వదిలేశాం',
+    bulk_contacts_none_new:'చేర్చడానికి కొత్త కాంటాక్ట్‌లు లేవు — అందరూ ఇప్పటికే రిజిస్ట్రీలో ఉన్నారు.',
     backup_prep:'బ్యాకప్ సిద్ధమవుతోంది…',
     backup_done:'బ్యాకప్ డౌన్‌లోడ్ అయింది. జాగ్రత్తగా ఉంచండి.',
     backup_fail:'బ్యాకప్ విఫలమైంది. నెట్‌వర్క్ చూడండి.',
@@ -2256,6 +2295,68 @@ async function pickContactInto(nameId, phoneId) {
 function pickContact()      { return pickContactInto('bk-client', 'bk-phone'); }
 function pickStaffContact() { return pickContactInto('st-name', 'st-phone'); }
 function pickCustomerContact() { return pickContactInto('cu-name', 'cu-phone'); }
+
+/* ---------- Bulk contact import — pick several contacts at once and create a
+   record for each directly, bypassing the single-entry form. Uses the same
+   safe path-scoped update() pattern as the booking save, so it only adds the
+   new records and never overwrites the rest of the Customer/Staff list. */
+async function pickMultipleContacts() {
+  if (!('contacts' in navigator) || !('select' in navigator.contacts)) {
+    toast(t('contact_unsupported'), true);
+    return null;
+  }
+  try {
+    return await navigator.contacts.select(['name', 'tel'], { multiple: true });
+  } catch (e) { return null; /* user closed the picker; no action needed */ }
+}
+async function bulkAddCustomersFromContacts() {
+  const picked = await pickMultipleContacts();
+  if (!picked || !picked.length) return;
+  const existingPhones = new Set(
+    Object.values(S.cache.customers || {}).filter(Boolean).map(c => txt(c.phone)).filter(Boolean)
+  );
+  const updates = {};
+  let added = 0, skipped = 0;
+  picked.forEach(c => {
+    const name = c.name && c.name[0] ? txt(c.name[0]) : '';
+    const phone = c.tel && c.tel[0] ? txt(c.tel[0]) : '';
+    if (!name) { skipped++; return; }
+    if (phone && existingPhones.has(phone)) { skipped++; return; }
+    const id = uid('cu');
+    updates['customers/' + id] = { id, name, phone, created: Date.now() };
+    if (phone) existingPhones.add(phone);
+    added++;
+  });
+  if (!added) { toast(t('bulk_contacts_none_new'), true); return; }
+  S.db.ref('/').update(updates)
+    .then(() => toast(added + ' ' + t('bulk_customers_added') + (skipped ? ' (' + skipped + ' ' + t('bulk_skipped_dup') + ')' : '')))
+    .catch(err => { toast(t('err_save'), true); console.error(err); });
+}
+async function bulkAddStaffFromContacts() {
+  const picked = await pickMultipleContacts();
+  if (!picked || !picked.length) return;
+  const role = txt(document.getElementById('st-role').value) || 'Purohit';
+  const wage = num(document.getElementById('st-wage').value);
+  const existingPhones = new Set(
+    Object.values(S.cache.staff || {}).filter(Boolean).map(s => txt(s.phone)).filter(Boolean)
+  );
+  const updates = {};
+  let added = 0, skipped = 0;
+  picked.forEach(c => {
+    const name = c.name && c.name[0] ? txt(c.name[0]) : '';
+    const phone = c.tel && c.tel[0] ? txt(c.tel[0]) : '';
+    if (!name) { skipped++; return; }
+    if (phone && existingPhones.has(phone)) { skipped++; return; }
+    const id = uid('st');
+    updates['staff/' + id] = { id, name, role, wage, phone, created: Date.now() };
+    if (phone) existingPhones.add(phone);
+    added++;
+  });
+  if (!added) { toast(t('bulk_contacts_none_new'), true); return; }
+  S.db.ref('/').update(updates)
+    .then(() => toast(added + ' ' + t('bulk_staff_added') + (skipped ? ' (' + skipped + ' ' + t('bulk_skipped_dup') + ')' : '')))
+    .catch(err => { toast(t('err_save'), true); console.error(err); });
+}
 function openBooking() {
   document.getElementById('modal-booking').classList.remove('hidden');
   S.editingEventId = null;
@@ -2281,11 +2382,24 @@ function populateCustomerSelect() {
   const customers = Object.values(S.cache.customers || {}).filter(Boolean)
     .sort((a, b) => txt(a.name).localeCompare(txt(b.name)));
   sel.innerHTML = '<option value="">' + t('walkin_opt') + '</option>' +
+    '<option value="__new__">+ Add New Customer</option>' +
     customers.map(cu => '<option value="' + cu.id + '">' + esc(cu.name) + (cu.phone ? ' · ' + esc(cu.phone) : '') + '</option>').join('');
 }
 function onBkCustomerChange() {
   const cid = txt(document.getElementById('bk-customer').value);
   const relSel = document.getElementById('bk-relative');
+  const newBlock = document.getElementById('bk-newcust-block');
+  if (cid === '__new__') {
+    relSel.classList.add('hidden');
+    relSel.innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>';
+    document.getElementById('bk-veda-display').classList.add('hidden');
+    document.getElementById('bk-freq-block').classList.add('hidden');
+    document.getElementById('bk-schedule-preview').classList.add('hidden');
+    S.bkSelectedRelative = null;
+    newBlock.classList.remove('hidden');
+    return;
+  }
+  newBlock.classList.add('hidden');
   if (!cid) {
     relSel.classList.add('hidden');
     relSel.innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>';
@@ -2326,7 +2440,23 @@ function onBkRelativeChange() {
   freqBlock.classList.remove('hidden');
   /* Reset frequency back to one-time each time a different relative is picked. */
   document.getElementById('bk-freq-onetime').checked = true;
+  updateFreqAvailability();
   onBkFreqChange();
+}
+/* Monthly/Yearly/Vaikuntha auto-scheduling needs a death date to compute the Panchanga
+   tithi — a relative added without one (e.g. via the quick inline "+ Add New Customer"
+   during booking) can only take a one-time booking until that's filled in later. */
+function updateFreqAvailability() {
+  const rel = S.bkSelectedRelative;
+  const hasDeathDate = !!(rel && rel.deathDate);
+  ['monthly', 'yearly', 'vaikuntha'].forEach(f => {
+    const lbl = document.getElementById('lbl-freq-' + f);
+    const inp = document.getElementById('bk-freq-' + f);
+    if (lbl) lbl.classList.toggle('hidden', !hasDeathDate);
+    if (inp) inp.disabled = !hasDeathDate;
+  });
+  const note = document.getElementById('bk-freq-incomplete-note');
+  if (note) note.classList.toggle('hidden', hasDeathDate);
 }
 function resetRitualLinking(keepBlockOpen) {
   document.getElementById('bk-relative').classList.add('hidden');
@@ -2335,9 +2465,57 @@ function resetRitualLinking(keepBlockOpen) {
   document.getElementById('bk-freq-block').classList.add('hidden');
   document.getElementById('bk-schedule-preview').classList.add('hidden');
   document.getElementById('bk-menu-block').classList.add('hidden');
+  document.getElementById('bk-newcust-block').classList.add('hidden');
+  ['bk-newcust-name','bk-newcust-phone','bk-newcust-relname'].forEach(i => document.getElementById(i).value = '');
   document.getElementById('bk-freq-onetime').checked = true;
   S.bkSelectedRelative = null;
+  updateFreqAvailability();
   if (!keepBlockOpen) document.getElementById('bk-customer').value = '';
+}
+/* Quick customer creation from inside the booking form. Deliberately minimal — name +
+   Veda Shakha only — so a walk-in can be registered without leaving the booking screen.
+   No death date is captured here, so this relative starts as one-time-only; the full
+   Ledger → Customer & Relative Registry form can add the death date later to unlock
+   Monthly/Yearly/Vaikuntha auto-scheduling for them. */
+function createInlineCustomer() {
+  const name = txt(document.getElementById('bk-newcust-name').value);
+  if (!name) { toast(t('err_name'), true); return; }
+  const phone = txt(document.getElementById('bk-newcust-phone').value);
+  const relName = txt(document.getElementById('bk-newcust-relname').value) || name;
+  const vedaShakha = txt(document.getElementById('bk-newcust-veda').value) || 'Other';
+
+  const customerId = uid('cu');
+  const relativeId = uid('rel');
+  const customerData = { id: customerId, name, phone, created: Date.now() };
+  const relativeData = { id: relativeId, customerId, name: relName, relation: 'Other', vedaShakha, created: Date.now() };
+
+  Promise.all([
+    save('customers/' + customerId, customerData),
+    save('relatives/' + relativeId, relativeData)
+  ]).then(() => {
+    /* Update the local cache immediately rather than waiting for the Firebase listener
+       round-trip, so the rest of the booking form can use this customer/relative right away. */
+    S.cache.customers = S.cache.customers || {};
+    S.cache.relatives = S.cache.relatives || {};
+    S.cache.customers[customerId] = customerData;
+    S.cache.relatives[relativeId] = relativeData;
+
+    document.getElementById('bk-newcust-block').classList.add('hidden');
+    S.bkSelectedRelative = relativeData;
+    const clientField = document.getElementById('bk-client');
+    const phoneField = document.getElementById('bk-phone');
+    if (!txt(clientField.value)) clientField.value = relName + ' (' + tRelation('Other') + ')';
+    if (!txt(phoneField.value) && phone) phoneField.value = phone;
+
+    const veda = document.getElementById('bk-veda-display');
+    veda.textContent = t('veda_lbl') + ': ' + tVeda(vedaShakha);
+    veda.classList.remove('hidden');
+    document.getElementById('bk-freq-block').classList.remove('hidden');
+    document.getElementById('bk-freq-onetime').checked = true;
+    updateFreqAvailability();
+    onBkFreqChange();
+    toast(name + ' — ' + t('relative_added'));
+  });
 }
 function onBkFreqChange() {
   const freq = document.querySelector('input[name="bk-freq"]:checked').value;
