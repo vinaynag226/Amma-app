@@ -601,6 +601,24 @@
       </div>
     </div>
 
+    <!-- ================= PANEL 4B — CEREMONY PACKAGE PRICING ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-pricing','setup-arrow-pricing'); renderPricingSettings()" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="pricing_panel_title">💰 Ceremony Package Pricing</span>
+        <span id="setup-arrow-pricing" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-pricing" class="acc-body px-4 pb-4">
+        <p class="text-creamdim text-[13px] mb-2">Changes only affect new bookings made after saving — bookings already saved keep their original price.</p>
+        <label class="small text-creamdim text-[12px] mb-1 block" data-i18n="price_regular_lbl">Regular package price (₹)</label>
+        <input id="price-regular" class="inp mb-2" type="number" min="1" />
+        <label class="small text-creamdim text-[12px] mb-1 block" data-i18n="price_muthidya_lbl">Muthidya package price (₹)</label>
+        <input id="price-muthidya" class="inp mb-2" type="number" min="1" />
+        <label class="small text-creamdim text-[12px] mb-1 block" data-i18n="price_extra_lbl">Extra plate price (₹)</label>
+        <input id="price-extra" class="inp mb-3" type="number" min="1" />
+        <button class="btn-gold w-full" onclick="savePricingSettings()" data-i18n="price_save_btn">Save prices</button>
+      </div>
+    </div>
+
     <!-- ================= PANEL 5 — CATERING MENU TEMPLATES ================= -->
     <div class="card mb-3 overflow-hidden">
       <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-catering','setup-arrow-catering')" aria-expanded="false">
@@ -915,7 +933,7 @@
       <div class="flex items-center gap-3 mb-2">
         <span class="text-creamdim text-[14px] flex-1">
           <span data-i18n="extra_plates">Extra plates</span>
-          <span class="text-[12px]" data-i18n="each_note">(+₹250 each)</span>
+          <span id="bk-each-note" class="text-[12px]" data-i18n="each_note">(+₹250 each)</span>
         </span>
         <button class="stepbtn" onclick="stepExtra(-1)" aria-label="Fewer extra plates">−</button>
         <input id="bk-extra" class="inp !w-16 text-center" type="number" min="0" value="0" onchange="updateBkTotal()" />
@@ -1406,7 +1424,13 @@ const I18N = {
     dish_chana_dal_payasam:'Chana Dal Payasam', dish_kayi_payasa:'Kayi Payasa (Kannada Coconut)', dish_godhi_payasa:'Godhi Payasa (Kannada Wheat)',
     dish_poornam_boorelu:'Poornam Boorelu', dish_laddu:'Laddu',
     pkg_regular:'Regular — ₹9,000', pkg_muthidya:'Muthidya — ₹9,500',
-    extra_plates:'Extra plates', each_note:'(+₹250 each)',
+    pkg_regular_name:'Regular', pkg_muthidya_name:'Muthidya',
+    extra_plates:'Extra plates', each_note:'(+₹250 each)', each_word:'each',
+    pricing_panel_title:'💰 Ceremony Package Pricing',
+    price_regular_lbl:'Regular package price (₹)', price_muthidya_lbl:'Muthidya package price (₹)',
+    price_extra_lbl:'Extra plate price (₹)', price_save_btn:'Save prices',
+    price_saved:'Prices updated. New bookings will use the new prices.',
+    err_price:'Enter a price greater than zero for all three fields.',
     advance_ph:'Advance received (₹)',
     prasadam_ph:'🍧 Extra Prasadam Charges (₹)', surcharge_ph:'🎟️ Additional/Misc Surcharges (₹)',
     surcharge_note_ph:'Surcharge / charge description (optional)',
@@ -1763,7 +1787,13 @@ const I18N = {
     dish_chana_dal_payasam:'శనగపప్పు పాయసం', dish_kayi_payasa:'కాయి పాయస (కన్నడ కొబ్బరి)', dish_godhi_payasa:'గోధి పాయస (కన్నడ గోధుమ)',
     dish_poornam_boorelu:'పూర్ణం బూరెలు', dish_laddu:'లడ్డు',
     pkg_regular:'రెగ్యులర్ — ₹9,000', pkg_muthidya:'ముత్తైదువ — ₹9,500',
-    extra_plates:'అదనపు ప్లేట్లు', each_note:'(ఒక్కొక్కటి +₹250)',
+    pkg_regular_name:'రెగ్యులర్', pkg_muthidya_name:'ముత్తైదువ',
+    extra_plates:'అదనపు ప్లేట్లు', each_note:'(ఒక్కొక్కటి +₹250)', each_word:'ఒక్కొక్కటికి',
+    pricing_panel_title:'💰 సెరిమనీ ప్యాకేజీ ధరలు',
+    price_regular_lbl:'రెగ్యులర్ ప్యాకేజీ ధర (₹)', price_muthidya_lbl:'ముత్తైదువ ప్యాకేజీ ధర (₹)',
+    price_extra_lbl:'అదనపు ప్లేట్ ధర (₹)', price_save_btn:'ధరలు సేవ్ చేయండి',
+    price_saved:'ధరలు అప్‌డేట్ అయ్యాయి. కొత్త బుకింగ్‌లు కొత్త ధరలను వాడతాయి.',
+    err_price:'మూడు ఫీల్డ్‌లలో సున్నా కంటే ఎక్కువ ధర నమోదు చేయండి.',
     advance_ph:'తీసుకున్న అడ్వాన్స్ (₹)',
     prasadam_ph:'🍧 అదనపు ప్రసాదం ఖర్చులు (₹)', surcharge_ph:'🎟️ ఇతర సర్‌ఛార్జీలు (₹)',
     surcharge_note_ph:'సర్‌ఛార్జ్ వివరణ (ఐచ్ఛికం)',
@@ -1965,6 +1995,7 @@ function applyLang() {
   document.body.classList.toggle('lang-te', S.lang === 'te');
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
+  applyPricingLabels();
   document.getElementById('conn-txt').textContent = S.online ? t('conn_live') : t('conn_off');
   updateLangButtons();
   headerDateLine();
@@ -1975,10 +2006,57 @@ function applyLang() {
   if (!document.getElementById('modal-receipt').classList.contains('hidden')) refreshReceipt();
 }
 
-/* ---------- Pricing constants ---------- */
+/* ---------- Pricing constants (defaults — overridden live by applyPricing() from
+   Setup → Ceremony Package Pricing, stored under the existing 'settings' Firebase
+   branch). PKG's object reference stays constant; only its .price fields are
+   mutated, so every existing call site (PKG[e.package].price etc.) keeps working
+   unchanged. EXTRA_PLATE is a plain number so it must be 'let', not 'const'. */
 const PKG = { regular: { key:'regular',  price: 9000 },
               muthidya:{ key:'muthidya', price: 9500 } };
-const EXTRA_PLATE = 250;
+let EXTRA_PLATE = 250;
+
+/* Pulls saved prices (if any) from S.cache.settings into PKG/EXTRA_PLATE, falling
+   back to the defaults above when nothing has been saved yet. Safe to call any
+   number of times — e.g. every time the settings branch syncs. */
+function applyPricing() {
+  const s = S.cache.settings || {};
+  PKG.regular.price  = num(s.regularPrice)  || 9000;
+  PKG.muthidya.price = num(s.muthidyaPrice) || 9500;
+  EXTRA_PLATE = num(s.extraPlatePrice) || 250;
+  applyPricingLabels();
+  updateBkTotal();
+}
+/* Refreshes any on-screen text that shows a price, so it never goes stale after
+   a price change or a language switch (which repaints data-i18n text and would
+   otherwise reset these options back to their hardcoded default label). */
+function applyPricingLabels() {
+  const regOpt = document.querySelector('#bk-package option[value="regular"]');
+  const muthOpt = document.querySelector('#bk-package option[value="muthidya"]');
+  if (regOpt)  regOpt.textContent  = t('pkg_regular_name')  + ' — ' + inr(PKG.regular.price);
+  if (muthOpt) muthOpt.textContent = t('pkg_muthidya_name') + ' — ' + inr(PKG.muthidya.price);
+  const extraNote = document.getElementById('bk-each-note');
+  if (extraNote) extraNote.textContent = '(+' + inr(EXTRA_PLATE) + ' ' + t('each_word') + ')';
+}
+/* Populates the Setup → Ceremony Package Pricing form with the currently-active
+   prices (saved values if present, otherwise the defaults) whenever it's opened
+   or the settings branch syncs. */
+function renderPricingSettings() {
+  const regEl = document.getElementById('price-regular');
+  const muthEl = document.getElementById('price-muthidya');
+  const extraEl = document.getElementById('price-extra');
+  if (!regEl) return; /* panel not in DOM yet */
+  regEl.value = PKG.regular.price;
+  muthEl.value = PKG.muthidya.price;
+  extraEl.value = EXTRA_PLATE;
+}
+function savePricingSettings() {
+  const regular = num(document.getElementById('price-regular').value);
+  const muthidya = num(document.getElementById('price-muthidya').value);
+  const extra = num(document.getElementById('price-extra').value);
+  if (!regular || !muthidya || !extra) { toast(t('err_price'), true); return; }
+  save('settings', { regularPrice: regular, muthidyaPrice: muthidya, extraPlatePrice: extra })
+    .then(() => toast(t('price_saved')));
+}
 const GROCERY_MARGIN = 1.15;
 
 /* ---------- Safe-parse helpers ---------- */
@@ -5851,7 +5929,7 @@ function attachListeners() {
   bind('staff',     'staff',     () => { renderStaff(); renderLog(); renderRadar(); renderContactsCurrentTab(); refreshStaffNameDatalist(); });
   bind('rates',     'rates',     () => { renderRates(); });
   bind('pnl',       'pnl',       () => { renderPnl(); });
-  bind('settings',  'settings',  () => { renderRadar(); seedGroceryItemsIfNeeded(); });
+  bind('settings',  'settings',  () => { renderRadar(); seedGroceryItemsIfNeeded(); applyPricing(); renderPricingSettings(); });
 }
 
 /* ---------- Header date line (locale follows app language) ---------- */
@@ -5872,6 +5950,7 @@ fillSelectors();
   document.getElementById('gc-date').value = isoOf(now);
 })();
 applyLang();     /* paints every static + dynamic string in the saved language */
+applyPricing();  /* paints default prices immediately; corrected once Firebase syncs */
 attachListeners();
 initVoice();
 nav('home');
