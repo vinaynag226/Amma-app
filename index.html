@@ -252,6 +252,19 @@
   body.lang-te [class*="text-base"]    { font-size: 19px !important; font-weight: 600; }
   body.lang-te [class*="text-lg"]      { font-size: 21px !important; font-weight: 700; }
   body.lang-te [class*="text-2xl"]     { font-size: 27px !important; font-weight: 700; }
+
+  /* ==========================================================
+     TEXT SIZE CONTROL — independent of language, works with
+     either English or Telugu. Uses Chrome's zoom property (this
+     app already targets Chrome on Android specifically), which
+     scales the whole rendered layout uniformly — text, buttons,
+     spacing — and, unlike a plain CSS transform, keeps fixed
+     header/nav/modals correctly positioned relative to the
+     viewport rather than clipping or overlapping them.
+     ========================================================== */
+  body.zoom-1 { zoom: 1.15; }
+  body.zoom-2 { zoom: 1.3; }
+  body.zoom-3 { zoom: 1.45; }
 </style>
 </head>
 
@@ -283,6 +296,11 @@
   <div id="ribbon" aria-live="polite">
     <p id="ribbon-txt" class="px-4 py-2 text-[15px] text-cream truncate">🗣️ …</p>
   </div>
+
+  <!-- Offline booking queue — visible whenever a booking couldn't reach the
+       server and is waiting to sync automatically. Tapping retries right away
+       instead of waiting for the passive connection listener. -->
+  <button id="offline-queue-badge" class="hidden w-full text-left px-4 py-2 text-[13px] text-cream" style="background:linear-gradient(90deg, rgba(232,133,61,.35), rgba(176,138,46,.3))" onclick="flushOfflineQueue()"></button>
 
   <div class="rangoli"></div>
 </header>
@@ -493,6 +511,18 @@
       </div>
     </div>
 
+    <!-- ================= PANEL 4B — UPCOMING CEREMONY RADAR ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('ledger-body-cerad','ledger-arrow-cerad'); renderCeremonyRadar()" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="panel_cerad_title">📿 Upcoming Ceremony Radar</span>
+        <span id="ledger-arrow-cerad" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="ledger-body-cerad" class="acc-body px-4 pb-4">
+        <p class="text-creamdim text-[12px] mb-3 leading-snug" data-i18n="cerad_note">Checks every registered relative's next Masika/Varshika/Vaikuntha date and flags anything due in the next 30 days that hasn't been booked yet.</p>
+        <div id="cerad-out"></div>
+      </div>
+    </div>
+
   </section>
 
   <!-- 4 ▸ TIFFIN -->
@@ -532,6 +562,24 @@
             <button id="lang-te" class="btn-line" onclick="setLang('te')">తెలుగు</button>
           </div>
           <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="lang_note">This choice is saved only on this phone. All phones read the same live data.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PANEL 1B — TEXT SIZE ================= -->
+    <div class="card mb-3 overflow-hidden">
+      <button class="w-full flex items-center justify-between text-left p-4" onclick="toggleAccordion('setup-body-zoom','setup-arrow-zoom'); applyTextZoom()" aria-expanded="false">
+        <span class="text-gold-400 font-display text-[16px] tracking-wide" data-i18n="text_size_hdr">🔤 Text Size</span>
+        <span id="setup-arrow-zoom" class="acc-arrow text-gold-400 text-lg">▸</span>
+      </button>
+      <div id="setup-body-zoom" class="acc-body px-4 pb-4">
+        <div class="card p-4 bg-maroon-950/40">
+          <div class="grid grid-cols-3 gap-2 items-center">
+            <button id="zoom-minus-btn" class="btn-line text-[22px] font-bold py-3" onclick="setTextZoom(-1)" aria-label="Decrease text size">A−</button>
+            <p id="zoom-level-label" class="text-center text-cream font-semibold" data-i18n="zoom_normal">Normal</p>
+            <button id="zoom-plus-btn" class="btn-line text-[22px] font-bold py-3" onclick="setTextZoom(1)" aria-label="Increase text size">A+</button>
+          </div>
+          <p class="text-creamdim text-[12px] mt-3 leading-snug" data-i18n="zoom_note">Makes everything in the app bigger and easier to read. Saved only on this phone — works with either English or Telugu.</p>
         </div>
       </div>
     </div>
@@ -802,6 +850,15 @@
 </div>
 
 <!-- ==================================================== -->
+<!-- SAVE WARNINGS — past date / duplicate booking, non-blocking -->
+<!-- ==================================================== -->
+<div id="modal-savewarning" class="hidden fixed inset-0 z-[82] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
+  <div class="card card-alert w-full max-w-md m-3 p-5">
+    <div id="savewarning-body"></div>
+  </div>
+</div>
+
+<!-- ==================================================== -->
 <!-- BOOKING MODAL                                        -->
 <!-- ==================================================== -->
 <div id="modal-booking" class="hidden fixed inset-0 z-[70] modal-bg flex items-end sm:items-center justify-center overflow-y-auto">
@@ -814,6 +871,19 @@
   <div class="card w-full max-w-md m-3 p-5">
     <div class="flex items-center justify-between mb-3 pt-1 pb-2">
       <h3 id="bm-title-el" class="font-display text-gold-400 text-lg" data-i18n="bm_title">New Booking</h3>
+    </div>
+
+    <!-- Ask a customer for their details over WhatsApp using a fixed format, then paste
+         their reply back in here. This only reads lines matching a known label — never
+         free-form text — and always leaves the human to review and tap Save; nothing
+         gets auto-booked from a pasted reply. -->
+    <div class="flex gap-2 mb-2">
+      <button class="btn-line flex-1 text-[13px]" onclick="copyBookingRequestTemplate()" data-i18n="wa_copy_template_btn">📤 Copy Request Template</button>
+      <button class="btn-line flex-1 text-[13px]" onclick="togglePasteBox()" data-i18n="wa_paste_reply_btn">📋 Paste Reply</button>
+    </div>
+    <div id="bk-paste-box" class="hidden mb-3 bg-maroon-950/50 rounded-lg p-3">
+      <textarea id="bk-paste-text" class="inp" rows="5" data-ph="wa_paste_placeholder" placeholder="Paste the customer's WhatsApp reply here"></textarea>
+      <button class="btn-gold w-full mt-2 text-[13px]" onclick="parseAndFillFromPaste()" data-i18n="wa_fill_form_btn">Fill Form From This</button>
     </div>
 
     <div class="flex gap-2 mb-2">
@@ -835,6 +905,36 @@
 
     <!-- Customer/Relative linking — shown only for Shraddha / Pitru Karya bookings -->
     <div id="bk-ritual-block" class="hidden">
+      <!-- Always asked for any Shraddha/Pitru Karya booking — walk-in, new, or existing
+           customer alike. What the priest needs for THIS ceremony shouldn't require
+           registering anyone. Pre-filled (and overridable) when a relative is picked
+           below or when linking/creating a customer; otherwise plain manual entry. -->
+      <p class="text-cream text-[13px] font-semibold mb-1">For this ceremony</p>
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <div>
+          <label class="text-creamdim text-[12px] mb-1 block">Veda Shakha</label>
+          <select id="bk-veda-select" class="inp font-semibold">
+            <option value="Rigveda">Rigveda</option>
+            <option value="Yajurveda" selected>Yajurveda</option>
+            <option value="Samaveda">Samaveda</option>
+            <option value="Atharvaveda">Atharvaveda</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-creamdim text-[12px] mb-1 block">Relation</label>
+          <select id="bk-relation-select" class="inp font-semibold">
+            <option value="Father" selected>Father</option>
+            <option value="Mother">Mother</option>
+            <option value="Grandfather">Grandfather</option>
+            <option value="Grandmother">Grandmother</option>
+            <option value="Husband">Husband</option>
+            <option value="Wife">Wife</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
       <p class="text-creamdim text-[12px] mb-1" data-i18n="link_customer_lbl">Link to a registered Customer (optional)</p>
       <select id="bk-customer" class="inp mb-2" onchange="onBkCustomerChange()">
         <option value="" data-i18n="walkin_opt">— Walk-in (no record) —</option>
@@ -842,13 +942,12 @@
       <select id="bk-relative" class="inp mb-2 hidden" onchange="onBkRelativeChange()">
         <option value="" data-i18n="pick_relative_opt">— Pick a relative —</option>
       </select>
-      <p id="bk-veda-display" class="text-creamdim text-[12px] mb-2 hidden"></p>
 
       <!-- Quick inline "Add New Customer" — used when starting a booking for a customer who
-           isn't registered yet. Keeps only what's needed to book today (name + Veda Shakha);
-           death date is optional here since Monthly/Yearly/Vaikuntha auto-scheduling needs it,
-           but a one-time booking today doesn't. Add the death date later in Ledger to unlock
-           auto-scheduling for this relative. -->
+           isn't registered yet. Veda/Relation come from the fields above (no need to ask
+           twice); death date is optional here since Monthly/Yearly/Vaikuntha auto-scheduling
+           needs it, but a one-time booking today doesn't. Add the death date later in Ledger
+           to unlock auto-scheduling for this relative. -->
       <div id="bk-newcust-block" class="hidden bg-maroon-950/50 rounded-lg p-3 mb-2">
         <p class="text-gold-300 font-semibold text-[13px] mb-2">+ Add New Customer</p>
         <div class="flex gap-2 mb-2">
@@ -857,15 +956,7 @@
         </div>
         <input id="bk-newcust-phone" class="inp mb-2" type="tel" placeholder="Phone (optional)" />
         <input id="bk-newcust-relname" class="inp mb-2" placeholder="Relative's name (leave blank to use customer name)" />
-        <p class="text-creamdim text-[12px] mb-1">Veda Shakha</p>
-        <select id="bk-newcust-veda" class="inp mb-2">
-          <option value="Rigveda">Rigveda</option>
-          <option value="Yajurveda" selected>Yajurveda</option>
-          <option value="Samaveda">Samaveda</option>
-          <option value="Atharvaveda">Atharvaveda</option>
-          <option value="Other">Other</option>
-        </select>
-        <p class="text-creamdim text-[11px] mb-2 leading-snug">No death date set here, so this booking will be one-time only. Add the death date later in Ledger → Customer &amp; Relative Registry to enable Monthly/Yearly/Vaikuntha auto-scheduling for this person.</p>
+        <p class="text-creamdim text-[11px] mb-2 leading-snug">Uses the Veda Shakha and Relation set above. No death date set here, so this booking will be one-time only. Add the death date later in Ledger → Customer &amp; Relative Registry to enable Monthly/Yearly/Vaikuntha auto-scheduling for this person.</p>
         <button class="btn-line w-full text-[13px]" onclick="createInlineCustomer()">+ Create &amp; Link to this Booking</button>
       </div>
 
@@ -1190,7 +1281,7 @@ const I18N = {
     gc_warn_body:'Many guests observe a rice fast on this tithi. Rice below is already reduced by 40% — plan semiya, sabudana or fruit alternatives for observers, and confirm the count with the host.',
     date_tbd:'Date TBD', pax:'pax',
     pkg_name_regular:'Regular', pkg_name_muthidya:'Muthidya',
-    package_word:'package', extra_plates_x:'Extra plates ×',
+    package_word:'package', extra_plates_x:'Extra plates ×', relation_word:'Relation',
     total:'Total', advance_word:'Advance', balance_word:'Balance',
     check_btn:'Checklist', staff_chip:'👥 Manage Staff', grocery_chip:'🧺 Grocery',
     assigned_staff_hdr:'Assigned Staff', no_staff_assigned:'No staff assigned yet.',
@@ -1216,6 +1307,12 @@ const I18N = {
     panel_conv_title:'📅 Dual-Way Gregorian ↔️ Vedic Date Converter',
     panel_pitru_title:'🌕 Customer & Relative Death-Ritual Registry',
     panel_anniv_title:'⏰ 1-Year Automated Past Customer Anniversary Reminder Radar',
+    panel_cerad_title:'📿 Upcoming Ceremony Radar',
+    cerad_note:'Checks every registered relative\u2019s next Masika/Varshika/Vaikuntha date and flags anything due in the next 30 days that hasn\u2019t been booked yet.',
+    cerad_empty:'Nothing due in the next 30 days that isn\u2019t already booked.',
+    cerad_today:'today', cerad_days:'days away',
+    cerad_monthly:'Masika', cerad_yearly:'Varshika', cerad_vaikuntha:'Vaikuntha Samaradhana',
+    cerad_book_btn:'📿 Book Now',
     master_pnl:'Master P&L', month_lbl:'Month:', date_lbl:'Date:',
     bookings_word:'bookings',
     income:'INCOME', deductions:'DEDUCTIONS',
@@ -1268,6 +1365,7 @@ const I18N = {
     cust_save_confirm_final:'Yes, save changes',
     cust_rmv_title1:'Remove this customer?', cust_rmv_body1:'This will permanently remove',
     cust_rmv_cascade_note:'linked relative(s) will also be removed',
+    cust_rmv_future_bookings_note:'This customer has {n} upcoming booking(s). They will NOT be deleted, but will no longer be linked to a registered customer.',
     cust_rmv_body2:'This action cannot be undone. All linked relatives and their ritual schedules will be permanently deleted too.',
     no_customers:'No customers registered yet. Add one above.',
     relform_title_add:'Add Relative', relform_title_edit:'Edit Relative',
@@ -1322,6 +1420,9 @@ const I18N = {
     /* setup */
     app_lang:'🌐 App Language',
     lang_note:'This choice is saved only on this phone. All phones read the same live data.',
+    text_size_hdr:'🔤 Text Size',
+    zoom_normal:'Normal', zoom_large:'Large', zoom_larger:'Larger', zoom_xlarge:'Extra Large',
+    zoom_note:'Makes everything in the app bigger and easier to read. Saved only on this phone — works with either English or Telugu.',
     staff_registry:'Staff Registry', staff_registry_panel:'👥 Staff Registry', add_registry:'Add to registry',
     name_ph:'Name', wage_ph:'Wage ₹/day', phone_ph:'Phone (WhatsApp)',
     no_staff:'No staff registered yet. Add your Purohits and Chefs above.',
@@ -1408,6 +1509,12 @@ const I18N = {
     floor_conflict_question:'Move this booking to {floor} instead?',
     floor_conflict_switch:'Switch to {floor}',
     floor_conflict_keep:'Keep on {floor} anyway',
+    warn_title:'Before we save this…',
+    warn_past_date_single:'{date} is in the past.',
+    warn_past_dates_multi:'of these dates are in the past.',
+    warn_duplicate_booking:'{client} already has a booking on {date}.',
+    warn_question:'Everything correct, or should we go back and check?',
+    warn_continue:'Save anyway',
     /* ritual ceremony menus */
     menu_lbl:'🍽️ Ceremony Menu', menu_included_hdr:'Included:', menu_include_payasam:'🍮 Include Payasam?',
     menu_slot_charu:'Charu / Sambar', menu_slot_palya:'Vegetable Curry (Palya)',
@@ -1440,10 +1547,14 @@ const I18N = {
     err_locked:'This card is locked. Tap 🔒 to unlock before editing.',
     remove_record:'🗑️ Remove Record',
     rmv_title1:'Remove this booking?', rmv_body1:'This will permanently delete the booking for',
+    rmv_series_note:'This booking is part of a Monthly series of {n} ceremonies. Cancel just this one date, or the whole series?',
+    rmv_just_this:'Just this one date',
+    rmv_whole_series:'Cancel whole series ({n} bookings)',
     cancel:'Cancel', continue_word:'Continue',
     rmv_title2:'Are you absolutely sure?',
     rmv_body2:'This action cannot be undone. All checklist, staff assignment, and payment records for this booking will be permanently erased.',
-    rmv_confirm_final:'Yes, delete permanently', booking_removed:'Booking removed.',
+    rmv_body2_series:'This action cannot be undone. All {n} bookings in this series — and their checklist, staff assignment, and payment records — will be permanently erased.',
+    rmv_confirm_final:'Yes, delete permanently', booking_removed:'Booking removed.', series_removed:'bookings in the series removed.',
     rar_title1:'Add this item to the rate book?',
     rar_body2:'Please confirm the details are correct before adding this to your live rate book.',
     rar_title2:'Confirm addition',
@@ -1466,6 +1577,9 @@ const I18N = {
     cat_Flowers:'Flowers', cat_Rent:'Rent', cat_Transport:'Transport', cat_General:'General',
     /* connection / voice */
     conn_live:'Live', conn_off:'Offline', conn_wait:'Connecting…',
+    offline_queue_pending:'booking(s) waiting to sync — tap to retry now',
+    offline_queue_saved:'Connection issue — {summary} saved on this phone and will sync automatically.',
+    offline_queue_synced:'queued booking(s) synced successfully.',
     listening:'🎙️ Listening', heard:'🗣️ Heard:',
     mic_blocked:'Microphone permission is blocked. Allow it in browser settings.',
     mic_retry:'Sahaaya could not hear that. Tap the mic and try again.',
@@ -1476,6 +1590,18 @@ const I18N = {
     booking_form_opened:'Booking form opened.',
     /* toasts */
     lang_set:'Language set for this phone.',
+    prefilled_from_last:'Filled in from {name}\u2019s last booking — check before saving.',
+    wa_copy_template_btn:'📤 Copy Request Template',
+    wa_paste_reply_btn:'📋 Paste Reply',
+    wa_paste_placeholder:'Paste the customer\u2019s WhatsApp reply here',
+    wa_fill_form_btn:'Fill Form From This',
+    clipboard_unsupported:'Couldn\u2019t copy — try selecting and copying the text manually.',
+    template_copied:'Template copied — paste it into WhatsApp and send.',
+    paste_field_name:'name', paste_field_type:'type', paste_field_date:'date',
+    paste_field_guests:'headcount', paste_field_veda:'Veda Shakha',
+    paste_filled_note:'Filled in: {fields}. Check everything before saving.',
+    paste_skipped_note:'Couldn\u2019t read: {fields} — fill those in by hand.',
+    paste_nothing_found:'Couldn\u2019t find any recognisable details in that text.',
     err_name:'Enter the name first.', err_client:'Enter the client name first.',
     err_item:'Enter the item name first.', err_date:'Pick a date first.',
     err_head:'Enter the headcount first.',
@@ -1553,7 +1679,7 @@ const I18N = {
     gc_warn_body:'ఈ తిథి రోజున చాలామంది అన్నం తినరు. కింద బియ్యం మోతాదు ఇప్పటికే 40% తగ్గించాం — ఉపవాసం ఉన్నవారికి సేమియా, సగ్గుబియ్యం లేదా పండ్లు ప్లాన్ చేయండి, హోస్ట్‌తో సంఖ్య నిర్ధారించండి.',
     date_tbd:'తేదీ ఇంకా లేదు', pax:'మంది',
     pkg_name_regular:'రెగ్యులర్', pkg_name_muthidya:'ముత్తైదువ',
-    package_word:'ప్యాకేజీ', extra_plates_x:'అదనపు ప్లేట్లు ×',
+    package_word:'ప్యాకేజీ', extra_plates_x:'అదనపు ప్లేట్లు ×', relation_word:'బంధుత్వం',
     total:'మొత్తం', advance_word:'అడ్వాన్స్', balance_word:'బాకీ',
     check_btn:'చెక్‌లిస్ట్', staff_chip:'👥 సిబ్బంది నిర్వహణ', grocery_chip:'🧺 సరుకులు',
     assigned_staff_hdr:'కేటాయించిన సిబ్బంది', no_staff_assigned:'ఇంకా సిబ్బందిని కేటాయించలేదు.',
@@ -1579,6 +1705,12 @@ const I18N = {
     panel_conv_title:'📅 ఇంగ్లీషు ↔️ వేద తేదీ మార్పిడి',
     panel_pitru_title:'🌕 కస్టమర్ & బంధువుల మరణాంతర కర్మల పట్టిక',
     panel_anniv_title:'⏰ పాత క్లయింట్ల వార్షికోత్సవ రిమైండర్ రాడార్ (1-సంవత్సరం ఆటోమేటిక్)',
+    panel_cerad_title:'📿 రాబోయే కార్యక్రమాల రాడార్',
+    cerad_note:'ప్రతి నమోదైన బంధువు తదుపరి మాసిక/వార్షిక/వైకుంఠ తేదీని పరిశీలించి, 30 రోజుల్లో రావాల్సి ఉండి, ఇంకా బుక్ చేయని వాటిని చూపిస్తుంది.',
+    cerad_empty:'రాబోయే 30 రోజుల్లో బుక్ చేయని కార్యక్రమాలు ఏవీ లేవు.',
+    cerad_today:'ఈరోజే', cerad_days:'రోజుల్లో',
+    cerad_monthly:'మాసికం', cerad_yearly:'వార్షికం', cerad_vaikuntha:'వైకుంఠ సమారాధన',
+    cerad_book_btn:'📿 ఇప్పుడే బుక్ చేయండి',
     master_pnl:'లాభ–నష్టాల పట్టిక', month_lbl:'నెల:', date_lbl:'తేదీ:',
     bookings_word:'బుకింగ్‌లు',
     income:'ఆదాయం', deductions:'ఖర్చులు',
@@ -1631,6 +1763,7 @@ const I18N = {
     cust_save_confirm_final:'అవును, మార్పులు సేవ్ చేయండి',
     cust_rmv_title1:'ఈ కస్టమర్‌ని తొలగించాలా?', cust_rmv_body1:'ఇది శాశ్వతంగా తొలగిస్తుంది —',
     cust_rmv_cascade_note:'అనుసంధానిత బంధువులు కూడా తొలగించబడతారు',
+    cust_rmv_future_bookings_note:'ఈ కస్టమర్‌కు {n} రాబోయే బుకింగ్‌లు ఉన్నాయి. అవి తొలగించబడవు, కానీ ఇకపై నమోదైన కస్టమర్‌తో అనుసంధానించబడి ఉండవు.',
     cust_rmv_body2:'ఈ చర్యను వెనక్కి తీసుకోలేము. అనుసంధానిత బంధువులు మరియు వారి కర్మల షెడ్యూల్ కూడా శాశ్వతంగా తొలగించబడతాయి.',
     no_customers:'ఇంకా కస్టమర్లు నమోదు కాలేదు. పైన ఒకటి చేర్చండి.',
     relform_title_add:'బంధువును చేర్చండి', relform_title_edit:'బంధువును మార్చండి',
@@ -1685,6 +1818,9 @@ const I18N = {
     /* setup */
     app_lang:'🌐 యాప్ భాష',
     lang_note:'ఈ ఎంపిక ఈ ఫోన్‌లో మాత్రమే ఉంటుంది. అన్ని ఫోన్లు ఒకే డేటానే చూపిస్తాయి.',
+    text_size_hdr:'🔤 అక్షరాల పరిమాణం',
+    zoom_normal:'సాధారణ', zoom_large:'పెద్దది', zoom_larger:'మరింత పెద్దది', zoom_xlarge:'చాలా పెద్దది',
+    zoom_note:'యాప్‌లో అన్నీ పెద్దగా, చదవడానికి సులభంగా కనిపిస్తాయి. ఈ ఫోన్‌లో మాత్రమే సేవ్ అవుతుంది — ఇంగ్లీష్ లేదా తెలుగు రెండింటితోనూ పనిచేస్తుంది.',
     staff_registry:'సిబ్బంది పట్టిక', staff_registry_panel:'👥 సిబ్బంది పట్టిక', add_registry:'పట్టికలో చేర్చండి',
     name_ph:'పేరు', wage_ph:'కూలి ₹/రోజు', phone_ph:'ఫోన్ (వాట్సాప్)',
     no_staff:'ఇంకా సిబ్బంది లేరు. పురోహితులు, వంటవారిని పైన చేర్చండి.',
@@ -1771,6 +1907,12 @@ const I18N = {
     floor_conflict_question:'ఈ బుకింగ్‌ని {floor}కి మార్చాలా?',
     floor_conflict_switch:'{floor}కి మార్చండి',
     floor_conflict_keep:'{floor}లోనే ఉంచండి',
+    warn_title:'సేవ్ చేసే ముందు…',
+    warn_past_date_single:'{date} గత తేదీ.',
+    warn_past_dates_multi:'తేదీలు గతంలోనివి.',
+    warn_duplicate_booking:'{client}కి {date} న ఇప్పటికే ఒక బుకింగ్ ఉంది.',
+    warn_question:'అన్నీ సరిగ్గా ఉన్నాయా, లేదా వెనక్కి వెళ్ళి చూడాలా?',
+    warn_continue:'అయినా సేవ్ చేయండి',
     /* ritual ceremony menus */
     menu_lbl:'🍽️ కార్యక్రమ మెనూ', menu_included_hdr:'చేర్చినవి:', menu_include_payasam:'🍮 పాయసం చేర్చాలా?',
     menu_slot_charu:'చారు / సాంబార్', menu_slot_palya:'కూర (పలియ)',
@@ -1804,10 +1946,14 @@ const I18N = {
     err_locked:'ఈ కార్డ్ లాక్ అయి ఉంది. ముందుగా 🔒 నొక్కి అన్‌లాక్ చేయండి.',
     remove_record:'🗑️ రికార్డ్ తొలగించండి',
     rmv_title1:'ఈ బుకింగ్ తొలగించాలా?', rmv_body1:'ఈ బుకింగ్ శాశ్వతంగా తొలగించబడుతుంది —',
+    rmv_series_note:'ఈ బుకింగ్ {n} కార్యక్రమాల మాసిక సిరీస్‌లో భాగం. ఈ ఒక్క తేదీని మాత్రమే రద్దు చేయాలా, లేదా మొత్తం సిరీస్‌ని రద్దు చేయాలా?',
+    rmv_just_this:'ఈ ఒక్క తేదీ మాత్రమే',
+    rmv_whole_series:'మొత్తం సిరీస్ రద్దు చేయండి ({n} బుకింగ్‌లు)',
     cancel:'రద్దు', continue_word:'కొనసాగించు',
     rmv_title2:'మీరు ఖచ్చితంగా ఉన్నారా?',
     rmv_body2:'ఈ చర్య వెనక్కి తీసుకోలేము. ఈ బుకింగ్ యొక్క చెక్‌లిస్ట్, సిబ్బంది కేటాయింపు, చెల్లింపుల రికార్డులు అన్నీ శాశ్వతంగా తొలగించబడతాయి.',
-    rmv_confirm_final:'అవును, శాశ్వతంగా తొలగించండి', booking_removed:'బుకింగ్ తొలగించబడింది.',
+    rmv_body2_series:'ఈ చర్య వెనక్కి తీసుకోలేము. ఈ సిరీస్‌లోని అన్ని {n} బుకింగ్‌లు — వాటి చెక్‌లిస్ట్, సిబ్బంది కేటాయింపు, చెల్లింపుల రికార్డులతో సహా — శాశ్వతంగా తొలగించబడతాయి.',
+    rmv_confirm_final:'అవును, శాశ్వతంగా తొలగించండి', booking_removed:'బుకింగ్ తొలగించబడింది.', series_removed:'సిరీస్‌లోని బుకింగ్‌లు తొలగించబడ్డాయి.',
     rar_title1:'ఈ వస్తువుని ధరల పుస్తకంలో చేర్చాలా?',
     rar_body2:'ఈ వస్తువుని మీ లైవ్ ధరల పుస్తకంలో చేర్చే ముందు వివరాలు సరిగ్గా ఉన్నాయో నిర్ధారించండి.',
     rar_title2:'చేర్చడాన్ని నిర్ధారించండి',
@@ -1830,6 +1976,9 @@ const I18N = {
     cat_Flowers:'పూలు', cat_Rent:'అద్దె', cat_Transport:'రవాణా', cat_General:'ఇతర',
     /* connection / voice */
     conn_live:'లైవ్', conn_off:'ఆఫ్‌లైన్', conn_wait:'కలుస్తోంది…',
+    offline_queue_pending:'బుకింగ్‌లు సింక్ కావడానికి వేచి ఉన్నాయి — ఇప్పుడే మళ్ళీ ప్రయత్నించడానికి నొక్కండి',
+    offline_queue_saved:'కనెక్షన్ సమస్య — {summary} ఈ ఫోన్‌లో సేవ్ అయింది, ఆటోమేటిక్‌గా సింక్ అవుతుంది.',
+    offline_queue_synced:'క్యూలో ఉన్న బుకింగ్‌లు విజయవంతంగా సింక్ అయ్యాయి.',
     listening:'🎙️ వింటున్నా', heard:'🗣️ విన్నది:',
     mic_blocked:'మైక్ అనుమతి బ్లాక్ అయింది. బ్రౌజర్ సెట్టింగ్స్‌లో అనుమతించండి.',
     mic_retry:'సహాయకి వినిపించలేదు. మైక్ నొక్కి మళ్ళీ చెప్పండి.',
@@ -1840,6 +1989,18 @@ const I18N = {
     booking_form_opened:'బుకింగ్ ఫారం తెరిచాం.',
     /* toasts */
     lang_set:'ఈ ఫోన్‌కి భాష సెట్ అయింది.',
+    prefilled_from_last:'{name} గత బుకింగ్ నుండి నింపాం — సేవ్ చేసే ముందు చూడండి.',
+    wa_copy_template_btn:'📤 అభ్యర్థన టెంప్లేట్ కాపీ చేయండి',
+    wa_paste_reply_btn:'📋 రిప్లై పేస్ట్ చేయండి',
+    wa_paste_placeholder:'కస్టమర్ వాట్సాప్ రిప్లైని ఇక్కడ పేస్ట్ చేయండి',
+    wa_fill_form_btn:'దీని నుండి ఫారం నింపండి',
+    clipboard_unsupported:'కాపీ కాలేదు — టెక్స్ట్‌ని మాన్యువల్‌గా ఎంచుకుని కాపీ చేయండి.',
+    template_copied:'టెంప్లేట్ కాపీ అయింది — వాట్సాప్‌లో పేస్ట్ చేసి పంపండి.',
+    paste_field_name:'పేరు', paste_field_type:'రకం', paste_field_date:'తేదీ',
+    paste_field_guests:'హెడ్‌కౌంట్', paste_field_veda:'వేద శాఖ',
+    paste_filled_note:'నింపినవి: {fields}. సేవ్ చేసే ముందు అన్నీ చూడండి.',
+    paste_skipped_note:'చదవలేకపోయాం: {fields} — వాటిని మీరే నింపండి.',
+    paste_nothing_found:'ఆ టెక్స్ట్‌లో గుర్తించదగిన వివరాలు కనిపించలేదు.',
     err_name:'ముందుగా పేరు రాయండి.', err_client:'ముందుగా క్లయింట్ పేరు రాయండి.',
     err_item:'ముందుగా వస్తువు పేరు రాయండి.', err_date:'ముందుగా తేదీ ఎంచుకోండి.',
     err_head:'ముందుగా అతిథుల సంఖ్య రాయండి.',
@@ -1896,6 +2057,11 @@ const S = {
     const stored = localStorage.getItem('appLanguage');
     return (stored === 'te' || stored === 'en') ? stored : 'en';
   })(),
+  textZoom: (function () {
+    /* Per-device text size, 0-3, same device-local pattern as language. */
+    const n = parseInt(localStorage.getItem('textZoom'), 10);
+    return (n >= 0 && n <= 3) ? n : 0;
+  })(),
   voiceLang: 'te-IN',
   listening: false,
   rec: null,
@@ -1923,6 +2089,7 @@ const S = {
   addCateringTarget: null,
   bkCaterItemsChosen: {},
   pendingBookingSave: null,
+  pendingSoftWarningSave: null,
   pendingEditFloorConflict: null,
   cache: {
     events:    {},
@@ -1985,6 +2152,22 @@ function setLang(lang) {
   applyLang();
   toast(t('lang_set'));
 }
+const TEXT_ZOOM_LABELS = ['zoom_normal', 'zoom_large', 'zoom_larger', 'zoom_xlarge'];
+function setTextZoom(delta) {
+  S.textZoom = Math.max(0, Math.min(3, S.textZoom + delta));
+  localStorage.setItem('textZoom', S.textZoom);
+  applyTextZoom();
+}
+function applyTextZoom() {
+  for (let i = 1; i <= 3; i++) document.body.classList.remove('zoom-' + i);
+  if (S.textZoom > 0) document.body.classList.add('zoom-' + S.textZoom);
+  const label = document.getElementById('zoom-level-label');
+  if (label) label.textContent = t(TEXT_ZOOM_LABELS[S.textZoom]);
+  const minusBtn = document.getElementById('zoom-minus-btn');
+  const plusBtn = document.getElementById('zoom-plus-btn');
+  if (minusBtn) minusBtn.disabled = S.textZoom === 0;
+  if (plusBtn) plusBtn.disabled = S.textZoom === 3;
+}
 function updateLangButtons() {
   const en = document.getElementById('lang-en');
   const te = document.getElementById('lang-te');
@@ -1996,6 +2179,8 @@ function applyLang() {
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
   applyPricingLabels();
+  applyTextZoom();
+  updateOfflineQueueBadge();
   document.getElementById('conn-txt').textContent = S.online ? t('conn_live') : t('conn_off');
   updateLangButtons();
   headerDateLine();
@@ -2108,7 +2293,68 @@ S.db.ref('.info/connected').on('value', snap => {
   S.online = snap.val() === true;
   document.getElementById('conn-dot').className = 'dot ' + (S.online ? 'on' : 'off');
   document.getElementById('conn-txt').textContent = S.online ? t('conn_live') : t('conn_off');
+  if (S.online) flushOfflineQueue();
 });
+
+/* =====================================================
+   OFFLINE BOOKING QUEUE
+   If a booking save can't reach Firebase — a dropped connection at a venue,
+   with a family standing there waiting, is exactly the real situation this
+   exists for — the booking is queued on the device instead of being lost,
+   and retried automatically the next time the connection comes back
+   (or immediately if the person taps the banner). Deliberately scoped to
+   booking creation only, not every write in the app: that's the one moment
+   where losing someone's work has a real cost, since every other save can
+   simply be tried again a moment later by the person sitting right there.
+   Survives an app close/reopen because it lives in localStorage, not memory. */
+const OFFLINE_QUEUE_KEY = 'offlineBookingQueue';
+function loadOfflineQueue() {
+  try { return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function saveOfflineQueueToStorage(queue) {
+  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+}
+function updateOfflineQueueBadge() {
+  const queue = loadOfflineQueue();
+  const badge = document.getElementById('offline-queue-badge');
+  if (!badge) return;
+  if (queue.length) {
+    badge.textContent = '⏳ ' + queue.length + ' ' + t('offline_queue_pending');
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+/* Always tries the real save first — queues only on genuine failure, never
+   pre-emptively. S.online can lag a moment behind reality, so an actual
+   attempt is a more honest signal than trusting a flag that might be stale. */
+function saveOrQueueBooking(updates, summary, onSuccess) {
+  return S.db.ref('/').update(updates).then(onSuccess).catch(err => {
+    console.error(err);
+    const queue = loadOfflineQueue();
+    queue.push({ id: uid('q'), updates, queuedAt: Date.now(), summary });
+    saveOfflineQueueToStorage(queue);
+    updateOfflineQueueBadge();
+    closeBooking();
+    toast(t('offline_queue_saved').replace('{summary}', summary));
+  });
+}
+function flushOfflineQueue() {
+  const queue = loadOfflineQueue();
+  if (!queue.length || !S.online) return;
+  const remaining = [];
+  let synced = 0;
+  Promise.all(queue.map(item =>
+    S.db.ref('/').update(item.updates)
+      .then(() => { synced++; })
+      .catch(() => { remaining.push(item); })
+  )).then(() => {
+    saveOfflineQueueToStorage(remaining);
+    updateOfflineQueueBadge();
+    if (synced) toast(synced + ' ' + t('offline_queue_synced'));
+  });
+}
 
 /* =====================================================
    PANCHANGA ENGINE
@@ -2446,6 +2692,8 @@ function openBooking() {
   onServiceToggle();
   populateCustomerSelect();
   onBkTypeChange();
+  const guestsField = document.getElementById('bk-guests');
+  if (!txt(guestsField.value)) guestsField.value = 10; /* sensible default for a new booking; editing an existing one shows its real value */
   updateBkTotal();
 }
 /* ---------- Ritual booking: link to Customer/Relative, ask frequency, preview schedule ---------- */
@@ -2470,7 +2718,6 @@ function onBkCustomerChange() {
   if (cid === '__new__') {
     relSel.classList.add('hidden');
     relSel.innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>';
-    document.getElementById('bk-veda-display').classList.add('hidden');
     document.getElementById('bk-freq-block').classList.add('hidden');
     document.getElementById('bk-schedule-preview').classList.add('hidden');
     S.bkSelectedRelative = null;
@@ -2488,17 +2735,14 @@ function onBkCustomerChange() {
   relSel.innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>' +
     relatives.map(r => '<option value="' + r.id + '">' + esc(r.name) + ' (' + esc(tRelation(r.relation)) + ')</option>').join('');
   relSel.classList.remove('hidden');
-  document.getElementById('bk-veda-display').classList.add('hidden');
   document.getElementById('bk-freq-block').classList.add('hidden');
   document.getElementById('bk-schedule-preview').classList.add('hidden');
   S.bkSelectedRelative = null;
 }
 function onBkRelativeChange() {
   const rid = txt(document.getElementById('bk-relative').value);
-  const veda = document.getElementById('bk-veda-display');
   const freqBlock = document.getElementById('bk-freq-block');
   if (!rid) {
-    veda.classList.add('hidden');
     freqBlock.classList.add('hidden');
     document.getElementById('bk-schedule-preview').classList.add('hidden');
     S.bkSelectedRelative = null;
@@ -2508,13 +2752,16 @@ function onBkRelativeChange() {
   if (!rel) return;
   S.bkSelectedRelative = rel;
   const cu = S.cache.customers[rel.customerId];
-  /* Auto-fill client/phone only if currently empty, so manual edits are never clobbered. */
+  /* Auto-fill client/phone only if currently empty, so manual edits are never clobbered.
+     Veda/Relation are pre-filled but left editable — they're this booking's own record,
+     not a read-only mirror of the registry, so a one-off correction here doesn't require
+     going to edit the registry entry itself. */
   const clientField = document.getElementById('bk-client');
   const phoneField = document.getElementById('bk-phone');
   if (!txt(clientField.value)) clientField.value = rel.name + ' (' + tRelation(rel.relation) + ')';
   if (!txt(phoneField.value) && cu && cu.phone) phoneField.value = cu.phone;
-  veda.textContent = t('veda_lbl') + ': ' + tVeda(rel.vedaShakha);
-  veda.classList.remove('hidden');
+  if (rel.vedaShakha) document.getElementById('bk-veda-select').value = rel.vedaShakha;
+  if (rel.relation) document.getElementById('bk-relation-select').value = rel.relation;
   freqBlock.classList.remove('hidden');
   /* Reset frequency back to one-time each time a different relative is picked. */
   document.getElementById('bk-freq-onetime').checked = true;
@@ -2539,7 +2786,8 @@ function updateFreqAvailability() {
 function resetRitualLinking(keepBlockOpen) {
   document.getElementById('bk-relative').classList.add('hidden');
   document.getElementById('bk-relative').innerHTML = '<option value="">' + t('pick_relative_opt') + '</option>';
-  document.getElementById('bk-veda-display').classList.add('hidden');
+  document.getElementById('bk-veda-select').value = 'Yajurveda';
+  document.getElementById('bk-relation-select').value = 'Father';
   document.getElementById('bk-freq-block').classList.add('hidden');
   document.getElementById('bk-schedule-preview').classList.add('hidden');
   document.getElementById('bk-menu-block').classList.add('hidden');
@@ -2560,12 +2808,13 @@ function createInlineCustomer() {
   if (!name) { toast(t('err_name'), true); return; }
   const phone = txt(document.getElementById('bk-newcust-phone').value);
   const relName = txt(document.getElementById('bk-newcust-relname').value) || name;
-  const vedaShakha = txt(document.getElementById('bk-newcust-veda').value) || 'Other';
+  const vedaShakha = txt(document.getElementById('bk-veda-select').value) || 'Other';
+  const relation = txt(document.getElementById('bk-relation-select').value) || 'Other';
 
   const customerId = uid('cu');
   const relativeId = uid('rel');
   const customerData = { id: customerId, name, phone, created: Date.now() };
-  const relativeData = { id: relativeId, customerId, name: relName, relation: 'Other', vedaShakha, created: Date.now() };
+  const relativeData = { id: relativeId, customerId, name: relName, relation, vedaShakha, created: Date.now() };
 
   Promise.all([
     save('customers/' + customerId, customerData),
@@ -2582,12 +2831,9 @@ function createInlineCustomer() {
     S.bkSelectedRelative = relativeData;
     const clientField = document.getElementById('bk-client');
     const phoneField = document.getElementById('bk-phone');
-    if (!txt(clientField.value)) clientField.value = relName + ' (' + tRelation('Other') + ')';
+    if (!txt(clientField.value)) clientField.value = relName + ' (' + tRelation(relation) + ')';
     if (!txt(phoneField.value) && phone) phoneField.value = phone;
 
-    const veda = document.getElementById('bk-veda-display');
-    veda.textContent = t('veda_lbl') + ': ' + tVeda(vedaShakha);
-    veda.classList.remove('hidden');
     document.getElementById('bk-freq-block').classList.remove('hidden');
     document.getElementById('bk-freq-onetime').checked = true;
     updateFreqAvailability();
@@ -2772,6 +3018,7 @@ function menuSummaryLines(menu) {
 function closeBooking() {
   document.getElementById('modal-booking').classList.add('hidden');
   S.editingEventId = null;
+  resetBookingForm(); /* prevents stale/duplicate data if reopened without saving */
 }
 /* ---------- Editing an already-saved booking (must be unlocked first; double-confirmed) ---------- */
 function editBookingEvent(id) {
@@ -2816,15 +3063,22 @@ function editBookingEvent(id) {
      the frequency chooser and preview only apply when first creating a booking. */
   document.getElementById('bk-freq-block').classList.add('hidden');
   document.getElementById('bk-schedule-preview').classList.add('hidden');
+  const isRitualEdit = e.type === 'Shraddha / Pitru Karya' && !document.getElementById('bk-ritual-block').classList.contains('hidden');
+  if (isRitualEdit) {
+    /* Booking's own saved value first; falls back to defaults for bookings saved
+       before this field existed (see the e.customerId branch below for a further
+       fallback to the linked relative's own record, if there is one). */
+    document.getElementById('bk-veda-select').value = e.vedaShakha || 'Yajurveda';
+    document.getElementById('bk-relation-select').value = e.relation || 'Father';
+  }
   if (e.customerId) {
     document.getElementById('bk-customer').value = e.customerId;
     onBkCustomerChange();
     if (e.relativeId && S.cache.relatives[e.relativeId]) {
       document.getElementById('bk-relative').value = e.relativeId;
       S.bkSelectedRelative = S.cache.relatives[e.relativeId];
-      const veda = document.getElementById('bk-veda-display');
-      veda.textContent = t('veda_lbl') + ': ' + tVeda(e.vedaShakha || S.bkSelectedRelative.vedaShakha);
-      veda.classList.remove('hidden');
+      if (!e.vedaShakha && S.bkSelectedRelative.vedaShakha) document.getElementById('bk-veda-select').value = S.bkSelectedRelative.vedaShakha;
+      if (!e.relation && S.bkSelectedRelative.relation) document.getElementById('bk-relation-select').value = S.bkSelectedRelative.relation;
     }
   }
   /* The menu can still be changed on edit, even though the schedule/frequency itself cannot. */
@@ -2867,12 +3121,17 @@ function saveBooking() {
   const freqEl = document.querySelector('input[name="bk-freq"]:checked');
   const freq = (rel && freqEl) ? freqEl.value : 'onetime';
 
-  const ritualMeta = rel ? {
-    customerId: rel.customerId,
-    relativeId: rel.id,
-    vedaShakha: rel.vedaShakha,
-    relation:   rel.relation
+  /* Veda Shakha and Relation are captured for every Shraddha/Pitru Karya booking —
+     walk-in included — since the priest needs them regardless of registry status.
+     customerId/relativeId are only added when actually linked to the registry. */
+  const ritualMeta = isRitual ? {
+    vedaShakha: txt(document.getElementById('bk-veda-select').value),
+    relation:   txt(document.getElementById('bk-relation-select').value)
   } : {};
+  if (rel) {
+    ritualMeta.customerId = rel.customerId;
+    ritualMeta.relativeId = rel.id;
+  }
 
   /* Work out the actual date(s) to book, based on the chosen frequency. */
   let occurrences; /* array of { date, masikaIndex? } */
@@ -2912,13 +3171,67 @@ function saveBooking() {
   };
 
   const pending = { occurrences, baseFields, ritualMeta, freq, menuSelection, client };
-  const conflicts = occurrences
-    .map(occ => ({ occ, conflict: findFloorConflict(occ.date, baseFields.floor, null) }))
+  const warnings = checkSoftWarnings(occurrences, client);
+  if (warnings.length) {
+    S.pendingSoftWarningSave = pending;
+    openSaveWarningConfirm(warnings);
+    return;
+  }
+  proceedPastSoftWarnings(pending);
+}
+/* Informational, non-blocking checks — a typo'd year or an accidental double-entry
+   shouldn't be silently allowed, but a genuinely intended past-dated or repeat
+   booking (e.g. backfilling old notebook entries) shouldn't be blocked either.
+   Returns an array of warning strings; empty means nothing to flag. */
+function checkSoftWarnings(occurrences, client) {
+  const warnings = [];
+  const todayISO = isoOf(new Date());
+  const pastDates = occurrences.filter(occ => occ.date < todayISO).map(occ => occ.date);
+  if (pastDates.length) {
+    warnings.push(pastDates.length > 1
+      ? pastDates.length + ' ' + t('warn_past_dates_multi')
+      : t('warn_past_date_single').replace('{date}', pastDates[0]));
+  }
+  const clientLower = txt(client).toLowerCase();
+  occurrences.forEach(occ => {
+    const dup = Object.values(S.cache.events || {}).find(e =>
+      e && txt(e.client).toLowerCase() === clientLower && e.date === occ.date
+    );
+    if (dup && !warnings.some(w => w.indexOf(occ.date) !== -1)) {
+      warnings.push(t('warn_duplicate_booking').replace('{client}', client).replace('{date}', occ.date));
+    }
+  });
+  return warnings;
+}
+function openSaveWarningConfirm(warnings) {
+  document.getElementById('savewarning-body').innerHTML =
+    '<p class="text-cream font-semibold text-[17px] mb-2">' + t('warn_title') + '</p>' +
+    warnings.map(w => '<p class="text-creamdim text-[14px] mb-1">⚠ ' + esc(w) + '</p>').join('') +
+    '<p class="text-creamdim text-[13px] mt-3 mb-3">' + t('warn_question') + '</p>' +
+    '<div class="grid grid-cols-2 gap-2">' +
+      '<button class="btn-line" onclick="resolveSaveWarning(\'cancel\')">' + t('cancel') + '</button>' +
+      '<button class="btn-gold" onclick="resolveSaveWarning(\'continue\')">' + t('warn_continue') + '</button>' +
+    '</div>';
+  document.getElementById('modal-savewarning').classList.remove('hidden');
+}
+function resolveSaveWarning(choice) {
+  document.getElementById('modal-savewarning').classList.add('hidden');
+  const pending = S.pendingSoftWarningSave;
+  S.pendingSoftWarningSave = null;
+  if (choice !== 'continue' || !pending) return;
+  proceedPastSoftWarnings(pending);
+}
+/* Existing floor-conflict check, unchanged — just factored out so both the
+   no-warnings path and the "continue anyway" path from openSaveWarningConfirm
+   reach it the same way. */
+function proceedPastSoftWarnings(pending) {
+  const conflicts = pending.occurrences
+    .map(occ => ({ occ, conflict: findFloorConflict(occ.date, pending.baseFields.floor, null) }))
     .filter(x => x.conflict);
 
   if (conflicts.length) {
     S.pendingBookingSave = pending;
-    openFloorConflictConfirm(conflicts, baseFields.floor);
+    openFloorConflictConfirm(conflicts, pending.baseFields.floor);
     return;
   }
   finalizeCeremonyBooking(pending);
@@ -2936,13 +3249,14 @@ function finalizeCeremonyBooking(pending) {
     updates['events/' + id] = evData;
   });
 
-  S.db.ref('/').update(updates).then(() => {
+  const summary = client + (occurrences.length > 1 ? ' (' + occurrences.length + ' ' + t('bookings_created_note') + ')' : ' — ' + occurrences[0].date);
+  saveOrQueueBooking(updates, summary, () => {
     closeBooking();
     toast(occurrences.length > 1
       ? occurrences.length + ' ' + t('bookings_created_note') + ' — ' + client
       : t('booking_saved') + ' ' + client + ' — ' + inr(baseFields.total));
     resetBookingForm();
-  }).catch(err => { toast(t('err_save'), true); console.error(err); });
+  });
 }
 /* ---------- Floor-conflict check: simple switch/keep/cancel confirmation ---------- */
 function getOtherFloor(floor) { return floor === 'first' ? 'ground' : 'first'; }
@@ -3005,7 +3319,7 @@ function saveCateringBooking(client) {
     : [];
   const total = perPlate * guests + prasadam + surcharge;
   const id = uid('ev');
-  save('events/' + id, {
+  const evData = {
     id, client,
     phone:            txt(document.getElementById('bk-phone').value),
     date:             dateVal,
@@ -3023,11 +3337,14 @@ function saveCateringBooking(client) {
     advance:          num(document.getElementById('bk-advance').value),
     locked:           true,
     created:          Date.now()
-  }).then(() => {
+  };
+  const updates = {};
+  updates['events/' + id] = evData;
+  saveOrQueueBooking(updates, client + ' — ' + dateVal, () => {
     closeBooking();
     toast(t('booking_saved') + ' ' + client + ' — ' + inr(total));
     resetBookingForm();
-  }).catch(err => { toast(t('err_save'), true); console.error(err); });
+  });
 }
 /* Editing an existing booking always requires double-confirmation, matching every other
    edit flow in this app (staff, Pitru, customer, relative). update() merges fields, so
@@ -3071,9 +3388,16 @@ function saveBookingEdit() {
     const pkg = PKG[pkgKey] || PKG.regular;
     const extra = int(document.getElementById('bk-extra').value);
     const rel = S.bkSelectedRelative;
-    const ritualMeta = (rel && !document.getElementById('bk-relative').classList.contains('hidden') && txt(document.getElementById('bk-relative').value)) ? {
-      customerId: rel.customerId, relativeId: rel.id, vedaShakha: rel.vedaShakha, relation: rel.relation
+    const isLinked = rel && !document.getElementById('bk-relative').classList.contains('hidden') && txt(document.getElementById('bk-relative').value);
+    const isRitualEdit = txt(document.getElementById('bk-type').value) === 'Shraddha / Pitru Karya' && !document.getElementById('bk-ritual-block').classList.contains('hidden');
+    const ritualMeta = isRitualEdit ? {
+      vedaShakha: txt(document.getElementById('bk-veda-select').value),
+      relation:   txt(document.getElementById('bk-relation-select').value)
     } : {};
+    if (isLinked) {
+      ritualMeta.customerId = rel.customerId;
+      ritualMeta.relativeId = rel.id;
+    }
     const existing = S.cache.events[S.editingEventId];
     const menuMeta = (existing && existing.ritualFrequency && menuTemplateFor(existing.ritualFrequency)) ?
       { menu: gatherMenuSelection(existing.ritualFrequency) } : {};
@@ -3172,26 +3496,49 @@ function toggleLock(id) {
   const isLocked = e.locked !== false;
   save('events/' + id, { locked: !isLocked });
 }
-function openRemoveConfirm(id, name) {
-  S.removeTarget = { id, name };
+function openRemoveConfirm(id, name, seriesId) {
+  S.removeTarget = { id, name, seriesId: seriesId || null };
+  S.removeScope = null;
   renderRemoveStep(1);
   document.getElementById('modal-removeconfirm').classList.remove('hidden');
 }
-function renderRemoveStep(step) {
+/* A Monthly-frequency booking creates up to 12 events sharing one seriesId, but
+   until now nothing let you act on that series as a whole — cancelling a
+   postponed or discontinued arrangement meant deleting up to 12 bookings one
+   at a time. Step 1 now offers "just this one" vs "the whole series" whenever
+   the booking being removed is actually part of one (seriesCount > 1). */
+function renderRemoveStep(step, scope) {
   const body = document.getElementById('rmv-body');
-  const name = esc(S.removeTarget ? S.removeTarget.name : '');
+  const tgt = S.removeTarget;
+  const name = esc(tgt ? tgt.name : '');
+  const seriesCount = (tgt && tgt.seriesId)
+    ? Object.values(S.cache.events || {}).filter(e => e && e.seriesId === tgt.seriesId).length
+    : 0;
   if (step === 1) {
+    if (seriesCount > 1) {
+      body.innerHTML =
+        '<p class="text-cream font-semibold text-[17px] mb-2">⚠️ ' + t('rmv_title1') + '</p>' +
+        '<p class="text-creamdim text-[14px] mb-4">' + t('rmv_series_note').replace('{n}', seriesCount) + '</p>' +
+        '<div class="grid grid-cols-1 gap-2">' +
+          '<button class="btn-gold" onclick="renderRemoveStep(2,\'single\')">' + t('rmv_just_this') + '</button>' +
+          '<button class="btn-gold" style="background:linear-gradient(180deg,#E88A87,#C25450);color:#2A070B" onclick="renderRemoveStep(2,\'series\')">' + t('rmv_whole_series').replace('{n}', seriesCount) + '</button>' +
+          '<button class="btn-line" onclick="cancelRemove()">' + t('cancel') + '</button>' +
+        '</div>';
+      return;
+    }
     body.innerHTML =
       '<p class="text-cream font-semibold text-[17px] mb-2">⚠️ ' + t('rmv_title1') + '</p>' +
       '<p class="text-creamdim text-[14px] mb-4">' + t('rmv_body1') + ' <b>' + name + '</b>?</p>' +
       '<div class="grid grid-cols-2 gap-2">' +
         '<button class="btn-line" onclick="cancelRemove()">' + t('cancel') + '</button>' +
-        '<button class="btn-gold" onclick="renderRemoveStep(2)">' + t('continue_word') + '</button>' +
+        '<button class="btn-gold" onclick="renderRemoveStep(2,\'single\')">' + t('continue_word') + '</button>' +
       '</div>';
   } else {
+    S.removeScope = scope || 'single';
+    const body2 = S.removeScope === 'series' ? t('rmv_body2_series').replace('{n}', seriesCount) : t('rmv_body2');
     body.innerHTML =
       '<p class="text-saffron font-bold text-[17px] mb-2">🚨 ' + t('rmv_title2') + '</p>' +
-      '<p class="text-creamdim text-[14px] mb-4">' + t('rmv_body2') + '</p>' +
+      '<p class="text-creamdim text-[14px] mb-4">' + body2 + '</p>' +
       '<div class="grid grid-cols-2 gap-2">' +
         '<button class="btn-line" onclick="cancelRemove()">' + t('cancel') + '</button>' +
         '<button class="btn-gold" style="background:linear-gradient(180deg,#E88A87,#C25450);color:#2A070B" onclick="confirmRemove()">' + t('rmv_confirm_final') + '</button>' +
@@ -3201,11 +3548,18 @@ function renderRemoveStep(step) {
 function cancelRemove() {
   document.getElementById('modal-removeconfirm').classList.add('hidden');
   S.removeTarget = null;
+  S.removeScope = null;
 }
 function confirmRemove() {
   if (!S.removeTarget) return;
-  removeKey('events', S.removeTarget.id);
-  toast(t('booking_removed'));
+  if (S.removeScope === 'series' && S.removeTarget.seriesId) {
+    const ids = Object.values(S.cache.events || {}).filter(e => e && e.seriesId === S.removeTarget.seriesId).map(e => e.id);
+    ids.forEach(id => removeKey('events', id));
+    toast(ids.length + ' ' + t('series_removed'));
+  } else {
+    removeKey('events', S.removeTarget.id);
+    toast(t('booking_removed'));
+  }
   cancelRemove();
 }
 function toggleCheck(eid, i) {
@@ -3423,7 +3777,14 @@ function waEvent(eid) {
       '\n' + t('headcount') + ': ' + int(e.guests) +
       '\n' + t('package_word') + ': ' + t('pkg_name_' + (PKG[e.package] ? e.package : 'regular')) +
       ' — ' + inr(num(e.basePrice) || PKG.regular.price);
-    if (int(e.extraPlates)) msg += '\n' + t('extra_plates') + ': ' + int(e.extraPlates) + ' × ₹' + EXTRA_PLATE + ' = ' + inr(num(e.extraAmount));
+    if (e.vedaShakha) msg += '\n' + t('veda_lbl') + ': ' + tVeda(e.vedaShakha);
+    if (e.relation)   msg += '\n' + t('relation_word') + ': ' + tRelation(e.relation);
+    if (int(e.extraPlates)) {
+      /* Derived from this booking's own stored total, not the current live price —
+         so the message stays accurate even after prices are changed later. */
+      const perPlateAtBooking = Math.round(num(e.extraAmount) / int(e.extraPlates));
+      msg += '\n' + t('extra_plates') + ': ' + int(e.extraPlates) + ' × ₹' + perPlateAtBooking + ' = ' + inr(num(e.extraAmount));
+    }
   }
   if (num(e.prasadamCharge)) msg += '\n' + t('prasadam_line') + ': ' + inr(num(e.prasadamCharge));
   if (num(e.surcharge)) msg += '\n' + t('surcharge_line') + (e.surchargeNote ? ' (' + e.surchargeNote + ')' : '') + ': ' + inr(num(e.surcharge));
@@ -3592,6 +3953,12 @@ function buildLogCardHTML(e, staffArr) {
           }).join('') +
         '</div>' : '') +
 
+        (e.service !== 'catering' && (e.vedaShakha || e.relation) ? '<p class="text-creamdim text-[13px] mt-2">' +
+          (e.vedaShakha ? t('veda_lbl') + ': ' + esc(tVeda(e.vedaShakha)) : '') +
+          (e.vedaShakha && e.relation ? '  ·  ' : '') +
+          (e.relation ? t('relation_word') + ': ' + esc(tRelation(e.relation)) : '') +
+        '</p>' : '') +
+
         '<div class="bg-maroon-950/60 rounded-lg p-3 mt-3 text-[14px]">' +
           (e.service === 'catering'
             ? '<div class="flex justify-between"><span class="text-creamdim">₹' + num(e.caterPerPlate) + ' ' + t('cater_perplate_suffix') + ' × ' + int(e.guests) + '</span><span>' + inr(num(e.caterPerPlate) * int(e.guests)) + '</span></div>'
@@ -3618,7 +3985,7 @@ function buildLogCardHTML(e, staffArr) {
 
         '<button class="btn-line w-full mt-3 !text-[13px]" onclick="editBookingEvent(\'' + e.id + '\')">✏️ ' + t('edit_booking_btn') + '</button>' +
         '<button class="btn-line w-full mt-2 !text-[13px]" style="border-color:rgba(194,84,80,.5);color:#E8A9A6" ' +
-          'onclick="openRemoveConfirm(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\')">' + t('remove_record') + '</button>' +
+          'onclick="openRemoveConfirm(\'' + e.id + '\',\'' + esc(e.client).replace(/'/g,'') + '\',\'' + (e.seriesId || '') + '\')">' + t('remove_record') + '</button>' +
       '</div>' +
     '</div>';
 }
@@ -4246,11 +4613,21 @@ function renderCustomerConfirmStep(step) {
   const isRemove = tgt.action === 'remove';
   const name = esc(tgt.data.name);
   if (step === 1) {
-    const relCount = isRemove ? Object.values(S.cache.relatives || {}).filter(r => r && r.customerId === tgt.id).length : 0;
+    const relIds = isRemove ? Object.values(S.cache.relatives || {}).filter(r => r && r.customerId === tgt.id).map(r => r.id) : [];
+    const relCount = relIds.length;
+    /* Relatives cascade-delete with the customer, but their existing bookings do not —
+       destroying payment/staff/checklist records as a side effect of a registry cleanup
+       would be a worse outcome than a booking that simply loses its registry link. This
+       just makes sure that's a known, chosen outcome rather than a silent one. */
+    const todayISO = isoOf(new Date());
+    const futureBookingCount = isRemove
+      ? Object.values(S.cache.events || {}).filter(e => e && relIds.indexOf(e.relativeId) !== -1 && e.date >= todayISO).length
+      : 0;
     body.innerHTML =
       '<p class="text-cream font-semibold text-[17px] mb-2">' + (isRemove ? t('cust_rmv_title1') : t('cust_edit_title1')) + '</p>' +
       '<p class="text-creamdim text-[14px] mb-4">' + (isRemove ? t('cust_rmv_body1') : t('cust_edit_body1')) + ' <b>' + name + '</b>' +
         (isRemove && relCount ? ' — ' + relCount + ' ' + t('cust_rmv_cascade_note') : '') + '?</p>' +
+      (futureBookingCount ? '<p class="text-saffron text-[13px] mb-4">⚠️ ' + t('cust_rmv_future_bookings_note').replace('{n}', futureBookingCount) + '</p>' : '') +
       '<div class="grid grid-cols-2 gap-2">' +
         '<button class="btn-line" onclick="cancelCustomerConfirm()">' + t('cancel') + '</button>' +
         '<button class="btn-gold" onclick="renderCustomerConfirmStep(2)">' + t('continue_word') + '</button>' +
@@ -4811,6 +5188,72 @@ function renderAnniversaryRadar() {
 }
 
 /* =====================================================
+   UPCOMING CEREMONY RADAR — distinct from the Anniversary Radar above,
+   which is a general customer-marketing tool scanning ANY past booking.
+   This one is specific to the ritual scheduling system: it scans every
+   registered relative with a known death date for their next due
+   Masika/Varshika/Vaikuntha date, and flags anything coming up soon
+   that hasn't actually been booked yet — the thing nothing in the app
+   previously watched for. Booking Monthly/Yearly/Vaikuntha through the
+   New Booking form already creates the relevant dates; this just makes
+   sure nothing due soon slips through unbooked.
+   ===================================================== */
+function computeUpcomingCeremonies(windowDays) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const cutoff = new Date(today); cutoff.setDate(cutoff.getDate() + windowDays);
+  const results = [];
+  Object.values(S.cache.relatives || {}).filter(r => r && r.deathDate).forEach(rel => {
+    const info = relativeScheduleInfo(rel);
+    const candidates = [];
+    if (info.nextMasika) candidates.push({ freq: 'monthly', p: info.nextMasika });
+    if (rel.wantsVaikuntha && info.nextVaikuntha) candidates.push({ freq: 'vaikuntha', p: info.nextVaikuntha });
+    else if (info.nextVarshika) candidates.push({ freq: 'yearly', p: info.nextVarshika });
+    candidates.forEach(c => {
+      if (!c.p || c.p.dateObj < today || c.p.dateObj > cutoff) return;
+      const alreadyBooked = Object.values(S.cache.events || {}).some(e => e && e.relativeId === rel.id && e.date === c.p.iso);
+      if (alreadyBooked) return;
+      const daysAway = Math.round((c.p.dateObj - today) / 86400000);
+      results.push({ rel, freq: c.freq, p: c.p, daysAway });
+    });
+  });
+  results.sort((a, b) => a.daysAway - b.daysAway);
+  return results;
+}
+function renderCeremonyRadar() {
+  const box = document.getElementById('cerad-out');
+  if (!box) return;
+  const items = computeUpcomingCeremonies(30);
+  if (!items.length) {
+    box.innerHTML = '<div class="card p-4 text-center text-creamdim text-sm">' + t('cerad_empty') + '</div>';
+    return;
+  }
+  box.innerHTML = items.map(it => {
+    const cu = S.cache.customers[it.rel.customerId];
+    const name = it.rel.name + (cu && cu.name && cu.name !== it.rel.name ? ' (' + cu.name + ')' : '');
+    const dayLabel = it.daysAway === 0 ? t('cerad_today') : (it.daysAway + ' ' + t('cerad_days'));
+    return '<div class="card p-3 mb-2">' +
+      '<p class="text-cream font-semibold text-[14px]">' + esc(name) + ' — ' + esc(tRelation(it.rel.relation)) + '</p>' +
+      '<p class="text-creamdim text-[12px] mt-1">' + t('cerad_' + it.freq) + ' — ' + fmtSchedDate(it.p) + ' (' + dayLabel + ')</p>' +
+      '<button class="btn-gold text-[13px] w-full mt-2" onclick="openBookingForRelative(\'' + it.rel.id + '\')">' + t('cerad_book_btn') + '</button>' +
+    '</div>';
+  }).join('');
+}
+/* Jumps straight into New Booking with this relative already linked, ready to
+   pick the frequency and confirm — reuses the exact same wiring as manually
+   selecting them from the dropdown, so behaviour stays identical either way. */
+function openBookingForRelative(relativeId) {
+  const rel = S.cache.relatives[relativeId];
+  if (!rel) return;
+  openBooking();
+  document.getElementById('bk-type').value = 'Shraddha / Pitru Karya';
+  onBkTypeChange();
+  document.getElementById('bk-customer').value = rel.customerId;
+  onBkCustomerChange();
+  document.getElementById('bk-relative').value = relativeId;
+  onBkRelativeChange();
+}
+
+/* =====================================================
    TIFFIN SUBSCRIPTION HUB
    ===================================================== */
 const MEALS = [ ['b','breakfast','rateB','gb'], ['l','lunch','rateL','gl'], ['d','dinner','rateD','gd'] ];
@@ -5259,14 +5702,147 @@ function refreshStaffNameDatalist() {
   )).sort((a, b) => a.localeCompare(b));
   dl.innerHTML = names.map(n => '<option value="' + esc(n) + '"></option>').join('');
 }
+/* =====================================================
+   WHATSAPP REQUEST TEMPLATE + PASTE-TO-FILL
+   Deliberately format-based, not free-text AI parsing — reading whatever a
+   customer types in a casual WhatsApp message reliably needs real language
+   understanding, which would mean calling an external AI service from this
+   page (an exposed API key, or a backend this app doesn't have). A fixed
+   label:value format needs neither and works completely offline. The human
+   always reviews the filled form and taps Save themselves — nothing here
+   ever saves a booking on its own.
+   ===================================================== */
+const BOOKING_REQUEST_TEMPLATE =
+  'Namaskaram! To confirm your booking, please reply with:\n\n' +
+  'Name: \n' +
+  'Date (DD/MM/YYYY): \n' +
+  'Ceremony Type (Shraddha or Other): \n' +
+  'Headcount: \n' +
+  'Veda Shakha (Rigveda/Yajurveda/Samaveda/Atharvaveda/Other, if applicable): \n\n' +
+  '🪔 Anantha Shree';
+function copyBookingRequestTemplate() {
+  if (!navigator.clipboard || !navigator.clipboard.writeText) { toast(t('clipboard_unsupported'), true); return; }
+  navigator.clipboard.writeText(BOOKING_REQUEST_TEMPLATE)
+    .then(() => toast(t('template_copied')))
+    .catch(() => toast(t('clipboard_unsupported'), true));
+}
+function togglePasteBox() {
+  document.getElementById('bk-paste-box').classList.toggle('hidden');
+}
+/* Reads only lines that match "Label: value" against a known set of labels —
+   anything else in the pasted text (greetings, extra lines, emoji) is simply
+   ignored rather than guessed at. */
+function parseBookingPasteText(text) {
+  const result = {};
+  txt(text).split('\n').forEach(line => {
+    const m = line.match(/^\s*([^:]+?)\s*:\s*(.+?)\s*$/);
+    if (!m) return;
+    const label = m[1].toLowerCase();
+    const value = txt(m[2]);
+    if (!value) return;
+    if (label.indexOf('name') !== -1) result.name = value;
+    else if (label.indexOf('date') !== -1) result.date = value;
+    else if (label.indexOf('ceremony') !== -1 || label.indexOf('type') !== -1) result.type = value;
+    else if (label.indexOf('headcount') !== -1 || label.indexOf('guest') !== -1) result.guests = value;
+    else if (label.indexOf('veda') !== -1) result.veda = value;
+  });
+  return result;
+}
+/* Accepts DD/MM/YYYY, DD-MM-YYYY, or plain YYYY-MM-DD — the two formats an
+   Indian customer is realistically going to type. Returns null (rather than
+   guessing) for anything else, so a badly-typed date is skipped, not silently
+   misread as the wrong day. */
+function parseDateFlexible(s) {
+  s = txt(s);
+  let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) {
+    const d = parseInt(m[1], 10), mo = parseInt(m[2], 10), y = parseInt(m[3], 10);
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    return null;
+  }
+  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+  return null;
+}
+function parseAndFillFromPaste() {
+  const raw = document.getElementById('bk-paste-text').value;
+  const parsed = parseBookingPasteText(raw);
+  const filled = [];
+  const skipped = [];
+
+  if (parsed.name) { document.getElementById('bk-client').value = parsed.name; filled.push(t('paste_field_name')); }
+
+  if (parsed.type) {
+    const typeLower = parsed.type.toLowerCase();
+    document.getElementById('bk-type').value =
+      (typeLower.indexOf('shraddha') !== -1 || typeLower.indexOf('pitru') !== -1) ? 'Shraddha / Pitru Karya' : 'Other';
+    onBkTypeChange(); /* reveals the ritual block (and bk-veda-select) before the veda line below is applied */
+    filled.push(t('paste_field_type'));
+  }
+
+  if (parsed.date) {
+    const iso = parseDateFlexible(parsed.date);
+    if (iso) { document.getElementById('bk-date').value = iso; filled.push(t('paste_field_date')); }
+    else skipped.push(t('paste_field_date'));
+  }
+
+  if (parsed.guests) {
+    const n = int(parsed.guests);
+    if (n > 0) { document.getElementById('bk-guests').value = n; filled.push(t('paste_field_guests')); }
+    else skipped.push(t('paste_field_guests'));
+  }
+
+  if (parsed.veda) {
+    const vedaLower = parsed.veda.toLowerCase();
+    const vedaMap = { rigveda: 'Rigveda', yajurveda: 'Yajurveda', samaveda: 'Samaveda', atharvaveda: 'Atharvaveda' };
+    let matched = null;
+    Object.keys(vedaMap).forEach(k => { if (vedaLower.indexOf(k) !== -1) matched = vedaMap[k]; });
+    const vedaField = document.getElementById('bk-veda-select');
+    if (matched && vedaField) { vedaField.value = matched; filled.push(t('paste_field_veda')); }
+    else skipped.push(t('paste_field_veda'));
+  }
+
+  updateBkTotal();
+  document.getElementById('bk-paste-box').classList.add('hidden');
+  document.getElementById('bk-paste-text').value = '';
+
+  if (!filled.length) { toast(t('paste_nothing_found'), true); return; }
+  toast(t('paste_filled_note').replace('{fields}', filled.join(', ')) +
+    (skipped.length ? ' ' + t('paste_skipped_note').replace('{fields}', skipped.join(', ')) : ''));
+}
+
 /* When the typed client name exactly matches a known contact and the phone field is
-   still empty, auto-fill the phone too — but never overwrite a phone already typed. */
+   still empty, auto-fill the phone too — but never overwrite a phone already typed.
+   Also looks up their most recent past ceremony (if any) and, only for fields still
+   sitting at their untouched default (package=regular, floor=first, guests=10),
+   suggests that booking's package/floor/headcount — a real time-saver for repeat
+   families, without ever clobbering something the user has actually chosen. */
 function onBkClientInput() {
   const nameVal = txt(document.getElementById('bk-client').value);
   const phoneField = document.getElementById('bk-phone');
-  if (!nameVal || !phoneField || txt(phoneField.value)) return;
-  const match = buildCustomerContactList().find(c => c.name.toLowerCase() === nameVal.toLowerCase());
-  if (match && match.phone) phoneField.value = match.phone;
+  if (!nameVal) return;
+  const nameLower = nameVal.toLowerCase();
+  if (phoneField && !txt(phoneField.value)) {
+    const match = buildCustomerContactList().find(c => c.name.toLowerCase() === nameLower);
+    if (match && match.phone) phoneField.value = match.phone;
+  }
+  if (document.getElementById('bk-service-catering').checked) return; /* package/floor/guests don't apply to catering */
+  const pastBookings = Object.values(S.cache.events || {})
+    .filter(e => e && e.service === 'ceremony' && txt(e.client).toLowerCase() === nameLower && e.id !== S.editingEventId)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const last = pastBookings[0];
+  if (!last) return;
+  const pkgField = document.getElementById('bk-package');
+  const floorField = document.getElementById('bk-floor');
+  const guestsField = document.getElementById('bk-guests');
+  let changed = false;
+  if (pkgField.value === 'regular' && PKG[last.package] && last.package !== 'regular') { pkgField.value = last.package; changed = true; }
+  if (floorField.value === 'first' && last.floor === 'ground') { floorField.value = 'ground'; changed = true; }
+  if (txt(guestsField.value) === '10' && last.guests && int(last.guests) !== 10) { guestsField.value = last.guests; changed = true; }
+  if (changed) {
+    updateBkTotal();
+    toast(t('prefilled_from_last').replace('{name}', nameVal));
+  }
 }
 function renderContactsList(tab) {
   const box = document.getElementById('contacts-list');
@@ -5913,11 +6489,11 @@ function attachListeners() {
     });
     S.listeners.push({ ref, fn });
   };
-  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); renderContactsCurrentTab(); refreshClientDatalist(); });
+  bind('events',    'events',    () => { renderHome(); renderLog(); renderPnl(); renderRadar(); renderAnniversaryRadar(); renderCeremonyRadar(); renderContactsCurrentTab(); refreshClientDatalist(); });
   bind('expenses',  'expenses',  () => { renderExpRecent(); renderPnl(); });
   bind('pitru',     'pitru',     () => { renderPitruList(); });
   bind('customers', 'customers', () => { renderCustomerRegistry(); renderContactsCurrentTab(); refreshClientDatalist(); });
-  bind('relatives', 'relatives', () => { renderCustomerRegistry(); });
+  bind('relatives', 'relatives', () => { renderCustomerRegistry(); renderCeremonyRadar(); });
   bind('cateringItems', 'cateringItems', () => { renderCateringMenu(); });
   bind('groceryItems', 'groceryItems', () => { renderGroceryMaterials(); seedGroceryItemsIfNeeded(); });
   bind('historicalScanLog', 'historicalScanLog', () => { renderHistoricalScanLog(); });
@@ -5951,6 +6527,7 @@ fillSelectors();
 })();
 applyLang();     /* paints every static + dynamic string in the saved language */
 applyPricing();  /* paints default prices immediately; corrected once Firebase syncs */
+updateOfflineQueueBadge(); /* in case a previous session closed before syncing a queued booking */
 attachListeners();
 initVoice();
 nav('home');
