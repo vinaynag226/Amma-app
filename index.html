@@ -900,10 +900,11 @@
 
     <select id="bk-type" class="inp mb-2" onchange="onBkTypeChange()">
       <option value="Shraddha / Pitru Karya" data-i18n="ty_shraddha">Shraddha / Pitru Karya</option>
+      <option value="Vaikuntha Samaradhana" data-i18n="ty_vaikuntha">Vaikuntha Samaradhana</option>
       <option value="Other" data-i18n="ty_other">Other</option>
     </select>
 
-    <!-- Customer/Relative linking — shown only for Shraddha / Pitru Karya bookings -->
+    <!-- Customer/Relative linking — shown for Shraddha / Pitru Karya and Vaikuntha Samaradhana bookings -->
     <div id="bk-ritual-block" class="hidden">
       <!-- Always asked for any Shraddha/Pitru Karya booking — walk-in, new, or existing
            customer alike. What the priest needs for THIS ceremony shouldn't require
@@ -1051,10 +1052,8 @@
 
     <input id="bk-advance" class="inp mb-2" type="number" min="0" data-ph="advance_ph" placeholder="Advance received (₹)" onchange="updateBkTotal()" />
 
-    <div class="grid grid-cols-2 gap-2 mb-2">
-      <input id="bk-prasadam" class="inp" type="number" min="0" data-ph="prasadam_ph" placeholder="🍧 Extra Prasadam Charges (₹)" onchange="updateBkTotal()" />
-      <input id="bk-surcharge" class="inp" type="number" min="0" data-ph="surcharge_ph" placeholder="🎟️ Misc Surcharges (₹)" onchange="updateBkTotal()" />
-    </div>
+    <input id="bk-prasadam" class="inp mb-2" type="number" min="0" data-ph="prasadam_ph" placeholder="🍧 Extra Prasadam Charges (₹)" onchange="updateBkTotal()" />
+    <input id="bk-surcharge" class="inp mb-2" type="number" min="0" data-ph="surcharge_ph" placeholder="🎟️ Misc Surcharges (₹)" onchange="updateBkTotal()" />
     <input id="bk-surcharge-note" class="inp mb-2" data-ph="surcharge_note_ph" placeholder="Surcharge / charge description (optional)" />
 
     <div class="bg-maroon-950/60 rounded-lg p-3 mb-3">
@@ -1474,7 +1473,7 @@ const I18N = {
     bm_title:'New Booking', edit_booking_title:'Edit Booking', edit_booking_btn:'Edit Details',
     client_name_ph:'Client name',
     ty_upanayana:'Upanayana', ty_wedding:'Wedding', ty_gruha:'Gruhapravesham',
-    ty_vratam:'Satyanarayana Vratam', ty_shraddha:'Shraddha / Pitru Karya',
+    ty_vratam:'Satyanarayana Vratam', ty_shraddha:'Shraddha / Pitru Karya', ty_vaikuntha:'Vaikuntha Samaradhana',
     ty_birthday:'Birthday', ty_corporate:'Corporate', ty_other:'Other',
     svc_ceremony:'Ceremony + Catering', svc_catering:'Catering only',
     svc_ceremony_only:'Ceremony Only', svc_catering_only:'Catering Only',
@@ -1872,7 +1871,7 @@ const I18N = {
     bm_title:'కొత్త బుకింగ్', edit_booking_title:'బుకింగ్ మార్చండి', edit_booking_btn:'వివరాలు మార్చండి',
     client_name_ph:'క్లయింట్ పేరు',
     ty_upanayana:'ఉపనయనం', ty_wedding:'పెళ్లి', ty_gruha:'గృహప్రవేశం',
-    ty_vratam:'సత్యనారాయణ వ్రతం', ty_shraddha:'శ్రాద్ధం / పితృ కార్యం',
+    ty_vratam:'సత్యనారాయణ వ్రతం', ty_shraddha:'శ్రాద్ధం / పితృ కార్యం', ty_vaikuntha:'వైకుంఠ సమారాధన',
     ty_birthday:'పుట్టినరోజు', ty_corporate:'కార్పొరేట్', ty_other:'ఇతరం',
     svc_ceremony:'కార్యక్రమం + క్యాటరింగ్', svc_catering:'క్యాటరింగ్ మాత్రమే',
     svc_ceremony_only:'కార్యక్రమం మాత్రమే', svc_catering_only:'క్యాటరింగ్ మాత్రమే',
@@ -2119,7 +2118,7 @@ function t(key) {
 }
 const TYPE_I18N = {
   'Upanayana':'ty_upanayana', 'Wedding':'ty_wedding', 'Gruhapravesham':'ty_gruha',
-  'Satyanarayana Vratam':'ty_vratam', 'Shraddha / Pitru Karya':'ty_shraddha',
+  'Satyanarayana Vratam':'ty_vratam', 'Shraddha / Pitru Karya':'ty_shraddha', 'Vaikuntha Samaradhana':'ty_vaikuntha',
   'Birthday':'ty_birthday', 'Corporate':'ty_corporate', 'Other':'ty_other'
 };
 function tType(v) { return TYPE_I18N[v] ? t(TYPE_I18N[v]) : txt(v); }
@@ -2697,9 +2696,16 @@ function openBooking() {
   updateBkTotal();
 }
 /* ---------- Ritual booking: link to Customer/Relative, ask frequency, preview schedule ---------- */
+/* Shraddha/Pitru Karya and Vaikuntha Samaradhana both get the "For this ceremony"
+   Veda Shakha/Relation fields and optional registry-linking — they're both
+   death-ritual ceremonies needing the same information, walk-in or not.
+   "Other" (birthdays, corporate events, etc.) gets neither. */
+function isRitualType(type) {
+  return type === 'Shraddha / Pitru Karya' || type === 'Vaikuntha Samaradhana';
+}
 function onBkTypeChange() {
   const isCatering = document.getElementById('bk-service-catering').checked;
-  const isRitual = !isCatering && txt(document.getElementById('bk-type').value) === 'Shraddha / Pitru Karya';
+  const isRitual = !isCatering && isRitualType(txt(document.getElementById('bk-type').value));
   document.getElementById('bk-ritual-block').classList.toggle('hidden', !isRitual);
   if (!isRitual) resetRitualLinking();
 }
@@ -3063,7 +3069,7 @@ function editBookingEvent(id) {
      the frequency chooser and preview only apply when first creating a booking. */
   document.getElementById('bk-freq-block').classList.add('hidden');
   document.getElementById('bk-schedule-preview').classList.add('hidden');
-  const isRitualEdit = e.type === 'Shraddha / Pitru Karya' && !document.getElementById('bk-ritual-block').classList.contains('hidden');
+  const isRitualEdit = isRitualType(e.type) && !document.getElementById('bk-ritual-block').classList.contains('hidden');
   if (isRitualEdit) {
     /* Booking's own saved value first; falls back to defaults for bookings saved
        before this field existed (see the e.customerId branch below for a further
@@ -3116,7 +3122,7 @@ function saveBooking() {
   const surcharge = num(document.getElementById('bk-surcharge').value);
   const surchargeNote = txt(document.getElementById('bk-surcharge-note').value);
   const type = txt(document.getElementById('bk-type').value);
-  const isRitual = type === 'Shraddha / Pitru Karya' && !document.getElementById('bk-ritual-block').classList.contains('hidden');
+  const isRitual = isRitualType(type) && !document.getElementById('bk-ritual-block').classList.contains('hidden');
   const rel = isRitual ? S.bkSelectedRelative : null;
   const freqEl = document.querySelector('input[name="bk-freq"]:checked');
   const freq = (rel && freqEl) ? freqEl.value : 'onetime';
@@ -3389,7 +3395,7 @@ function saveBookingEdit() {
     const extra = int(document.getElementById('bk-extra').value);
     const rel = S.bkSelectedRelative;
     const isLinked = rel && !document.getElementById('bk-relative').classList.contains('hidden') && txt(document.getElementById('bk-relative').value);
-    const isRitualEdit = txt(document.getElementById('bk-type').value) === 'Shraddha / Pitru Karya' && !document.getElementById('bk-ritual-block').classList.contains('hidden');
+    const isRitualEdit = isRitualType(txt(document.getElementById('bk-type').value)) && !document.getElementById('bk-ritual-block').classList.contains('hidden');
     const ritualMeta = isRitualEdit ? {
       vedaShakha: txt(document.getElementById('bk-veda-select').value),
       relation:   txt(document.getElementById('bk-relation-select').value)
@@ -4871,7 +4877,7 @@ function scanHistoricalBookings() {
     groupEvents.forEach(e => { updates['events/' + e.id + '/customerId'] = customerId; });
 
     const ritualEvents = groupEvents
-      .filter(e => txt(e.type) === 'Shraddha / Pitru Karya' && !e.relativeId && txt(e.date))
+      .filter(e => isRitualType(txt(e.type)) && !e.relativeId && txt(e.date))
       .sort((a, b) => txt(a.date).localeCompare(txt(b.date)));
 
     if (ritualEvents.length) {
@@ -5716,7 +5722,7 @@ const BOOKING_REQUEST_TEMPLATE =
   'Namaskaram! To confirm your booking, please reply with:\n\n' +
   'Name: \n' +
   'Date (DD/MM/YYYY): \n' +
-  'Ceremony Type (Shraddha or Other): \n' +
+  'Ceremony Type (Shraddha, Vaikuntha, or Other): \n' +
   'Headcount: \n' +
   'Veda Shakha (Rigveda/Yajurveda/Samaveda/Atharvaveda/Other, if applicable): \n\n' +
   '🪔 Anantha Shree';
@@ -5774,8 +5780,10 @@ function parseAndFillFromPaste() {
 
   if (parsed.type) {
     const typeLower = parsed.type.toLowerCase();
-    document.getElementById('bk-type').value =
-      (typeLower.indexOf('shraddha') !== -1 || typeLower.indexOf('pitru') !== -1) ? 'Shraddha / Pitru Karya' : 'Other';
+    let matchedType = 'Other';
+    if (typeLower.indexOf('vaikuntha') !== -1) matchedType = 'Vaikuntha Samaradhana';
+    else if (typeLower.indexOf('shraddha') !== -1 || typeLower.indexOf('pitru') !== -1) matchedType = 'Shraddha / Pitru Karya';
+    document.getElementById('bk-type').value = matchedType;
     onBkTypeChange(); /* reveals the ritual block (and bk-veda-select) before the veda line below is applied */
     filled.push(t('paste_field_type'));
   }
