@@ -63,7 +63,7 @@
       radial-gradient(900px 600px at 50% 110%, rgba(82,18,24,0.55), transparent 65%);
     color: #F5E9D3;
     font-family: 'Mukta', sans-serif;
-    font-size: 17px;
+    font-size: calc(17px * var(--text-scale));
   }
 
   /* ---------- Signature: gold rangoli hairline ---------- */
@@ -220,51 +220,86 @@
   .pad-safe-b { padding-bottom: calc(env(safe-area-inset-bottom, 0px)); }
 
   /* ==========================================================
+     TEXT SIZE CONTROL — scales font-size only, nothing else.
+     Buttons, padding, icons, and spacing all stay their normal
+     size; only the text itself gets bigger or smaller. Uses the
+     same per-selector override technique as the Telugu mode
+     below (Tailwind's arbitrary pixel classes are absolute, not
+     relative, so there's no shortcut around listing them), just
+     driven by one CSS variable via calc() so each selector is
+     written once instead of once per zoom level. English-base
+     rules below are unscoped (their zoom-scaled size is the
+     default); the Telugu-scoped versions further down override
+     them with higher specificity when Telugu is active, so the
+     two combine correctly rather than needing every combination
+     spelled out twice.
+     ========================================================== */
+  :root { --text-scale: 1; }
+  body.zoom-1 { --text-scale: 1.15; }
+  body.zoom-2 { --text-scale: 1.3; }
+  body.zoom-3 { --text-scale: 1.45; }
+
+  .inp      { font-size: calc(16px * var(--text-scale)); }
+  .btn-gold { font-size: calc(16px * var(--text-scale)); }
+  .btn-line { font-size: calc(15px * var(--text-scale)); }
+  .btn-mega { font-size: calc(21px * var(--text-scale)); }
+  .chip     { font-size: calc(13.5px * var(--text-scale)); }
+  .seg button { font-size: calc(14px * var(--text-scale)); }
+  .stepbtn  { font-size: calc(20px * var(--text-scale)); }
+
+  [class*="text-[11px]"] { font-size: calc(11px * var(--text-scale)) !important; }
+  [class*="text-[12px]"] { font-size: calc(12px * var(--text-scale)) !important; }
+  [class*="text-[13px]"] { font-size: calc(13px * var(--text-scale)) !important; }
+  [class*="text-[14px]"] { font-size: calc(14px * var(--text-scale)) !important; }
+  [class*="text-[15px]"] { font-size: calc(15px * var(--text-scale)) !important; }
+  [class*="text-[16px]"] { font-size: calc(16px * var(--text-scale)) !important; }
+  [class*="text-[17px]"] { font-size: calc(17px * var(--text-scale)) !important; }
+  [class*="text-[19px]"] { font-size: calc(19px * var(--text-scale)) !important; }
+  [class*="text-[22px]"] { font-size: calc(22px * var(--text-scale)) !important; }
+  [class*="text-[26px]"] { font-size: calc(26px * var(--text-scale)) !important; }
+  [class*="text-[30px]"] { font-size: calc(30px * var(--text-scale)) !important; }
+  [class*="text-xs"]     { font-size: calc(12px * var(--text-scale)) !important; }
+  [class*="text-sm"]     { font-size: calc(14px * var(--text-scale)) !important; }
+  [class*="text-base"]   { font-size: calc(16px * var(--text-scale)) !important; }
+  [class*="text-lg"]     { font-size: calc(18px * var(--text-scale)) !important; }
+  [class*="text-2xl"]    { font-size: calc(24px * var(--text-scale)) !important; }
+
+  /* ==========================================================
      TELUGU READABILITY MODE — larger, bolder text for elderly /
      low-vision users. Scoped to body.lang-te only; English is
      untouched. Uses attribute-substring selectors so it reaches
      Tailwind's arbitrary-value utility classes (e.g. text-[13px])
-     regardless of any !-important modifier prefix.
+     regardless of any !-important modifier prefix. Each rule here
+     also scales with --text-scale, so Telugu mode and the Text
+     Size control combine correctly instead of one overriding the
+     other.
      ========================================================== */
-  body.lang-te { font-size: 20px; line-height: 1.45; }
-  body.lang-te .inp { font-size: 19px; font-weight: 600; }
-  body.lang-te .btn-gold { font-size: 19px; font-weight: 800; }
-  body.lang-te .btn-line { font-size: 18px; font-weight: 700; }
-  body.lang-te .btn-mega { font-size: 24px; }
-  body.lang-te .chip { font-size: 16.5px; font-weight: 700; }
-  body.lang-te .seg button { font-size: 17px; font-weight: 700; }
-  body.lang-te .stepbtn { font-size: 23px; }
+  body.lang-te { font-size: calc(20px * var(--text-scale)); line-height: 1.45; }
+  body.lang-te .inp { font-size: calc(19px * var(--text-scale)); font-weight: 600; }
+  body.lang-te .btn-gold { font-size: calc(19px * var(--text-scale)); font-weight: 800; }
+  body.lang-te .btn-line { font-size: calc(18px * var(--text-scale)); font-weight: 700; }
+  body.lang-te .btn-mega { font-size: calc(24px * var(--text-scale)); }
+  body.lang-te .chip { font-size: calc(16.5px * var(--text-scale)); font-weight: 700; }
+  body.lang-te .seg button { font-size: calc(17px * var(--text-scale)); font-weight: 700; }
+  body.lang-te .stepbtn { font-size: calc(23px * var(--text-scale)); }
   body.lang-te .engrave { font-weight: 700; }
 
-  body.lang-te [class*="text-[11px]"]  { font-size: 14px !important; font-weight: 600; }
-  body.lang-te [class*="text-[12px]"]  { font-size: 15px !important; font-weight: 600; }
-  body.lang-te [class*="text-[13px]"]  { font-size: 16px !important; font-weight: 600; }
-  body.lang-te [class*="text-[14px]"]  { font-size: 17px !important; font-weight: 600; }
-  body.lang-te [class*="text-[15px]"]  { font-size: 18px !important; font-weight: 600; }
-  body.lang-te [class*="text-[16px]"]  { font-size: 19px !important; font-weight: 700; }
-  body.lang-te [class*="text-[17px]"]  { font-size: 20px !important; font-weight: 700; }
-  body.lang-te [class*="text-[19px]"]  { font-size: 22px !important; font-weight: 700; }
-  body.lang-te [class*="text-[22px]"]  { font-size: 25px !important; font-weight: 700; }
-  body.lang-te [class*="text-[26px]"]  { font-size: 29px !important; font-weight: 700; }
-  body.lang-te [class*="text-[30px]"]  { font-size: 33px !important; font-weight: 700; }
-  body.lang-te [class*="text-xs"]      { font-size: 15px !important; font-weight: 600; }
-  body.lang-te [class*="text-sm"]      { font-size: 17px !important; font-weight: 600; }
-  body.lang-te [class*="text-base"]    { font-size: 19px !important; font-weight: 600; }
-  body.lang-te [class*="text-lg"]      { font-size: 21px !important; font-weight: 700; }
-  body.lang-te [class*="text-2xl"]     { font-size: 27px !important; font-weight: 700; }
-
-  /* ==========================================================
-     TEXT SIZE CONTROL — independent of language, works with
-     either English or Telugu. Uses Chrome's zoom property (this
-     app already targets Chrome on Android specifically), which
-     scales the whole rendered layout uniformly — text, buttons,
-     spacing — and, unlike a plain CSS transform, keeps fixed
-     header/nav/modals correctly positioned relative to the
-     viewport rather than clipping or overlapping them.
-     ========================================================== */
-  body.zoom-1 { zoom: 1.15; }
-  body.zoom-2 { zoom: 1.3; }
-  body.zoom-3 { zoom: 1.45; }
+  body.lang-te [class*="text-[11px]"]  { font-size: calc(14px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-[12px]"]  { font-size: calc(15px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-[13px]"]  { font-size: calc(16px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-[14px]"]  { font-size: calc(17px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-[15px]"]  { font-size: calc(18px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-[16px]"]  { font-size: calc(19px * var(--text-scale)) !important; font-weight: 700; }
+  body.lang-te [class*="text-[17px]"]  { font-size: calc(20px * var(--text-scale)) !important; font-weight: 700; }
+  body.lang-te [class*="text-[19px]"]  { font-size: calc(22px * var(--text-scale)) !important; font-weight: 700; }
+  body.lang-te [class*="text-[22px]"]  { font-size: calc(25px * var(--text-scale)) !important; font-weight: 700; }
+  body.lang-te [class*="text-[26px]"]  { font-size: calc(29px * var(--text-scale)) !important; font-weight: 700; }
+  body.lang-te [class*="text-[30px]"]  { font-size: calc(33px * var(--text-scale)) !important; font-weight: 700; }
+  body.lang-te [class*="text-xs"]      { font-size: calc(15px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-sm"]      { font-size: calc(17px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-base"]    { font-size: calc(19px * var(--text-scale)) !important; font-weight: 600; }
+  body.lang-te [class*="text-lg"]      { font-size: calc(21px * var(--text-scale)) !important; font-weight: 700; }
+  body.lang-te [class*="text-2xl"]     { font-size: calc(27px * var(--text-scale)) !important; font-weight: 700; }
 </style>
 </head>
 
@@ -1421,7 +1456,7 @@ const I18N = {
     lang_note:'This choice is saved only on this phone. All phones read the same live data.',
     text_size_hdr:'🔤 Text Size',
     zoom_normal:'Normal', zoom_large:'Large', zoom_larger:'Larger', zoom_xlarge:'Extra Large',
-    zoom_note:'Makes everything in the app bigger and easier to read. Saved only on this phone — works with either English or Telugu.',
+    zoom_note:'Makes the text bigger and easier to read, without changing the size of buttons or spacing. Saved only on this phone — works with either English or Telugu.',
     staff_registry:'Staff Registry', staff_registry_panel:'👥 Staff Registry', add_registry:'Add to registry',
     name_ph:'Name', wage_ph:'Wage ₹/day', phone_ph:'Phone (WhatsApp)',
     no_staff:'No staff registered yet. Add your Purohits and Chefs above.',
@@ -1819,7 +1854,7 @@ const I18N = {
     lang_note:'ఈ ఎంపిక ఈ ఫోన్‌లో మాత్రమే ఉంటుంది. అన్ని ఫోన్లు ఒకే డేటానే చూపిస్తాయి.',
     text_size_hdr:'🔤 అక్షరాల పరిమాణం',
     zoom_normal:'సాధారణ', zoom_large:'పెద్దది', zoom_larger:'మరింత పెద్దది', zoom_xlarge:'చాలా పెద్దది',
-    zoom_note:'యాప్‌లో అన్నీ పెద్దగా, చదవడానికి సులభంగా కనిపిస్తాయి. ఈ ఫోన్‌లో మాత్రమే సేవ్ అవుతుంది — ఇంగ్లీష్ లేదా తెలుగు రెండింటితోనూ పనిచేస్తుంది.',
+    zoom_note:'బటన్‌లు లేదా ఖాళీల పరిమాణం మారకుండా, టెక్స్ట్ మాత్రమే పెద్దగా, చదవడానికి సులభంగా అవుతుంది. ఈ ఫోన్‌లో మాత్రమే సేవ్ అవుతుంది — ఇంగ్లీష్ లేదా తెలుగు రెండింటితోనూ పనిచేస్తుంది.',
     staff_registry:'సిబ్బంది పట్టిక', staff_registry_panel:'👥 సిబ్బంది పట్టిక', add_registry:'పట్టికలో చేర్చండి',
     name_ph:'పేరు', wage_ph:'కూలి ₹/రోజు', phone_ph:'ఫోన్ (వాట్సాప్)',
     no_staff:'ఇంకా సిబ్బంది లేరు. పురోహితులు, వంటవారిని పైన చేర్చండి.',
